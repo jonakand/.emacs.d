@@ -9,6 +9,7 @@ snippets/
 themes/
 url/
 vendor/
+BACKUP/
 *.elc
 .mc-lists.el
 .org-id-locations

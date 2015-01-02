@@ -1,10 +1,4 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Theme the window early so that things don't flash from light to dark when
-;; the theme is loaded.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(load-theme 'monokai t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Set the inactive modeline so it will match the flat look and size of the 
 ;;  modeline settings in the god mode config.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -12,14 +6,6 @@
 		    :foreground "grey80" :background "grey30"
 		    :inverse-video nil
 		    :box '(:line-width 1 :color "grey30" :style nil))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  So gnutls can find trustfiles on windows simply setting the path for the
-;;  trust files doesn't seem to work.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(eval-after-load "gnutls" 
-  '(progn 
-     (setq gnutls-trustfiles '("h:/emacs/cacert.pem"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Enable some functions.
@@ -72,7 +58,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Set the font to something nice
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(set-face-attribute 'default nil :font "Consolas-11:antialias=subpixel")
+(if (eq system-type 'windows-nt)
+    (set-face-attribute 'default nil :font "Consolas-11:antialias=subpixel"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Turn off line wrapping
@@ -87,34 +74,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Save temp files in c:/temp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq backup-directory-alist
-      `((".*" . "C:/temp/EMACS_TEMP")))
-(setq auto-save-file-name-transforms
-      `((".*" , "C:/temp/EMACS_TEMP" t)))
+(if (eq system-type 'windows-nt)
+    (progn
+      (setq backup-directory-alist
+	    `((".*" . "~/.emacs.d/BACKUP")))
+      (setq auto-save-file-name-transforms
+	    `((".*" , "~/.emacs.d/BACKUP" t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  DB2 related setup
-;;  Taken from http://www.ibm.com/developerworks/data/library/techarticle/0206mathew/0206mathew.html
+;;  Auto revert the buffer if the underlying file has changed.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe") 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;;  -t - ';' (semicolon) is treated as the command line terminator. 
-;;  +ec - Print SQLCODE.
-;;  +m - Print number of rows affected by statement.
-;;  Taken from http://www.ibm.com/developerworks/data/library/techarticle/0206mathew/0206mathew.html
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Rainbox delimiter mode.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Enable smartscan mode.  M-n and M-p to move to next/previous 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-smartscan-mode 1)
+(global-auto-revert-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ibuffer key.
@@ -148,6 +118,47 @@
 (global-set-key (kbd "<M-f5>") 'ry/sql-connect)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Spell checking keys.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key [f1] 'flyspell-check-previous-highlighted-word)
+(global-set-key [f2] 'ispell-word)
+(global-set-key [f3] 'flyspell-check-next-highlighted-word)
+(global-set-key [f4] 'ispell-buffer)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Remap move-beginning-of-line to prelude-move-beginning-of-line so that it
+;;  puts the cursor to the first non whitepace character or beginning of the
+;;  line if pressed again.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Kill buffers for dired mode and package menu mode instead of burying them.
+;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(eval-after-load "dired"
+  (progn
+    '(bind-keys :map dired-mode-map
+		("q" . kill-this-buffer))))
+
+(bind-keys :map package-menu-mode-map
+	   ("q" . kill-this-buffer))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Define a map to use for toggling modes.  This seemed like a very nice idea.
+;;  See if I can remember to use it.
+;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-prefix-command 'toggle-map)
+(bind-key "C-x t" 'toggle-map)
+(bind-keys :map toggle-map
+           ("l" . linum-mode)
+           ("o" . org-mode)
+           ("s" . smartparens-mode)
+           ("t" . text-mode)
+           ("w" . whitespace-mode))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
 ;;  Taken from http://www.emacswiki.org/emacs/RectangleCommands
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,7 +190,9 @@
   (god-local-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Open a DB2 SQLI window.
+;;  Open a DB2 SQLI window.  This probably isn't a super way of doing this as
+;;  the SQLi hook is not being called due to the way the sql-buffer is being set
+;;  but for now it works.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/sql-open-database ()
   "Open a SQLI process and name the SQL statement window with the name provided."
@@ -190,7 +203,7 @@
   (switch-to-buffer "*DATABASE*")
   (sql-mode)
   (sql-set-product "db2")
-  (sql-set-sqli-buffer)
+  (setq sql-buffer "*SQL*")
   (auto-complete-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -206,7 +219,7 @@
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Prefix the region with an EXPORT command and send it to the DB2 process.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;xs
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/sql-send-export-paragraph ()
   "Prefix the current paragraph with an EXPORT command and 
 send the paragraph to the SQL process."
@@ -217,7 +230,7 @@ send the paragraph to the SQL process."
   	(end (save-excursion
   	       (forward-paragraph)
   	       (point)))
-  	(temp-file ;;"F:/Users/T55011/AppData/Local/Temp/DB2-EXPORT-1920sGn"))
+  	(temp-file
   	 (make-temp-file "DB2-EXPORT-" nil)))
     (sql-send-string (concat "EXPORT TO " temp-file " OF DEL MODIFIED BY COLDEL0x09 " (buffer-substring-no-properties start end)))
     (switch-to-buffer "*EXPORT*")
@@ -278,8 +291,6 @@ point reaches the beginning or end of the buffer, stop there."
     (when (= orig-point (point))
       (move-beginning-of-line 1))))
 
-(global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions for formatting XML documents.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -288,14 +299,14 @@ point reaches the beginning or end of the buffer, stop there."
 as an XML document.  Region needs to contain a valid XML document."
   (interactive "*r")
   (save-excursion
-    (shell-command-on-region beg end "C:/PROGRA~2/Java/jre7/bin/java -jar H:/emacs/Java/XMLFormatter.jar --pretty" (current-buffer) t)))
+    (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar --pretty" (current-buffer) t)))
 
 (defun ry/xml-linearlize (beg end)
   "Call an external Java program to linearlize the current region.  
 Region needs to contain a valid XML document."
   (interactive "*r")
   (save-excursion
-    (shell-command-on-region beg end "C:/PROGRA~2/Java/jre7/bin/java -jar H:/emacs/Java/XMLFormatter.jar " (current-buffer) t)))
+    (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar " (current-buffer) t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Perform an XQUERY on the selected region.
@@ -327,7 +338,7 @@ Region needs to contain a valid XML document."
   (setq file (make-temp-file "elisp-dbxml-"))
   (write-region xquery nil file)
   (setq result (shell-command-to-string
-			 (concat "C:/PROGRA~2/Java/jre7/bin/java -cp H:/emacs/Java/saxon9he.jar net.sf.saxon.Query -q:\"" file "\" !indent=yes\n")))
+		(concat "java -cp H:/emacs/Java/saxon9he.jar net.sf.saxon.Query -q:\"" file "\" !indent=yes\n")))
   (delete-file file)
   (concat "" result))
 
@@ -422,20 +433,76 @@ Don't mess with special buffers."
   (ispell-word))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Hide/Show modeline.  This looked interesting but I'm not sure if it will get
+;;  used.
+;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar-local hidden-mode-line-mode nil)
+
+(define-minor-mode hidden-mode-line-mode
+  "Minor mode to hide the mode-line in the current buffer."
+  :init-value nil
+  :global t
+  :variable hidden-mode-line-mode
+  :group 'editing-basics
+  (if hidden-mode-line-mode
+      (setq hide-mode-line mode-line-format
+            mode-line-format nil)
+    (setq mode-line-format hide-mode-line
+          hide-mode-line nil))
+  (force-mode-line-update)
+  ;; Apparently force-mode-line-update is not always enough to
+  ;; redisplay the mode-line
+  (redraw-display)
+  (when (and (called-interactively-p 'interactive)
+             hidden-mode-line-mode)
+    (run-with-idle-timer
+     0 nil 'message
+     (concat "Hidden Mode Line Mode enabled.  "
+             "Use M-x hidden-mode-line-mode to make the mode-line appear."))))
+
+(bind-key "m" 'hidden-mode-line-mode toggle-map)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Theme the window early so that things don't flash from light to dark when
+;; the theme is loaded.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package monokai-theme
+  :ensure t
+  :config
+  (load-theme 'monokai t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Smart mode line config.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smart-mode-line
-  :ensure smart-mode-line
+  :ensure t 
   :config
   (progn
     (sml/setup)
     (sml/apply-theme 'dark)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Rainbox delimiter mode.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package rainbow-delimiters
+  :ensure t 
+  :config
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Enable smartscan mode.  M-n and M-p to move to next/previous 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package smartscan
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook 'global-smartscan-mode))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Config hideshowvis
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package hideshowvis
-  :ensure hideshowvis
+  :ensure t
   :config
   (progn
     (add-to-list 'hs-special-modes-alist
@@ -478,7 +545,7 @@ Don't mess with special buffers."
 ;;  Add hook to NXML to load custom functions when NXML loads.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package nxml-mode
-  :commands nxml-mode
+  :commands 
   :init
   (progn 
     (setq nxml-auto-insert-xml-declaration-flag nil)
@@ -488,7 +555,7 @@ Don't mess with special buffers."
 ;; Web-mode initialization stuff.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package web-mode
-  :ensure web-mode
+  :ensure t
   :mode 
   (("\\.phtml\\'" . web-mode)
    ("\\.tpl\\.php\\'" . web-mode)
@@ -502,7 +569,7 @@ Don't mess with special buffers."
 ;; Helm init
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package helm
-  :ensure helm
+  :ensure t
   :bind (("C-M-s" . helm-occur)
 	 ("M-x" . helm-M-x)
 	 ("C-x b" . helm-mini)
@@ -544,20 +611,15 @@ Don't mess with special buffers."
 ;; rw-hunspell is no longer used as Emacs 24.4 made Hunspell integration very
 ;; easy.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq ispell-personal-dictionary "h:/emacs/Config/en_US_personal")
+(setq ispell-personal-dictionary "~/emacs/Config/en_US_personal")
 (setq ispell-silently-savep t)
 (setq ispell-quietly t)
-
-(global-set-key [f1] 'flyspell-check-previous-highlighted-word)
-(global-set-key [f2] 'ispell-word)
-(global-set-key [f3] 'flyspell-check-next-highlighted-word)
-(global-set-key [f4] 'ispell-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Enable multiple cursors
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package multiple-cursors
-  :ensure multiple-cursors
+  :ensure t
   :bind (("C-S-s C-S-s" . mc/edit-lines)
 	 ("C->" . mc/mark-next-symbol-like-this)
 	 ("C-<" . mc/mark-previous-like-this)
@@ -567,7 +629,7 @@ Don't mess with special buffers."
 ;; GURU mode 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package guru-mode
-  :ensure guru-mode
+  :ensure t
   :init
   (progn
     (guru-mode)))
@@ -576,7 +638,7 @@ Don't mess with special buffers."
 ;;  Expand region by symantic units.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package expand-region
-  :ensure expand-region
+  :ensure t
   :bind ("C-=" . er/expand-region))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -584,6 +646,7 @@ Don't mess with special buffers."
 ;;  http://pages.sachachua.com/.emacs.d/Sacha.html#unnumbered-47
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package "eldoc"
+  
   :diminish eldoc-mode
   :commands turn-on-eldoc-mode
   :init
@@ -596,7 +659,7 @@ Don't mess with special buffers."
 ;;  Load sunrise commander and set F11 to open it.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package sunrise-commander
-  :ensure sunrise-commander
+  :ensure t 
   :commands sunrise
   :bind ("<f11>" . sunrise)
   :config
@@ -607,15 +670,15 @@ Don't mess with special buffers."
 ;; Add org mode stuff to the load path.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package org
-  :ensure org
+  :ensure t 
   :commands org-mode
-  :idle (load "~/emacs/Config/custom-org-mode.el"))
+  :idle (load "~/.emacs.d/custom-org-mode.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Yasnippet setup and prompt to use popup menu mode.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package yasnippet
-  :ensure yasnippet
+  :ensure t 
   :commands yas-global-mode
   :idle (yas-global-mode)
   :config
@@ -647,7 +710,7 @@ Don't mess with special buffers."
 ;;  undo-tree config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package undo-tree
-  :ensure undo-tree
+  :ensure t 
   :init
   (progn
     (global-undo-tree-mode)
@@ -658,7 +721,7 @@ Don't mess with special buffers."
 ;;  GOD mode config with some keymaps to make it easier to use.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package god-mode
-  :ensure god-mode
+  :ensure t 
   :bind (("<escape>" . god-local-mode)
 	 ("C-x C-1" . delete-other-windows)
 	 ("C-x C-2" . sacha/vsplit-last-buffer) ;; split-window-below)
@@ -700,7 +763,7 @@ Don't mess with special buffers."
 ;;  Init golden ratio mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package golden-ratio
-  :ensure golden-ratio
+  :ensure t 
   :config
   (progn 
     (golden-ratio-mode 1)))
@@ -709,7 +772,7 @@ Don't mess with special buffers."
 ;; Company mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package company
-  :ensure company
+  :ensure t 
   :config
   (progn
     (global-company-mode)
@@ -735,7 +798,7 @@ Don't mess with special buffers."
 ;;  Smartparens init.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartparens
-  :ensure smartparens
+  :ensure t 
   :config
   (progn
     (require 'smartparens-config)
@@ -745,10 +808,9 @@ Don't mess with special buffers."
 ;;  Dired+ to enhance dired and commander.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package dired+
-  :ensure dired+
+  :ensure t 
   :config
   (progn
-    (add-to-list 'load-path "~/emacs/Config") 
     (require 'dired-sort-menu)
     (setq dired-hide-details-mode nil)))
 
@@ -756,13 +818,43 @@ Don't mess with special buffers."
 ;;  Clojure development.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package cider
-  :ensure cider
+  :ensure t 
   :config
-  (setq cider-lein-command "h:/emacs/Leiningen/lein.bat"))
+  (setq cider-lein-command "~/emacs/Leiningen/lein.bat"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Make the frame fullscreen on Windows.  This is done last so that the frame
-;;  stays full screen.  If done too early the frame will maximize and then 
-;;  change to windowed mode and believe it is still fullcreen.
+;;  Setup Magit
+;;  Taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+;;  but originally came from Magnars.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(w32-send-sys-command #xf030)
+(use-package magit
+  :bind (("C-x g" . magit-status)
+         ("C-c g" . magit-status))
+  :init
+  (use-package git-timemachine
+    :ensure t
+    :bind (("C-x v t" . git-timemachine)))
+  (use-package git-link
+    :ensure t
+    :bind (("C-x v L" . git-link))
+    :init
+    (setq git-link-open-in-browser t))
+  :config
+  (setq magit-use-overlays nil)
+  (diminish 'magit-auto-revert-mode)
+  (diminish 'magit-backup-mode)
+  (defadvice magit-status (around magit-fullscreen activate)
+    (window-configuration-to-register :magit-fullscreen)
+    ad-do-it
+    (delete-other-windows))
+
+  (defun magit-quit-session ()
+    "Restores the previous window configuration and kills the magit buffer"
+    (interactive)
+    (kill-buffer)
+    (jump-to-register :magit-fullscreen))
+
+  (bind-keys :map magit-status-mode-map
+             ("TAB" . magit-section-toggle)
+             ("<C-tab>" . magit-section-cycle)
+             ("q" . magit-quit-session)))
