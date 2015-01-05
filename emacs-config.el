@@ -112,7 +112,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  SQL related bindings.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "<f5>") 'sql-send-paragraph)
+(global-set-key (kbd "<f5>") 'ry/sql-send-paragraph)
 (global-set-key (kbd "<S-f5>") 'ry/sql-open-database)
 (global-set-key (kbd "<C-f5>") 'ry/sql-send-export-paragraph)
 (global-set-key (kbd "<M-f5>") 'ry/sql-connect)
@@ -156,7 +156,8 @@
            ("o" . org-mode)
            ("s" . smartparens-mode)
            ("t" . text-mode)
-           ("w" . whitespace-mode))
+           ("w" . whitespace-mode)
+	   ("m" . menu-bar-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
@@ -216,7 +217,29 @@
 		(read-string "Username: ")
 		(read-passwd "Password: ")))
   (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";")))
-  
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Sense I have a hard time remembering to limit my queries this method was
+;;  created to do it for me.  Simply append the FETCH FIRST clause to the SQL
+;;  statement prior to sending the paragraph.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/sql-send-paragraph ()
+  "Add FETCH FIRST clause to the SQL statement prior to sending"
+  (interactive)
+  (let ((start (save-excursion
+  		 (backward-paragraph)
+  		 (point)))
+  	(end (save-excursion
+  	       (forward-paragraph)
+  	       (point))))
+    (save-restriction
+      (narrow-to-region start end)
+      (if (not (search-forward-regexp "select" nil t))
+	  (if (not (search-forward-regexp "fetch" nil t))
+	      (sql-send-string (buffer-substring-no-properties start end))
+	    (sql-send-string (concat (buffer-substring-no-properties start (1- end)) " FETCH FIRST 50 ROWS ONLY WITH UR;")))
+	(sql-send-string (buffer-substring-no-properties start end))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Prefix the region with an EXPORT command and send it to the DB2 process.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -766,7 +789,7 @@ Don't mess with special buffers."
   :ensure t 
   :config
   (progn 
-    (golden-ratio-mode 1)))
+    (golden-ratio-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Company mode
@@ -858,3 +881,14 @@ Don't mess with special buffers."
              ("TAB" . magit-section-toggle)
              ("<C-tab>" . magit-section-cycle)
              ("q" . magit-quit-session)))
+
+(use-package linum-relative
+  :ensure t
+  :init
+  (setq linum-format 'linum-relative)
+  :config
+  (setq linum-relative-current-symbol ""))
+
+(use-package comment-dwim-2
+  :ensure t
+  :bind ("M-;" . comment-dwim-2))	
