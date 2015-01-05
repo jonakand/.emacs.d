@@ -157,7 +157,8 @@
            ("s" . smartparens-mode)
            ("t" . text-mode)
            ("w" . whitespace-mode)
-	   ("m" . menu-bar-mode))
+	   ("n" . menu-bar-mode)
+	   ("h" . global-hl-line-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
