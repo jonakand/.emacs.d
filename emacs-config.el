@@ -3,9 +3,33 @@
 ;;  modeline settings in the god mode config.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (set-face-attribute 'mode-line-inactive nil
-		    :foreground "grey80" :background "grey30"
-		    :inverse-video nil
-		    :box '(:line-width 1 :color "grey30" :style nil))
+                    :foreground "grey80" :background "grey30"
+                    :inverse-video nil
+                    :box '(:line-width 1 :color "grey30" :style nil))
+
+(setq-default mode-line-format
+              '("%e" ; print error message about full memory.
+                mode-line-front-space
+                ; mode-line-mule-info
+                ; mode-line-client
+                ; mode-line-modified
+                ; mode-line-remote
+                ; mode-line-frame-identification
+                mode-line-buffer-identification
+                "   "
+                mode-line-position
+                ; (vc-mode vc-mode)
+                "  "
+                mode-line-modes
+                "   "
+                ; mode-line-misc-info
+                display-time-string
+                "   "
+                ;battery-mode-line-string
+                mode-line-end-spaces))
+
+(display-time-mode 1)
+(setq display-time-format "%a %m/%d/%Y%t%R")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Enable some functions.
@@ -67,7 +91,8 @@
 (set-default 'truncate-lines t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Increase the threshold size to 100MB
+;;  Increase the threshold size to 100MB.  Need this as log files and test files
+;;  tend to be large.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (set-default 'large-file-warning-threshold 1000000000)
 
@@ -77,19 +102,27 @@
 (if (eq system-type 'windows-nt)
     (progn
       (setq backup-directory-alist
-	    `((".*" . "~/.emacs.d/BACKUP")))
+            `((".*" . "~/.emacs.d/BACKUP")))
       (setq auto-save-file-name-transforms
-	    `((".*" , "~/.emacs.d/BACKUP" t)))))
+            `((".*" , "~/.emacs.d/BACKUP" t)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Indicate empty lines.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq default-indicate-empty-lines nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Use four spaces inplace of tab characters.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq-default indent-tabs-mode nil
+              tab-width 4)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Auto revert the buffer if the underlying file has changed.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-auto-revert-mode t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ibuffer key.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "C-c C-b") 'ibuffer)
+(define-key global-map (kbd "RET") 'newline-and-indent)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Bindings for changing window sized.
@@ -117,6 +150,9 @@
 (global-set-key (kbd "<C-f5>") 'ry/sql-send-export-paragraph)
 (global-set-key (kbd "<M-f5>") 'ry/sql-connect)
 
+(global-set-key (kbd "M-A") 'backward-paragraph)
+(global-set-key (kbd "M-A") 'forward-paragraph)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Spell checking keys.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -139,10 +175,10 @@
 (eval-after-load "dired"
   (progn
     '(bind-keys :map dired-mode-map
-		("q" . kill-this-buffer))))
+                ("q" . kill-this-buffer))))
 
 (bind-keys :map package-menu-mode-map
-	   ("q" . kill-this-buffer))
+           ("q" . kill-this-buffer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Define a map to use for toggling modes.  This seemed like a very nice idea.
@@ -157,8 +193,8 @@
            ("s" . smartparens-mode)
            ("t" . text-mode)
            ("w" . whitespace-mode)
-	   ("n" . menu-bar-mode)
-	   ("h" . global-hl-line-mode))
+           ("b" . menu-bar-mode)
+           ("h" . global-hl-line-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
@@ -214,9 +250,9 @@
 (defun ry/sql-connect (database username password)
   "Custom SQL connect"
   (interactive (list
-		(read-string "Database: ")
-		(read-string "Username: ")
-		(read-passwd "Password: ")))
+                (read-string "Database: ")
+                (read-string "Username: ")
+                (read-passwd "Password: ")))
   (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -228,18 +264,18 @@
   "Add FETCH FIRST clause to the SQL statement prior to sending"
   (interactive)
   (let ((start (save-excursion
-  		 (backward-paragraph)
-  		 (point)))
-  	(end (save-excursion
-  	       (forward-paragraph)
-  	       (point))))
+                 (backward-paragraph)
+                 (point)))
+        (end (save-excursion
+               (forward-paragraph)
+               (point))))
     (save-restriction
       (narrow-to-region start end)
       (if (not (search-forward-regexp "select" nil t))
-	  (if (not (search-forward-regexp "fetch" nil t))
-	      (sql-send-string (buffer-substring-no-properties start end))
-	    (sql-send-string (concat (buffer-substring-no-properties start (1- end)) " FETCH FIRST 50 ROWS ONLY WITH UR;")))
-	(sql-send-string (buffer-substring-no-properties start end))))))
+          (if (not (search-forward-regexp "fetch" nil t))
+              (sql-send-string (buffer-substring-no-properties start end))
+            (sql-send-string (concat (buffer-substring-no-properties start (1- end)) " FETCH FIRST 50 ROWS ONLY WITH UR;")))
+        (sql-send-string (buffer-substring-no-properties start end))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Prefix the region with an EXPORT command and send it to the DB2 process.
@@ -249,13 +285,13 @@
 send the paragraph to the SQL process."
   (interactive)
   (let ((start (save-excursion
-  		 (backward-paragraph)
-  		 (point)))
-  	(end (save-excursion
-  	       (forward-paragraph)
-  	       (point)))
-  	(temp-file
-  	 (make-temp-file "DB2-EXPORT-" nil)))
+                 (backward-paragraph)
+                 (point)))
+        (end (save-excursion
+               (forward-paragraph)
+               (point)))
+        (temp-file
+         (make-temp-file "DB2-EXPORT-" nil)))
     (sql-send-string (concat "EXPORT TO " temp-file " OF DEL MODIFIED BY COLDEL0x09 " (buffer-substring-no-properties start end)))
     (switch-to-buffer "*EXPORT*")
     (sleep-for 1)
@@ -338,31 +374,31 @@ Region needs to contain a valid XML document."
 ;;  and modified to work with Saxon instead of Berkley DB.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun xquery-with-region (beg end)
-   "Perform Xquery using Saxon with the current region."
-   (interactive "*r")
-   (let ((newbuffer nil)
-         (buffer (get-buffer "xquery-result"))
-         (xquery (buffer-substring beg end)))
-     (setq xquery-result
-           (cond
-            ((buffer-live-p buffer) buffer)
-            (t (setq newbuffer t) (generate-new-buffer "xquery-result"))))
-     (with-current-buffer xquery-result
-       (with-timeout
-           (10 (insert "Gave up because query was taking too long."))
-         (erase-buffer)
-         (insert (perform-xquery xquery t)))
-       (nxml-mode)
-       (goto-char (point-min)))
-     (switch-to-buffer-other-window xquery-result)
-     (other-window -1)))
+  "Perform Xquery using Saxon with the current region."
+  (interactive "*r")
+  (let ((newbuffer nil)
+        (buffer (get-buffer "xquery-result"))
+        (xquery (buffer-substring beg end)))
+    (setq xquery-result
+          (cond
+           ((buffer-live-p buffer) buffer)
+           (t (setq newbuffer t) (generate-new-buffer "xquery-result"))))
+    (with-current-buffer xquery-result
+      (with-timeout
+          (10 (insert "Gave up because query was taking too long."))
+        (erase-buffer)
+        (insert (perform-xquery xquery t)))
+      (nxml-mode)
+      (goto-char (point-min)))
+    (switch-to-buffer-other-window xquery-result)
+    (other-window -1)))
 
 (defun perform-xquery (xquery &optional timed)
   "Perform the selected Xquery using Saxon."
   (setq file (make-temp-file "elisp-dbxml-"))
   (write-region xquery nil file)
   (setq result (shell-command-to-string
-		(concat "java -cp H:/emacs/Java/saxon9he.jar net.sf.saxon.Query -q:\"" file "\" !indent=yes\n")))
+                (concat "java -cp H:/emacs/Java/saxon9he.jar net.sf.saxon.Query -q:\"" file "\" !indent=yes\n")))
   (delete-file file)
   (concat "" result))
 
@@ -487,6 +523,50 @@ Don't mess with special buffers."
 
 (bind-key "m" 'hidden-mode-line-mode toggle-map)
 
+(defun narrow-or-widen-dwim (p)
+  "If the buffer is narrowed, it widens. Otherwise, it narrows
+intelligently.  Intelligently means: region, org-src-block,
+org-subtree, or defun, whichever applies first.  Narrowing to
+org-src-block actually calls `org-edit-src-code'.
+
+With prefix P, don't widen, just narrow even if buffer is already
+narrowed."
+  (interactive "P")
+  (declare (interactive-only))
+  (cond ((and (buffer-narrowed-p) (not p)) (widen))
+        ((and (boundp 'org-src-mode) org-src-mode (not p))
+         (org-edit-src-exit))
+        ((region-active-p)
+         (narrow-to-region (region-beginning) (region-end)))
+        ((derived-mode-p 'org-mode)
+         (cond ((ignore-errors (org-edit-src-code))
+                (delete-other-windows))
+               ((org-at-block-p)
+                (org-narrow-to-block))
+               (t (org-narrow-to-subtree))))
+        ((derived-mode-p 'prog-mode) (narrow-to-defun))
+        (t (error "Please select a region to narrow to"))))
+
+(bind-key "n" 'narrow-or-widen-dwim toggle-map)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Get things ready for async package installation.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package async
+  :ensure t)
+
+(use-package paradox
+  :ensure t
+  :config
+  (setq paradox-execute-asynchronously t)
+  (setq paradox-github-token t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Remove unnecessary modes from the modeline.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package diminish
+  :ensure t)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Theme the window early so that things don't flash from light to dark when
 ;; the theme is loaded.
@@ -499,12 +579,12 @@ Don't mess with special buffers."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Smart mode line config.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package smart-mode-line
-  :ensure t 
-  :config
-  (progn
-    (sml/setup)
-    (sml/apply-theme 'dark)))
+;; (use-package smart-mode-line
+;;   :ensure t 
+;;   :config
+;;   (progn
+;;     (sml/setup)
+;;     (sml/apply-theme 'dark)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Rainbox delimiter mode.
@@ -525,48 +605,48 @@ Don't mess with special buffers."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Config hideshowvis
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package hideshowvis
-  :ensure t
-  :config
-  (progn
-    (add-to-list 'hs-special-modes-alist
-		 '(nxml-mode
-		   "<!--\\|<[^/>]>\\|<[^/][^>]*[^/]>"
-		   ""
-		   "<!--" ;; won't work on its own; uses syntax table
-		   (lambda (arg) (my-nxml-forward-element))
-		   nil))
+;; (use-package hideshowvis
+;;   :ensure t
+;;   :config
+;;   (progn
+;;     (add-to-list 'hs-special-modes-alist
+;; 		 '(nxml-mode
+;; 		   "<!--\\|<[^/>]>\\|<[^/][^>]*[^/]>"
+;; 		   ""
+;; 		   "<!--" ;; won't work on its own; uses syntax table
+;; 		   (lambda (arg) (my-nxml-forward-element))
+;; 		   nil))
 
-    (defun my-nxml-forward-element ()
-      (let ((nxml-sexp-element-flag))
-	(setq nxml-sexp-element-flag (not (looking-at "<!--")))
-	(unless (looking-at outline-regexp)
-	  (condition-case nil
-	      (nxml-forward-balanced-item 1)
-	    (error nil)))))
-    
-    (add-hook 'hs-nxml-hook
-	      (lambda ()
-		(save-excursion
-		  (when (search-forward-regexp "^<\\?xml" 6 0)
-		    (nxml-mode)))))
+;;     (defun my-nxml-forward-element ()
+;;       (let ((nxml-sexp-element-flag))
+;; 	(setq nxml-sexp-element-flag (not (looking-at "<!--")))
+;; 	(unless (looking-at outline-regexp)
+;; 	  (condition-case nil
+;; 	      (nxml-forward-balanced-item 1)
+;; 	    (error nil)))))
 
-    (autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
+;;     (add-hook 'hs-nxml-hook
+;; 	      (lambda ()
+;; 		(save-excursion
+;; 		  (when (search-forward-regexp "^<\\?xml" 6 0)
+;; 		    (nxml-mode)))))
 
-    (autoload 'hideshowvis-minor-mode
-      "hideshowvis"
-      "Will indicate regions foldable with hideshow in the fringe."
-      'interactive)
-    (dolist (hook (list 'emacs-lisp-mode-hook
-			'java-mode-hook
-			'nxml-mode-hook))
-      (add-hook hook 'hideshowvis-enable))
-    
-    (global-set-key (kbd "M--") 'hs-hide-block)
-    (global-set-key (kbd "M-=") 'hs-show-block)))
+;;     (autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
+
+;;     (autoload 'hideshowvis-minor-mode
+;;       "hideshowvis"
+;;       "Will indicate regions foldable with hideshow in the fringe."
+;;       'interactive)
+;;     (dolist (hook (list 'emacs-lisp-mode-hook
+;; 			'java-mode-hook
+;; 			'nxml-mode-hook))
+;;       (add-hook hook 'hideshowvis-enable))
+
+;;     (global-set-key (kbd "M--") 'hs-hide-block)
+;;     (global-set-key (kbd "M-=") 'hs-show-block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Add hook to NXML to load custom functions when NXML loads.
+;;  NXML
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package nxml-mode
   :commands 
@@ -574,7 +654,7 @@ Don't mess with special buffers."
   (progn 
     (setq nxml-auto-insert-xml-declaration-flag nil)
     (setq nxml-slash-auto-complete-flag t)))
-    
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Web-mode initialization stuff.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -594,18 +674,18 @@ Don't mess with special buffers."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package helm
   :ensure t
+  :diminish helm-mode
   :bind (("C-M-s" . helm-occur)
-	 ("M-x" . helm-M-x)
-	 ("C-x b" . helm-mini)
-	 ("C-x r l" . helm-bookmarks)
-	 ("M-y" . helm-show-kill-ring)
-	 ("C-x C-b" . helm-mini)
-	 ("<f7>" . helm-bookmarks)
-	 ("<f8>" . bookmark-set))
+         ("M-x" . helm-M-x)
+         ("C-x b" . helm-mini)
+         ("C-x r l" . helm-bookmarks)
+         ("M-y" . helm-show-kill-ring)
+         ("C-x C-b" . helm-mini)
+         ("<f7>" . helm-bookmarks)
+         ("<f8>" . bookmark-set))
   :init
   (progn
     (require 'helm-config)
-    (helm-mode 1)
     (setq htlm-ff-auto-update-initial-value nil)
 
     (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
@@ -614,22 +694,28 @@ Don't mess with special buffers."
 
     ;; From https://gist.github.com/antifuchs/9238468
     (setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
-	  helm-input-idle-delay 0.01  ; this actually updates things
+          helm-input-idle-delay 0.01  ; this actually updates things
                                         ; reeeelatively quickly.
-	  helm-quick-update t
-	  helm-M-x-requires-pattern nil
-	  helm-ff-skip-boring-files t)
+          helm-quick-update t
+          helm-M-x-requires-pattern nil
+          helm-ff-skip-boring-files t
+          helm-split-window-in-side-p t
+          helm-buffers-fuzzy-matching t
+          helm-ff-search-library-in-sexp t
+          helm-scroll-amount 8
+          helm-ff-file-name-history-use-recentf t)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Make helm always create a new window and always split the current window
     ;;  vertially.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (setq helm-display-function
-	  (lambda (buf)
-	    (split-window-vertically)
-	    (other-window 1)
-	    (switch-to-buffer buf)))))
- 
+          (lambda (buf)
+            (split-window-vertically)
+            (other-window 1)
+            (switch-to-buffer buf)))
+    (helm-mode)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup Hunspell
 ;; rw-hunspell is no longer used as Emacs 24.4 made Hunspell integration very
@@ -645,9 +731,9 @@ Don't mess with special buffers."
 (use-package multiple-cursors
   :ensure t
   :bind (("C-S-s C-S-s" . mc/edit-lines)
-	 ("C->" . mc/mark-next-symbol-like-this)
-	 ("C-<" . mc/mark-previous-like-this)
-	 ("C-c *" . mc/mark-all-like-this)))
+         ("C->" . mc/mark-next-symbol-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-c *" . mc/mark-all-like-this)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GURU mode 
@@ -655,8 +741,7 @@ Don't mess with special buffers."
 (use-package guru-mode
   :ensure t
   :init
-  (progn
-    (guru-mode)))
+  (guru-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Expand region by symantic units.
@@ -669,8 +754,7 @@ Don't mess with special buffers."
 ;;  Eldoc mode for lisp coding.
 ;;  http://pages.sachachua.com/.emacs.d/Sacha.html#unnumbered-47
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package "eldoc"
-  
+(use-package "eldoc"  
   :diminish eldoc-mode
   :commands turn-on-eldoc-mode
   :init
@@ -701,40 +785,42 @@ Don't mess with special buffers."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Yasnippet setup and prompt to use popup menu mode.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package yasnippet
-  :ensure t 
-  :commands yas-global-mode
-  :idle (yas-global-mode)
-  :config
-  (progn
-    (use-package popup))
+;; (use-package yasnippet
+;;   :ensure t
+;;   :diminish yas-minor-mode
+;;   :commands yas-global-mode
+;;   :idle (yas-global-mode)
+;;   :config
+;;   (progn
+;;     (use-package popup))
 
-    (define-key popup-menu-keymap (kbd "M-n") 'popup-next)
-    (define-key popup-menu-keymap (kbd "TAB") 'popup-next)
-    (define-key popup-menu-keymap (kbd "<tab>") 'popup-next)
-    (define-key popup-menu-keymap (kbd "<backtab>") 'popup-previous)
-   
-    (defun yas-popup-isearch-prompt (prompt choices &optional display-fn)
-      (when (featurep 'popup)
-	(popup-menu*
-	 (mapcar
-	  (lambda (choice)
-	    (popup-make-item
-	     (or (and display-fn (funcall display-fn choice))
-		 choice)
-	     :value choice))
-	  choices)
-	 :prompt prompt
-	 ;; start isearch mode immediately
-	 :isearch t)))
+;;     (define-key popup-menu-keymap (kbd "M-n") 'popup-next)
+;;     (define-key popup-menu-keymap (kbd "TAB") 'popup-next)
+;;     (define-key popup-menu-keymap (kbd "<tab>") 'popup-next)
+;;     (define-key popup-menu-keymap (kbd "<backtab>") 'popup-previous)
 
-    (setq yas-prompt-functions '(yas-popup-isearch-prompt yas-ido-prompt yas-no-prompt)))
+;;     (defun yas-popup-isearch-prompt (prompt choices &optional display-fn)
+;;       (when (featurep 'popup)
+;; 	(popup-menu*
+;; 	 (mapcar
+;; 	  (lambda (choice)
+;; 	    (popup-make-item
+;; 	     (or (and display-fn (funcall display-fn choice))
+;; 		 choice)
+;; 	     :value choice))
+;; 	  choices)
+;; 	 :prompt prompt
+;; 	 ;; start isearch mode immediately
+;; 	 :isearch t)))
+
+;;     (setq yas-prompt-functions '(yas-popup-isearch-prompt yas-ido-prompt yas-no-prompt)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  undo-tree config
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package undo-tree
-  :ensure t 
+  :ensure t
+  :diminish undo-tree-mode
   :init
   (progn
     (global-undo-tree-mode)
@@ -745,18 +831,19 @@ Don't mess with special buffers."
 ;;  GOD mode config with some keymaps to make it easier to use.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package god-mode
-  :ensure t 
+  :ensure t
+  :diminish god-mode
   :bind (("<escape>" . god-local-mode)
-	 ("C-x C-1" . delete-other-windows)
-	 ("C-x C-2" . sacha/vsplit-last-buffer) ;; split-window-below)
-	 ("C-x C-3" . sacha/hsplit-last-buffer) ;;'split-window-right)
-	 ("C-x C-0" . delete-window)
-	 ("C-x C-k" . kill-this-buffer)
-	 ("C-x C-S-k" . kill-other-buffers)
-	 ("C-x C-o" . other-window)
-	 ("C-c C-r" . org-capture)
-	 ("C-x C-h" . mark-whole-buffer)
-	 ("C-x C-d" . dired))
+         ("C-x C-1" . delete-other-windows)
+         ("C-x C-2" . sacha/vsplit-last-buffer) ;; split-window-below)
+         ("C-x C-3" . sacha/hsplit-last-buffer) ;;'split-window-right)
+         ("C-x C-0" . delete-window)
+         ("C-x C-k" . kill-this-buffer)
+         ("C-x C-S-k" . kill-other-buffers)
+         ("C-x C-o" . other-window)
+         ("C-c C-r" . org-capture)
+         ("C-x C-h" . mark-whole-buffer)
+         ("C-x C-d" . dired))
   :init
   (progn
     (god-mode-all)
@@ -768,41 +855,50 @@ Don't mess with special buffers."
     ;;  Change the color of the modeline based on god-local-mode being enabled 
     ;;  or not.
     (add-hook 'post-command-hook
-	      (lambda ()
-		(if god-local-mode
-		    (progn
-		      (set-face-attribute 'mode-line nil
-					  :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
-					  :inverse-video nil
-					  :box '(:line-width 1 :color "#b22222" :style nil))
-		      (setq cursor-type 'box))
-		  (progn
-		    (set-face-attribute 'mode-line nil
-					:foreground "#ffffff" :background "#006400"
-					:inverse-video nil
-					:box '(:line-width 1 :color "#006400" :style nil))
-		    (setq cursor-type 'bar)))))))
+              (lambda ()
+                (if (or god-local-mode buffer-read-only)
+                    (progn
+                      (set-face-attribute 'mode-line nil
+                                          :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
+                                          :inverse-video nil
+                                          :box '(:line-width 1 :color "#b22222" :style nil))
+                      (setq cursor-type 'box))
+                  (progn
+                    (set-face-attribute 'mode-line nil
+                                        :foreground "#ffffff" :background "#006400"
+                                        :inverse-video nil
+                                        :box '(:line-width 1 :color "#006400" :style nil))
+                    (setq cursor-type 'bar)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Init golden ratio mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package golden-ratio
-  :ensure t 
+  :ensure t
+  :diminish golden-ratio-mode
   :config
   (progn 
-    (golden-ratio-mode)))
+    (golden-ratio-mode)
+
+    (defun pl/helm-alive-p ()
+      (if (boundp 'helm-alive-p)
+          (symbol-value 'helm-alive-p)))
+
+    (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Company mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package company
-  :ensure t 
+  :ensure t
+  :diminish company-mode
   :config
   (progn
     (global-company-mode)
     (setq company-idle-delay 0)
     (setq company-show-numbers t)
-        
+    (setq company-dabbrev-downcase nil)
+    
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "M-n") nil)
       (define-key company-active-map (kbd "M-p") nil)
@@ -811,18 +907,29 @@ Don't mess with special buffers."
 
     (require 'color)
     (let ((bg (face-attribute 'default :background)))
-    (custom-set-faces
-     `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
-     `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
-     `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
-     `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
-     `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))))
-
+      (set-face-attribute 'company-tooltip nil
+                          :inherit 'default
+                          :background (color-lighten-name bg 2))
+      (set-face-attribute 'company-scrollbar-bg nil
+                          :background (color-lighten-name bg 10))
+      (set-face-attribute 'company-scrollbar-fg nil
+                          :background (color-lighten-name bg 5))
+      (set-face-attribute 'company-tooltip-selection nil
+                          :inherit font-lock-function-name-face)
+      (set-face-attribute 'company-tooltip-common nil
+                          :inherit font-lock-constant-face))))
+;; (custom-set-faces
+;;  `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
+;;  `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
+;;  `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
+;;  `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
+;;  `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Smartparens init.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartparens
-  :ensure t 
+  :ensure t
+  :diminish smartparens-mode
   :config
   (progn
     (require 'smartparens-config)
@@ -835,16 +942,19 @@ Don't mess with special buffers."
   :ensure t 
   :config
   (progn
+    (toggle-diredp-find-file-reuse-dir 1)
+    (add-to-list 'load-path "~/.emacs.d/extra")
     (require 'dired-sort-menu)
     (setq dired-hide-details-mode nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Clojure development.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package cider
-  :ensure t 
-  :config
-  (setq cider-lein-command "~/emacs/Leiningen/lein.bat"))
+;; (use-package cider
+;;   :ensure t
+;;   :diminish cider-mode
+;;   :config
+;;   (setq cider-lein-command "~/emacs/Leiningen/lein.bat"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Setup Magit
@@ -865,8 +975,8 @@ Don't mess with special buffers."
     (setq git-link-open-in-browser t))
   :config
   (setq magit-use-overlays nil)
-  (diminish 'magit-auto-revert-mode)
-  (diminish 'magit-backup-mode)
+;;  (diminish 'magit-auto-revert-mode)
+;;  (diminish 'magit-backup-mode)
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it
@@ -885,11 +995,22 @@ Don't mess with special buffers."
 
 (use-package linum-relative
   :ensure t
-  :init
-  (setq linum-format 'linum-relative)
   :config
+  (setq linum-format 'linum-relative)
   (setq linum-relative-current-symbol ""))
 
 (use-package comment-dwim-2
   :ensure t
   :bind ("M-;" . comment-dwim-2))	
+
+(use-package mediawiki
+  :ensure t)
+
+(use-package stripe-buffer
+  :ensure t
+  :config
+  (progn
+    (add-hook 'dired-mode-hook 'stripe-listify-buffer)
+    (add-hook 'org-mode-hook 'turn-on-stripe-table-mode)
+    (setq stripe-hl-line "#333333")
+    (set-face-attribute stripe-highlight-face nil :background "#333333")))
