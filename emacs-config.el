@@ -686,7 +686,7 @@ narrowed."
   :init
   (progn
     (require 'helm-config)
-    (setq htlm-ff-auto-update-initial-value nil)
+    (helm-mode)
 
     (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
     (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
@@ -703,7 +703,8 @@ narrowed."
           helm-buffers-fuzzy-matching t
           helm-ff-search-library-in-sexp t
           helm-scroll-amount 8
-          helm-ff-file-name-history-use-recentf t)
+          helm-ff-file-name-history-use-recentf t
+          htlm-ff-auto-update-initial-value nil)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Make helm always create a new window and always split the current window
@@ -713,8 +714,7 @@ narrowed."
           (lambda (buf)
             (split-window-vertically)
             (other-window 1)
-            (switch-to-buffer buf)))
-    (helm-mode)))
+            (switch-to-buffer buf)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup Hunspell
@@ -962,6 +962,7 @@ narrowed."
 ;;  but originally came from Magnars.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package magit
+  :ensure t
   :bind (("C-x g" . magit-status)
          ("C-c g" . magit-status))
   :init
