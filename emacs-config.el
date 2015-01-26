@@ -2,34 +2,34 @@
 ;;  Set the inactive modeline so it will match the flat look and size of the 
 ;;  modeline settings in the god mode config.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(set-face-attribute 'mode-line-inactive nil
-                    :foreground "grey80" :background "grey30"
-                    :inverse-video nil
-                    :box '(:line-width 1 :color "grey30" :style nil))
+;; (set-face-attribute 'mode-line-inactive nil
+;;                     :foreground "grey80" :background "grey30"
+;;                     :inverse-video nil
+;;                     :box '(:line-width 1 :color "grey30" :style nil))
 
 (setq-default mode-line-format
-              '("%e" ; print error message about full memory.
-                mode-line-front-space
-                ; mode-line-mule-info
-                ; mode-line-client
-                ; mode-line-modified
-                ; mode-line-remote
-                ; mode-line-frame-identification
-                mode-line-buffer-identification
-                "   "
-                mode-line-position
-                ; (vc-mode vc-mode)
-                "  "
-                mode-line-modes
-                "   "
-                ; mode-line-misc-info
-                display-time-string
-                "   "
-                ;battery-mode-line-string
-                mode-line-end-spaces))
+             '("%e" ; print error message about full memory.
+               mode-line-front-space
+               ; mode-line-mule-info
+               ; mode-line-client
+               ; mode-line-modified
+               ; mode-line-remote
+               ; mode-line-frame-identification
+               "%f" ;;mode-line-buffer-identification
+               "   "
+               mode-line-position
+               (vc-mode vc-mode)
+               "  "
+               mode-line-modes
+               "   "
+               ; mode-line-misc-info
+               display-time-string
+               "   "
+               ;battery-mode-line-string
+               mode-line-end-spaces))
 
-(display-time-mode 1)
-(setq display-time-format "%a %m/%d/%Y%t%R")
+;;(display-time-mode 1)
+;;(setq display-time-format "%a %m/%d/%Y%t%R")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Enable some functions.
@@ -99,17 +99,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Save temp files in c:/temp
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(if (eq system-type 'windows-nt)
-    (progn
-      (setq backup-directory-alist
-            `((".*" . "~/.emacs.d/BACKUP")))
-      (setq auto-save-file-name-transforms
-            `((".*" , "~/.emacs.d/BACKUP" t)))))
+(setq backup-directory-alist
+      `((".*" . "~/.emacs.d/BACKUP")))
+(setq auto-save-file-name-transforms
+      `((".*" , "~/.emacs.d/BACKUP" t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Indicate empty lines.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq default-indicate-empty-lines nil)
+(setq indicate-empty-lines nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Use four spaces inplace of tab characters.
@@ -122,10 +120,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-auto-revert-mode t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Fix what the return key does to work the way that I think it should.  When
+;;  it is pressed move to the next line and also indent.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Bindings for changing window sized.
+;;  Bindings for changing window sizes.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
 (global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
@@ -150,6 +152,9 @@
 (global-set-key (kbd "<C-f5>") 'ry/sql-send-export-paragraph)
 (global-set-key (kbd "<M-f5>") 'ry/sql-connect)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Paragraph movement keys.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "M-A") 'backward-paragraph)
 (global-set-key (kbd "M-A") 'forward-paragraph)
 
@@ -217,8 +222,7 @@
   (yank-rectangle))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Functions to open TEMP buffer and temp file on the desktop along with their
-;;  global key bindings.
+;;  Function to open a *TEMP#* buffer based on the numeric argument passed.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/open-temp-buffer (&optional num)
   "Open a numbered *TEMP#* buffer based on argument."
@@ -326,7 +330,9 @@ send the paragraph to the SQL process."
     (god-local-mode 1)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Customized functions                
+;;  Taken from Prelude.  Make the point move to the beginning of the line in the
+;;  same way Eclipse does.  Really move back-and-forth between the hard
+;;  beginning of the line and the first non-space character.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun prelude-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
@@ -352,7 +358,8 @@ point reaches the beginning or end of the buffer, stop there."
       (move-beginning-of-line 1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Functions for formatting XML documents.
+;;  Functions for formatting XML documents.  These will call an external Java
+;;  program to handle the formatting as that is my bread-and-butter.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/xml-format (beg end)
   "Call an external Java program to format the current region
@@ -403,7 +410,9 @@ Region needs to contain a valid XML document."
   (concat "" result))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  
+;;  Simple little function for switching buffers.  First enable god-mode for the
+;;  buffer being left so that it is on when coming back.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/switch-buffer ()
   "Function to switch the current buffer to God-mode
  prior to switching buffers."
@@ -550,6 +559,27 @@ narrowed."
 (bind-key "n" 'narrow-or-widen-dwim toggle-map)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  This is another one of those little functions that is handy in certain
+;;  situations but I'm not sure if I will remember that it is available in the
+;;  future.  Time will tell.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun xah/copy-file-path (&optional φdir-path-only-p)
+  "Copy the current buffer's file path or dired path to `kill-ring'.
+If `universal-argument' is called, copy only the dir path.
+Version 2015-01-14
+URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
+  (interactive "P")
+  (let ((fPath
+         (if (equal major-mode 'dired-mode)
+             default-directory
+           (buffer-file-name))))
+    (kill-new
+     (if (equal φdir-path-only-p nil)
+         fPath
+       (file-name-directory fPath)))
+    (message "File path copied: 「%s」" fPath)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Get things ready for async package installation.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package async
@@ -571,20 +601,46 @@ narrowed."
 ;; Theme the window early so that things don't flash from light to dark when
 ;; the theme is loaded.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package monokai-theme
-  :ensure t
-  :config
-  (load-theme 'monokai t))
+;; (use-package monokai-theme
+;;   :ensure t
+;;   :config
+;;   (load-theme 'monokai t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Smart mode line config.
+;;  Load the sollarized dark theme.  The package is from MELPA.  I liike to have
+;;  the mode-line in different colors to make the active/inactive window more
+;;  easily found.  The light gray is pleasing.  Also add the different faces for
+;;  org blocks so that they stand out more.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package smart-mode-line
-;;   :ensure t 
-;;   :config
-;;   (progn
-;;     (sml/setup)
-;;     (sml/apply-theme 'dark)))
+(use-package solarized-theme
+  :ensure t
+  :config
+  (load-theme 'solarized-dark t)
+  (set-face-attribute 'mode-line nil
+                      :inverse-video t
+                      :weight 'bold
+                      :overline nil
+                      :underline nil
+                      :box nil
+                      :foreground "#93a1a1"
+                      :background "#073642")
+  (set-face-attribute 'mode-line-inactive nil
+                      :inverse-video t
+                      :weight 'bold
+                      :overline nil
+                      :underline nil
+                      :box nil
+                      :foreground "#657b83"
+                      :background "#073642")
+  (with-eval-after-load 'org
+                  (set-face-attribute 'org-block-begin-line nil
+                                      :underline t
+                                      :background "#073642")
+                  (set-face-attribute 'org-block-end-line nil
+                                      :overline t
+                                      :background "#073642")
+                  (set-face-attribute 'org-block-background nil
+                                      :background "#073642")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Rainbox delimiter mode.
@@ -601,49 +657,6 @@ narrowed."
   :ensure t
   :config
   (add-hook 'prog-mode-hook 'global-smartscan-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Config hideshowvis
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package hideshowvis
-;;   :ensure t
-;;   :config
-;;   (progn
-;;     (add-to-list 'hs-special-modes-alist
-;; 		 '(nxml-mode
-;; 		   "<!--\\|<[^/>]>\\|<[^/][^>]*[^/]>"
-;; 		   ""
-;; 		   "<!--" ;; won't work on its own; uses syntax table
-;; 		   (lambda (arg) (my-nxml-forward-element))
-;; 		   nil))
-
-;;     (defun my-nxml-forward-element ()
-;;       (let ((nxml-sexp-element-flag))
-;; 	(setq nxml-sexp-element-flag (not (looking-at "<!--")))
-;; 	(unless (looking-at outline-regexp)
-;; 	  (condition-case nil
-;; 	      (nxml-forward-balanced-item 1)
-;; 	    (error nil)))))
-
-;;     (add-hook 'hs-nxml-hook
-;; 	      (lambda ()
-;; 		(save-excursion
-;; 		  (when (search-forward-regexp "^<\\?xml" 6 0)
-;; 		    (nxml-mode)))))
-
-;;     (autoload 'hideshowvis-enable "hideshowvis" "Highlight foldable regions")
-
-;;     (autoload 'hideshowvis-minor-mode
-;;       "hideshowvis"
-;;       "Will indicate regions foldable with hideshow in the fringe."
-;;       'interactive)
-;;     (dolist (hook (list 'emacs-lisp-mode-hook
-;; 			'java-mode-hook
-;; 			'nxml-mode-hook))
-;;       (add-hook hook 'hideshowvis-enable))
-
-;;     (global-set-key (kbd "M--") 'hs-hide-block)
-;;     (global-set-key (kbd "M-=") 'hs-show-block)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  NXML
@@ -756,7 +769,7 @@ narrowed."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package "eldoc"  
   :diminish eldoc-mode
-  :commands turn-on-eldoc-mode
+  :commands eldoc-mode
   :init
   (progn
     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
@@ -781,39 +794,6 @@ narrowed."
   :ensure t 
   :commands org-mode
   :idle (load "~/.emacs.d/custom-org-mode.el"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Yasnippet setup and prompt to use popup menu mode.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package yasnippet
-;;   :ensure t
-;;   :diminish yas-minor-mode
-;;   :commands yas-global-mode
-;;   :idle (yas-global-mode)
-;;   :config
-;;   (progn
-;;     (use-package popup))
-
-;;     (define-key popup-menu-keymap (kbd "M-n") 'popup-next)
-;;     (define-key popup-menu-keymap (kbd "TAB") 'popup-next)
-;;     (define-key popup-menu-keymap (kbd "<tab>") 'popup-next)
-;;     (define-key popup-menu-keymap (kbd "<backtab>") 'popup-previous)
-
-;;     (defun yas-popup-isearch-prompt (prompt choices &optional display-fn)
-;;       (when (featurep 'popup)
-;; 	(popup-menu*
-;; 	 (mapcar
-;; 	  (lambda (choice)
-;; 	    (popup-make-item
-;; 	     (or (and display-fn (funcall display-fn choice))
-;; 		 choice)
-;; 	     :value choice))
-;; 	  choices)
-;; 	 :prompt prompt
-;; 	 ;; start isearch mode immediately
-;; 	 :isearch t)))
-
-;;     (setq yas-prompt-functions '(yas-popup-isearch-prompt yas-ido-prompt yas-no-prompt)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  undo-tree config
@@ -842,6 +822,7 @@ narrowed."
          ("C-x C-S-k" . kill-other-buffers)
          ("C-x C-o" . other-window)
          ("C-c C-r" . org-capture)
+         ("C-C C-a" . org-agenda)
          ("C-x C-h" . mark-whole-buffer)
          ("C-x C-d" . dired))
   :init
@@ -851,23 +832,20 @@ narrowed."
     (define-key god-local-mode-map (kbd "z") 'repeat)
     (define-key god-local-mode-map (kbd "i") 'god-local-mode)
     (define-key god-local-mode-map (kbd "v") 'scroll-up-command)
-    
-    ;;  Change the color of the modeline based on god-local-mode being enabled 
-    ;;  or not.
+
+    (add-to-list 'god-exempt-major-modes 'dired-mode)
+    (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
+    (add-to-list 'god-exempt-major-modes 'org-capture-mode)
+        
+    ;;  Change the color of the cursor to RED if god-mode is enabled.
     (add-hook 'post-command-hook
               (lambda ()
                 (if (or god-local-mode buffer-read-only)
-                    (progn
-                      (set-face-attribute 'mode-line nil
-                                          :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
-                                          :inverse-video nil
-                                          :box '(:line-width 1 :color "#b22222" :style nil))
+                    (progn                   
+                      (set-cursor-color "#b22222")
                       (setq cursor-type 'box))
                   (progn
-                    (set-face-attribute 'mode-line nil
-                                        :foreground "#ffffff" :background "#006400"
-                                        :inverse-video nil
-                                        :box '(:line-width 1 :color "#006400" :style nil))
+                    (set-cursor-color "#839496")
                     (setq cursor-type 'bar)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -918,12 +896,7 @@ narrowed."
                           :inherit font-lock-function-name-face)
       (set-face-attribute 'company-tooltip-common nil
                           :inherit font-lock-constant-face))))
-;; (custom-set-faces
-;;  `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
-;;  `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
-;;  `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
-;;  `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
-;;  `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Smartparens init.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -948,15 +921,6 @@ narrowed."
     (setq dired-hide-details-mode nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Clojure development.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package cider
-;;   :ensure t
-;;   :diminish cider-mode
-;;   :config
-;;   (setq cider-lein-command "~/emacs/Leiningen/lein.bat"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Setup Magit
 ;;  Taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
 ;;  but originally came from Magnars.
@@ -976,8 +940,8 @@ narrowed."
     (setq git-link-open-in-browser t))
   :config
   (setq magit-use-overlays nil)
-;;  (diminish 'magit-auto-revert-mode)
-;;  (diminish 'magit-backup-mode)
+  ;; (diminish 'magit-auto-revert-mode)
+  ;; (diminish 'magit-backup-mode)
   (defadvice magit-status (around magit-fullscreen activate)
     (window-configuration-to-register :magit-fullscreen)
     ad-do-it
@@ -994,19 +958,31 @@ narrowed."
              ("<C-tab>" . magit-section-cycle)
              ("q" . magit-quit-session)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Realtive line numbers for easier jumping within a file and running macros.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package linum-relative
   :ensure t
   :config
   (setq linum-format 'linum-relative)
   (setq linum-relative-current-symbol ""))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Nice commenting/uncommenting.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package comment-dwim-2
   :ensure t
   :bind ("M-;" . comment-dwim-2))	
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  For editing the MediaWiki at work.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package mediawiki
   :ensure t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Stripe dired buffers and tables in ORG mode for easier reading.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package stripe-buffer
   :ensure t
   :config

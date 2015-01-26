@@ -3,27 +3,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Setup key bindings.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "<f6>") 'bh/org-todo)
-(global-set-key (kbd "<S-f6>") 'bh/widen)
-(global-set-key (kbd "<f9> <f9>") 'bh/show-org-agenda)
 (global-set-key (kbd "C-M-r") 'org-capture)
 (global-set-key (kbd "C-c r") 'org-capture)
 (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c a") 'org-agenda)
 
-;;  GOD mode binding.
-(global-set-key (kbd "C-c C-a") 'org-agenda)
-(global-set-key (kbd "C-c b") 'org-iswitchb)
-
 (eval-after-load "org-agenda"
   '(progn
      (define-key org-agenda-mode-map "x" nil) 
-     (define-key org-agenda-mode-map "W" 'bh/widen)
-     (define-key org-agenda-mode-map "F" 'bh/restrict-to-file-or-follow)
-     (define-key org-agenda-mode-map "N" 'bh/narrow-to-subtree)
-     (define-key org-agenda-mode-map "U" 'bh/narrow-up-one-level)
-     (define-key org-agenda-mode-map "P" 'bh/narrow-to-project)
-     (define-key org-agenda-mode-map "V" 'bh/view-next-project)
      (define-key org-agenda-mode-map "q" 'bury-buffer)
 
      ;; Undefine C-c [ and C-c ] since this breaks my
@@ -714,127 +701,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
   (setq appt-time-msg-list nil)
   (org-agenda-to-appt))
 
-(defun bh/org-todo (arg)
-  (interactive "p")
-  (if (equal arg 4)
-      (save-restriction
-	(bh/narrow-to-org-subtree)
-	(org-show-todo-tree nil))
-    (bh/narrow-to-org-subtree)
-    (org-show-todo-tree nil)))
-
-(defun bh/widen ()
-  (interactive)
-  (if (equal major-mode 'org-agenda-mode)
-      (org-agenda-remove-restriction-lock)
-    (widen)
-    (org-agenda-remove-restriction-lock)))
-
-(defun bh/restrict-to-file-or-follow (arg)
-  "Set agenda restriction to 'file or with argument invoke follow mode.
-I don't use follow mode very often but I restrict to file all the time
-so change the default 'F' binding in the agenda to allow both"
-  (interactive "p")
-  (if (equal arg 4)
-      (org-agenda-follow-mode)
-    (if (equal major-mode 'org-agenda-mode)
-	(bh/set-agenda-restriction-lock 4)
-      (widen))))
-
-(defun bh/narrow-to-org-subtree ()
-  (widen)
-  (org-narrow-to-subtree))
-
-(defun bh/narrow-to-subtree ()
-  (interactive)
-  (if (equal major-mode 'org-agenda-mode)
-      (org-with-point-at (org-get-at-bol 'org-hd-marker)
-	(bh/narrow-to-org-subtree)
-	(save-restriction
-	  (org-agenda-set-restriction-lock)))
-    (bh/narrow-to-org-subtree)
-    (save-restriction
-      (org-agenda-set-restriction-lock))))
-
-(defun bh/narrow-up-one-org-level ()
-  (widen)
-  (save-excursion
-    (outline-up-heading 1 'invisible-ok)
-    (bh/narrow-to-org-subtree)))
-
-(defun bh/get-pom-from-agenda-restriction-or-point ()
-  (or (org-get-at-bol 'org-hd-marker)
-      (and (marker-position org-agenda-restrict-begin) org-agenda-restrict-begin)
-      (and (equal major-mode 'org-mode) (point))
-      org-clock-marker))
-
-(defun bh/narrow-up-one-level ()
-  (interactive)
-  (if (equal major-mode 'org-agenda-mode)
-      (org-with-point-at (bh/get-pom-from-agenda-restriction-or-point)
-	(bh/narrow-up-one-org-level))
-    (bh/narrow-up-one-org-level)))
-
-(defun bh/narrow-to-org-project ()
-  (widen)
-  (save-excursion
-    (bh/find-project-task)
-    (bh/narrow-to-org-subtree)))
-
-(defun bh/narrow-to-project ()
-  (interactive)
-  (if (equal major-mode 'org-agenda-mode)
-      (org-with-point-at (bh/get-pom-from-agenda-restriction-or-point)
-	(bh/narrow-to-org-project)
-	(save-restriction
-	  (org-agenda-set-restriction-lock)))
-    (bh/narrow-to-org-project)
-    (save-restriction
-      (org-agenda-set-restriction-lock))))
-
 (defvar bh/current-view-project nil)
-
-(defun bh/view-next-project ()
-  (interactive)
-  (unless (marker-position org-agenda-restrict-begin)
-    (goto-char (point-min))
-    (setq bh/current-view-project (point)))
-  (bh/widen)
-  (goto-char bh/current-view-project)
-  (forward-visible-line 1)
-  (while (and (< (point) (point-max))
-	      (or (not (org-get-at-bol 'org-hd-marker))
-		  (org-with-point-at (org-get-at-bol 'org-hd-marker)
-		    (or (not (bh/is-project-p))
-			(bh/is-project-subtree-p)))))
-    (forward-visible-line 1))
-  (setq bh/current-view-project (point))
-  (if (org-get-at-bol 'org-hd-marker)
-      (progn
-	(bh/narrow-to-project)
-	(org-agenda-redo)
-	;;(beginning-of-buffer))
-	(goto-char (point-min)))
-    ;;(beginning-of-buffer)
-	(goto-char (point-min))
-    (error "All projects viewed.")))
-
-(defun bh/set-agenda-restriction-lock (arg)
-  "Set restriction lock to current task subtree or file if prefix is specified"
-  (interactive "p")
-  (let* ((pom (bh/get-pom-from-agenda-restriction-or-point))
-	 (tags (org-with-point-at pom (org-get-tags-at))))
-    (let ((restriction-type (if (equal arg 4) 'file 'subtree)))
-      (save-restriction
-	(cond
-	 ((and (equal major-mode 'org-agenda-mode) pom)
-	  (org-with-point-at pom
-	    (org-agenda-set-restriction-lock restriction-type)))
-	 ((and (equal major-mode 'org-mode) (org-before-first-heading-p))
-	  (org-agenda-set-restriction-lock 'file))
-	 (pom
-	  (org-with-point-at pom
-	    (org-agenda-set-restriction-lock restriction-type))))))))
 
 (defun bh/agenda-sort (a b)
   "Sorting strategy for agenda items.
@@ -943,24 +810,3 @@ Late deadlines first, then scheduled, then non-late deadlines"
 	(while (org-up-heading-safe)
 	  (when (member (nth 2 (org-heading-components)) (list "NEXT"))
 	    (org-todo "TODO")))))))
-
-(defun jump-to-org-agenda ()
-  "Jump to the org-mode agenda."
-  (interactive)
-  (let ((buf (get-buffer "*Org Agenda*"))
-	wind)
-    (if buf
-	(if (setq wind (get-buffer-window buf))
-	    (select-window wind)
-	  (if (called-interactively-p)
-	      (progn
-		(select-window (display-buffer buf t t))
-		(org-fit-window-to-buffer))
-	    (with-selected-window (display-buffer buf)
-	      (org-fit-window-to-buffer))))
-      (call-interactively 'org-agenda-list))))
-
-(defun bh/show-org-agenda ()
-  (interactive)
-  (switch-to-buffer "*Org Agenda*")
-  (delete-other-windows))
