@@ -216,6 +216,12 @@
 (global-set-key (kbd "<f4>") 'ispell-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  In my workflow only the current buffer is killed, so this mapping is done
+;;  instead of the default one.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Remap move-beginning-of-line to prelude-move-beginning-of-line so that it
 ;;  puts the cursor to the first non whitepace character or beginning of the
 ;;  line if pressed again.
