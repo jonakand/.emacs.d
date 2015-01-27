@@ -1,12 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Set the inactive modeline so it will match the flat look and size of the 
-;;  modeline settings in the god mode config.
+;;  Setup the mode-line with a condensed amount of information.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (set-face-attribute 'mode-line-inactive nil
-;;                     :foreground "grey80" :background "grey30"
-;;                     :inverse-video nil
-;;                     :box '(:line-width 1 :color "grey30" :style nil))
-
 (setq-default mode-line-format
              '("%e" ; print error message about full memory.
                mode-line-front-space
@@ -27,9 +21,6 @@
                "   "
                ;battery-mode-line-string
                mode-line-end-spaces))
-
-;;(display-time-mode 1)
-;;(setq display-time-format "%a %m/%d/%Y%t%R")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Enable some functions.
@@ -86,6 +77,59 @@
     (set-face-attribute 'default nil :font "Consolas-11:antialias=subpixel"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Set the exec-path so Emacs can find programs not on the windows path.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (setq exec-path
+          (append exec-path
+                  '("~/emacs/Graphviz/bin"
+                    "~/emacs/Hunspell/bin/"
+                    "~/emacs/Gnutls/bin"
+                    "~/emacs/Leiningen"
+                    "~/Git/bin"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Set a couple environment values so that ispell can automatically load the
+;; correct dictionary.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (progn
+      (setenv "DICTIONARY" "en_US")
+      (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Graphviz needs an environment value set so it can locate dot.exe as PATH is
+;; not used.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (setenv "GRAPHVIZ_DOT" "~/emacs/Graphviz/bin/dot.exe"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  So gnutls can find trustfiles on windows simply setting the path for the
+;;  trust files doesn't seem to work.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (eval-after-load "gnutls" 
+      '(progn 
+         (setq gnutls-trustfiles '("~/emacs/cacert.pem")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  DB2 related setup
+;;  Taken from http://www.ibm.com/developerworks/data/library/techarticle/0206mathew/0206mathew.html
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;  -t - ';' (semicolon) is treated as the command line terminator. 
+;;  +ec - Print SQLCODE.
+;;  +m - Print number of rows affected by statement.
+;;  Taken from http://www.ibm.com/developerworks/data/library/techarticle/0206mathew/0206mathew.html
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Turn off line wrapping
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (set-default 'truncate-lines t)
@@ -107,7 +151,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Indicate empty lines.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq indicate-empty-lines nil)
+(setq indicate-empty-lines t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Use four spaces inplace of tab characters.
@@ -159,12 +203,17 @@
 (global-set-key (kbd "M-A") 'forward-paragraph)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  I dont use tags so this was poached from those keys.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "M-.") 'find-function-at-point)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Spell checking keys.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key [f1] 'flyspell-check-previous-highlighted-word)
-(global-set-key [f2] 'ispell-word)
-(global-set-key [f3] 'flyspell-check-next-highlighted-word)
-(global-set-key [f4] 'ispell-buffer)
+(global-set-key (kbd "<f1>") 'flyspell-check-previous-highlighted-word)
+(global-set-key (kbd "<f2>") 'ispell-word)
+(global-set-key (kbd "<f3>") 'flyspell-check-next-highlighted-word)
+(global-set-key (kbd "<f4>") 'ispell-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Remap move-beginning-of-line to prelude-move-beginning-of-line so that it
@@ -421,15 +470,6 @@ Region needs to contain a valid XML document."
   (helm-mini))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Simple function to byte compile configs.
-;;  Taken from http://pages.sachachua.com/.emacs.d/Sacha.html
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun sacha/byte-recompile ()
-  "Byte recompile EL files in the specified directories."
-  (interactive)
-  (byte-recompile-directory "~/emacs/Config" 0))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Make window splitting split with the previous buffer instead of using the
 ;;  same buffer for the new window.
 ;;  Taken from http://pages.sachachua.com/.emacs.d/Sacha.html
@@ -532,6 +572,10 @@ Don't mess with special buffers."
 
 (bind-key "m" 'hidden-mode-line-mode toggle-map)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Narrow or widen intelligenetly.
+;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun narrow-or-widen-dwim (p)
   "If the buffer is narrowed, it widens. Otherwise, it narrows
 intelligently.  Intelligently means: region, org-src-block,
@@ -592,19 +636,11 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (setq paradox-github-token t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Remove unnecessary modes from the modeline.
+;;  Remove unnecessary modes from the modeline.  Probably not needed as
+;;  use-package should handle this.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package diminish
   :ensure t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Theme the window early so that things don't flash from light to dark when
-;; the theme is loaded.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package monokai-theme
-;;   :ensure t
-;;   :config
-;;   (load-theme 'monokai t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Load the sollarized dark theme.  The package is from MELPA.  I liike to have
@@ -991,3 +1027,20 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (add-hook 'org-mode-hook 'turn-on-stripe-table-mode)
     (setq stripe-hl-line "#333333")
     (set-face-attribute stripe-highlight-face nil :background "#333333")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Ace jump and key chord look helpful/interesting.  The config for key chord
+;;  was taken from Sacha Chua.
+;;  http://pages.sachachua.com/.emacs.d/Sacha.html
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package ace-jump-mode
+  :ensure t)
+
+(use-package key-chord
+  :ensure t
+  :init
+  (progn
+    (setq key-chord-one-key-delay 0.16)
+    (key-chord-mode 1)
+    (key-chord-define-global "jj"     'ace-jump-word-mode)
+    (key-chord-define-global "jl"     'ace-jump-line-mode)))
