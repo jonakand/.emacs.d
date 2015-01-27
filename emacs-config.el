@@ -1050,3 +1050,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (key-chord-mode 1)
     (key-chord-define-global "jj"     'ace-jump-word-mode)
     (key-chord-define-global "jl"     'ace-jump-line-mode)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  JSON formatting.  Not used so much but I know it will be helpful.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package json-reformat
+  :ensure t)
