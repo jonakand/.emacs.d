@@ -165,6 +165,32 @@
 (global-auto-revert-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setup Hunspell
+;; rw-hunspell is no longer used as Emacs 24.4 made Hunspell integration very
+;; easy.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq ispell-personal-dictionary "~/emacs/Config/en_US_personal")
+(setq ispell-silently-savep t)
+(setq ispell-quietly t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Add hook to Java and emacs lisp mode to spellcheck comments.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(add-hook 'java-mode-hook
+          (lambda ()
+            (flyspell-prog-mode)))
+            
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (flyspell-prog-mode)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  This suggestion came from the emacse wiki as a way to speedup flyspell.
+;;  http://www.emacswiki.org/emacs/FlySpell
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq flyspell-issue-message-flag nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Fix what the return key does to work the way that I think it should.  When
 ;;  it is pressed move to the next line and also indent.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -210,9 +236,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Spell checking keys.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "<f1>") 'flyspell-check-previous-highlighted-word)
-(global-set-key (kbd "<f2>") 'ispell-word)
-(global-set-key (kbd "<f3>") 'flyspell-check-next-highlighted-word)
+(global-set-key (kbd "<f1>") 'ry/flyspell-check-previous-highlighted-word)
+(global-set-key (kbd "<f2>") 'flyspell-correct-word-before-point)
+(global-set-key (kbd "<f3>") 'ry/flyspell-check-next-highlighted-word)
 (global-set-key (kbd "<f4>") 'ispell-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -539,13 +565,93 @@ Don't mess with special buffers."
       (insert decoded-text))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Function for checking the next problem word.
+;;  This is again from the emacs wiki.  This will cause a popup to be used
+;;  instead of having a new window to be opened when checking the current word.
+;;  Typically I will correct words as they are found instead of doing a whole
+;;  buffer at a time so this will allow me to do that without having the
+;;  display thrash with.  
+;;  http://www.emacswiki.org/emacs/FlySpell
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flyspell-check-next-highlighted-word ()
+(defun flyspell-emacs-popup-textual (event poss word)
+  "A textual flyspell popup menu."
+  (require 'popup)
+  (let* ((corrects (if flyspell-sort-corrections
+                       (sort (car (cdr (cdr poss))) 'string<)
+                     (car (cdr (cdr poss)))))
+         (cor-menu (if (consp corrects)
+                       (mapcar (lambda (correct)
+                                 (list correct correct))
+                               corrects)
+                     '()))
+         (affix (car (cdr (cdr (cdr poss)))))
+         show-affix-info
+         (base-menu  (let ((save (if (and (consp affix) show-affix-info)
+                                     (list
+                                      (list (concat "Save affix: " (car affix))
+                                            'save)
+                                      '("Accept (session)" session)
+                                      '("Accept (buffer)" buffer))
+                                   '(("Save word" save)
+                                     ("Accept (session)" session)
+                                     ("Accept (buffer)" buffer)))))
+                       (if (consp cor-menu)
+                           (append cor-menu (cons "" save))
+                         save)))
+         (menu (mapcar
+                (lambda (arg) (if (consp arg) (car arg) arg))
+                base-menu)))
+    (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu))))
+
+(eval-after-load "flyspell"
+  '(progn
+     (fset 'flyspell-emacs-popup 'flyspell-emacs-popup-textual)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Check the next misspelled word and display the popup instead of splitting
+;;  the window.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/flyspell-check-next-highlighted-word ()
   "Custom function to spell check next highlighted word"
   (interactive)
   (flyspell-goto-next-error)
-  (ispell-word))
+  (flyspell-correct-word-before-point))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  This function is taken from the flyspell code with only a minor modification
+;;  made.  It calls the flyspell correct word before point instead of ispell
+;;  word.  Doing this will display the corrections in a popup instead of by
+;;  splitting the window.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/flyspell-check-previous-highlighted-word (&optional arg)
+  "Correct the closer misspelled word.
+This function scans a mis-spelled word before the cursor. If it finds one
+it proposes replacement for that word. With prefix arg, count that many
+misspelled words backwards."
+  (interactive)
+  (let ((pos1 (point))
+	(pos  (point))
+	(arg  (if (or (not (numberp arg)) (< arg 1)) 1 arg))
+	ov ovs)
+    (if (catch 'exit
+	  (while (and (setq pos (previous-overlay-change pos))
+		      (not (= pos pos1)))
+	    (setq pos1 pos)
+	    (if (> pos (point-min))
+		(progn
+		  (setq ovs (overlays-at (1- pos)))
+		  (while (consp ovs)
+		    (setq ov (car ovs))
+		    (setq ovs (cdr ovs))
+		    (if (and (flyspell-overlay-p ov)
+			     (= 0 (setq arg (1- arg))))
+			(throw 'exit t)))))))
+	(save-excursion
+	  (goto-char pos)
+	  ;; (ispell-word)
+      (flyspell-correct-word-before-point)
+	  (setq flyspell-word-cache-word nil) ;; Force flyspell-word re-check
+	  (flyspell-word))
+      (error "No word to correct before point"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Hide/Show modeline.  This looked interesting but I'm not sure if it will get
@@ -770,15 +876,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
             (split-window-vertically)
             (other-window 1)
             (switch-to-buffer buf)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Setup Hunspell
-;; rw-hunspell is no longer used as Emacs 24.4 made Hunspell integration very
-;; easy.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq ispell-personal-dictionary "~/emacs/Config/en_US_personal")
-(setq ispell-silently-savep t)
-(setq ispell-quietly t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Enable multiple cursors
