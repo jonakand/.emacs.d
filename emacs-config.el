@@ -29,7 +29,7 @@
 (put 'downcase-region 'disabled nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Show the function the cursor is currently in in the status line.
+;; Show the function the cursor is currently in the status line.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (which-function-mode 1)
 
@@ -280,7 +280,8 @@
            ("t" . text-mode)
            ("w" . whitespace-mode)
            ("b" . menu-bar-mode)
-           ("h" . global-hl-line-mode))
+           ("h" . global-hl-line-mode)
+           ("f" . flyspell-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
