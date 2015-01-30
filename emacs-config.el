@@ -29,7 +29,7 @@
 (put 'downcase-region 'disabled nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Show the function the cursor is currently in the status line.
+;; Show the function the cursor is currently in in the status line.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (which-function-mode 1)
 
@@ -964,7 +964,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
          ("C-c C-r" . org-capture)
          ("C-C C-a" . org-agenda)
          ("C-x C-h" . mark-whole-buffer)
-         ("C-x C-d" . dired))
+         ("C-x C-d" . dired)
+         ("C-x C-g" . magit-status)
+         ("C-c C-g" . magit-status))
   :init
   (progn
     (god-mode-all)
@@ -1129,8 +1131,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (progn
     (add-hook 'dired-mode-hook 'stripe-listify-buffer)
     (add-hook 'org-mode-hook 'turn-on-stripe-table-mode)
-    (setq stripe-hl-line "#333333")
-    (set-face-attribute stripe-highlight-face nil :background "#333333")))
+    (setq stripe-hl-line "#073642")
+    (set-face-attribute stripe-highlight-face nil :background "#073642")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Ace jump and key chord look helpful/interesting.  The config for key chord
@@ -1154,3 +1156,15 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package json-reformat
   :ensure t)
+
+(use-package markdown-mode
+  :ensure t)
+
+(use-package git-gutter+
+  :ensure t
+  :diminish git-gutter+-mode
+  :config
+  (setq git-gutter+-modified-sign "  ") ;; two space
+  (setq git-gutter+-added-sign "++")    ;; multiple character is OK
+  (setq git-gutter+-deleted-sign "--")
+  (set-face-background 'git-gutter+-modified "#073642"))
