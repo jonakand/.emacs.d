@@ -725,6 +725,23 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (message "File path copied: 「%s」" fPath)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  A couple helper functions for launching applications when on Windows.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/launch-windows-explorer ()
+  "Open Windows explorer."
+  (interactive)
+  (if (eq system-type 'windows-nt)
+      (shell-command "explorer.exe")
+    (error "This command can only be used on Windows.")))
+
+(defun ry/launch-internet-explorer ()
+  "Open Internet Explorer."
+  (interactive)
+  (if (eq system-type 'windows-nt)      
+      (shell-command "C:/Progra~1/Intern~1/iexplore.exe https://www.bing.com")
+    (error "This command can only be used on Windows.")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Get things ready for async package installation.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package async
@@ -1224,8 +1241,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (set-face-background 'git-gutter+-modified "#073642"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Use hydra to define a toggle map.  This is similar to the version done on
-;;  the page below, which seems like a very good idea.
+;;  Use hydra to define a toggle map and an application launch map.
+;;  This is similar to the version done on the page below, which seems like a
+;;  very good idea.
 ;;  https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package hydra
@@ -1244,7 +1262,15 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     ("t" text-mode "text" :color blue)
     ("w" whitespace-mode "whitespace" :color blue)
     ("q" nil "cancel" :color red))
-  (global-set-key (kbd "C-c t") 'hydra-toggle/body))
+
+  (defhydra hydra-launch (:color blue)
+    "launch"
+    ("i" ry/launch-internet-explorer "iexplore" :color blue)
+    ("w" ry/launch-windows-explorer "wexplore" :color blue))
+
+  (global-set-key (kbd "C-c t") 'hydra-toggle/body)
+  (global-set-key (kbd "C-c l") 'hydra-launch/body))
+  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Save recent file history.

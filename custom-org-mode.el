@@ -5,7 +5,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "C-M-r") 'org-capture)
 (global-set-key (kbd "C-c r") 'org-capture)
-(global-set-key (kbd "C-c l") 'org-store-link)
+;; (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c a") 'org-agenda)
 
 (eval-after-load "org-agenda"
