@@ -267,23 +267,6 @@
            ("q" . kill-this-buffer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Define a map to use for toggling modes.  This seemed like a very nice idea.
-;;  See if I can remember to use it.
-;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-prefix-command 'toggle-map)
-(bind-key "C-x t" 'toggle-map)
-(bind-keys :map toggle-map
-           ("l" . linum-mode)
-           ("o" . org-mode)
-           ("s" . smartparens-mode)
-           ("t" . text-mode)
-           ("w" . whitespace-mode)
-           ("b" . menu-bar-mode)
-           ("h" . global-hl-line-mode)
-           ("f" . flyspell-mode))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
 ;;  Taken from http://www.emacswiki.org/emacs/RectangleCommands
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -683,8 +666,6 @@ misspelled words backwards."
      (concat "Hidden Mode Line Mode enabled.  "
              "Use M-x hidden-mode-line-mode to make the mode-line appear."))))
 
-(bind-key "m" 'hidden-mode-line-mode toggle-map)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Narrow or widen intelligenetly.
 ;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
@@ -712,8 +693,6 @@ narrowed."
                (t (org-narrow-to-subtree))))
         ((derived-mode-p 'prog-mode) (narrow-to-defun))
         (t (error "Please select a region to narrow to"))))
-
-(bind-key "n" 'narrow-or-widen-dwim toggle-map)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  This is another one of those little functions that is handy in certain
@@ -1040,7 +1019,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
                           :inherit font-lock-constant-face))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Smartparens init.
+;;  Smartparens init
+;;  Some of the configs taken from Sacha's config.
+;;  http://pages.sachachua.com/.emacs.d/Sacha.html
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartparens
   :ensure t
@@ -1048,7 +1029,61 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :config
   (progn
     (require 'smartparens-config)
-    (smartparens-global-mode)))
+    (smartparens-global-mode)
+
+    (define-key sp-keymap (kbd "C-c s r n") 'sp-narrow-to-sexp)
+    (define-key sp-keymap (kbd "C-M-f") 'sp-forward-sexp)
+    (define-key sp-keymap (kbd "C-M-b") 'sp-backward-sexp)
+    (define-key sp-keymap (kbd "C-M-d") 'sp-down-sexp)
+    (define-key sp-keymap (kbd "C-M-a") 'sp-backward-down-sexp)
+    (define-key sp-keymap (kbd "C-S-a") 'sp-beginning-of-sexp)
+    (define-key sp-keymap (kbd "C-S-d") 'sp-end-of-sexp)
+
+    (define-key sp-keymap (kbd "C-M-e") 'sp-up-sexp)
+    (define-key emacs-lisp-mode-map (kbd ")") 'sp-up-sexp)
+    (define-key sp-keymap (kbd "C-M-u") 'sp-backward-up-sexp)
+    (define-key sp-keymap (kbd "C-M-t") 'sp-transpose-sexp)
+
+    (define-key sp-keymap (kbd "C-M-n") 'sp-next-sexp)
+    (define-key sp-keymap (kbd "C-M-p") 'sp-previous-sexp)
+
+    (define-key sp-keymap (kbd "C-M-k") 'sp-kill-sexp)
+    (define-key sp-keymap (kbd "C-M-w") 'sp-copy-sexp)
+
+    (define-key sp-keymap (kbd "M-<delete>") 'sp-unwrap-sexp)
+    (define-key sp-keymap (kbd "M-<backspace>") 'sp-backward-unwrap-sexp)
+
+    (define-key sp-keymap (kbd "C-<right>") 'sp-forward-slurp-sexp)
+    (define-key sp-keymap (kbd "C-<left>") 'sp-forward-barf-sexp)
+    (define-key sp-keymap (kbd "C-M-<left>") 'sp-backward-slurp-sexp)
+    (define-key sp-keymap (kbd "C-M-<right>") 'sp-backward-barf-sexp)
+
+    (define-key sp-keymap (kbd "M-D") 'sp-splice-sexp)
+    (define-key sp-keymap (kbd "C-M-<delete>") 'sp-splice-sexp-killing-forward)
+    (define-key sp-keymap (kbd "C-M-<backspace>") 'sp-splice-sexp-killing-backward)
+    (define-key sp-keymap (kbd "C-S-<backspace>") 'sp-splice-sexp-killing-around)
+
+    (define-key sp-keymap (kbd "C-]") 'sp-select-next-thing-exchange)
+    (define-key sp-keymap (kbd "C-<left_bracket>") 'sp-select-previous-thing)
+    (define-key sp-keymap (kbd "C-M-]") 'sp-select-next-thing)
+
+    (define-key sp-keymap (kbd "M-F") 'sp-forward-symbol)
+    (define-key sp-keymap (kbd "M-B") 'sp-backward-symbol)
+
+    (define-key sp-keymap (kbd "C-c s t") 'sp-prefix-tag-object)
+    (define-key sp-keymap (kbd "C-c s p") 'sp-prefix-pair-object)
+    (define-key sp-keymap (kbd "C-c s c") 'sp-convolute-sexp)
+    (define-key sp-keymap (kbd "C-c s a") 'sp-absorb-sexp)
+    (define-key sp-keymap (kbd "C-c s e") 'sp-emit-sexp)
+    (define-key sp-keymap (kbd "C-c s p") 'sp-add-to-previous-sexp)
+    (define-key sp-keymap (kbd "C-c s n") 'sp-add-to-next-sexp)
+    (define-key sp-keymap (kbd "C-c s j") 'sp-join-sexp)
+    (define-key sp-keymap (kbd "C-c s s") 'sp-split-sexp)
+
+    (sp-local-pair 'web-mode "<" nil :when '(sacha/sp-web-mode-is-code-context))
+    
+    (sp-with-modes '(html-mode sgml-mode web-mode)
+      (sp-local-pair "<" ">"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Dired+ to enhance dired and commander.
@@ -1071,7 +1106,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-c g" . magit-status))
-  :init
   (use-package git-timemachine
     :ensure t
     :bind (("C-x v t" . git-timemachine)))
@@ -1117,10 +1151,15 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :bind ("M-;" . comment-dwim-2))	
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  For editing the MediaWiki at work.
+;;  For editing the MediaWiki at work.  An old version of Mediawiki is being
+;;  used which is incompatible so this is only being used for the little code
+;;  coloring that it provides.  As such the keybinding for C-x C-s that is
+;;  provided by the mode is overwritten by the default action.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package mediawiki
-  :ensure t)
+  :ensure t
+  :config
+  (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Stripe dired buffers and tables in ORG mode for easier reading.
@@ -1158,13 +1197,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :ensure t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Trying markdown mode instead of Mediawiki mode.  Mediawiki clobbers some
-;;  very common key bindings.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package markdown-mode
-  :ensure t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Add Git diff information to the gutter to easily see what has changed.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package git-gutter+
@@ -1175,3 +1207,26 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (setq git-gutter+-added-sign "++")    ;; multiple character is OK
   (setq git-gutter+-deleted-sign "--")
   (set-face-background 'git-gutter+-modified "#073642"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Use hydra to define a toggle map.  This is similar to the version done on
+;;  the page below, which seems like a very good idea.
+;;  https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package hydra
+  :ensure t
+  :config
+  (defhydra hydra-toggle (:color blue)
+    "toggle"
+    ("b" menu-bar-mode "menu" :color blue)
+    ("d" toggle-debug-on-error "debug" :color blue)
+    ("f" flyspell-mode "flyspell" :color blue)
+    ("h" global-hl-line-mode "highlight" :color blue)
+    ("m" hidden-mode-line-mode "hide" :color blue)
+    ("n" narrow-or-widen-dwim "narrow" :color blue)
+    ("o" org-mode "org" :color blue)
+    ("s" smartparens-mode "smartparens" :color blue)
+    ("t" text-mode "text" :color blue)
+    ("w" whitespace-mode "whitespace" :color blue)
+    ("q" nil "cancel" :color red))
+  (global-set-key (kbd "C-c t") 'hydra-toggle/body))
