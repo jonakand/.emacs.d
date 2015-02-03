@@ -191,6 +191,15 @@
 (setq flyspell-issue-message-flag nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Setup URL browsing based on the system type.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program (if (eq system-type 'windows-nt)
+                                     "C:/Program Files/Internet Explorer/iexplore.exe"))
+
+(bind-key "C-c B" 'browse-url-at-point)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Fix what the return key does to work the way that I think it should.  When
 ;;  it is pressed move to the next line and also indent.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -784,7 +793,19 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package smartscan
   :ensure t
   :config
-  (add-hook 'prog-mode-hook 'global-smartscan-mode))
+  (global-smartscan-mode)
+  (defun highlight-symbol-first ()
+    "Jump to the first location of symbol at point."
+    (interactive)
+    (push-mark)
+    (eval
+     `(progn
+        (goto-char (point-min))
+        (search-forward-regexp
+         (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+         nil t)
+        (beginning-of-thing 'symbol))))
+  (bind-keys ("M-P" . highlight-symbol-first)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  NXML
@@ -1020,70 +1041,64 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Smartparens init
-;;  Some of the configs taken from Sacha's config.
+;;  Some of the configs taken from Sacha's config the rest is taken from
+;;  mwfogleman.
 ;;  http://pages.sachachua.com/.emacs.d/Sacha.html
+;;  https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartparens
   :ensure t
   :diminish smartparens-mode
-  :config
+  :bind
+  (("C-M-f" . sp-forward-sexp)
+   ("C-M-b" . sp-backward-sexp)
+   ("C-M-d" . sp-down-sexp)
+   ("C-M-a" . sp-backward-down-sexp)
+   ("C-S-a" . sp-beginning-of-sexp)
+   ("C-S-d" . sp-end-of-sexp)
+   ("C-M-e" . sp-up-sexp)
+   ("C-M-u" . sp-backward-up-sexp)
+   ("C-M-t" . sp-transpose-sexp)
+   ("C-M-n" . sp-next-sexp)
+   ("C-M-p" . sp-previous-sexp)
+   ("C-M-k" . sp-kill-sexp)
+   ("C-M-w" . sp-copy-sexp)
+   ("M-<delete>" . sp-unwrap-sexp)
+   ("M-S-<backspace>" . sp-backward-unwrap-sexp)
+   ("C-<right>" . sp-forward-slurp-sexp)
+   ("C-<left>" . sp-forward-barf-sexp)
+   ("C-M-<left>" . sp-backward-slurp-sexp)
+   ("C-M-<right>" . sp-backward-barf-sexp)
+   ("M-D" . sp-splice-sexp)
+   ("C-M-<delete>" . sp-splice-sexp-killing-forward)
+   ("C-M-<backspace>" . sp-splice-sexp-killing-backward)
+   ("C-M-S-<backspace>" . sp-splice-sexp-killing-around)
+   ("C-]" . sp-select-next-thing-exchange)
+   ("C-<left_bracket>" . sp-select-previous-thing)
+   ("C-M-]" . sp-select-next-thing)
+   ("M-F" . sp-forward-symbol)
+   ("M-B" . sp-backward-symbol)
+   ("H-t" . sp-prefix-tag-object)
+   ("H-p" . sp-prefix-pair-object)
+   ("H-s c" . sp-convolute-sexp)
+   ("H-s a" . sp-absorb-sexp)
+   ("H-s e" . sp-emit-sexp)
+   ("H-s p" . sp-add-to-previous-sexp)
+   ("H-s n" . sp-add-to-next-sexp)
+   ("H-s j" . sp-join-sexp)
+   ("H-s s" . sp-split-sexp)
+   ("M-9" . sp-backward-sexp)
+   ("M-0" . sp-forward-sexp))
+  :init
   (progn
-    (require 'smartparens-config)
-    (smartparens-global-mode)
-
-    (define-key sp-keymap (kbd "C-c s r n") 'sp-narrow-to-sexp)
-    (define-key sp-keymap (kbd "C-M-f") 'sp-forward-sexp)
-    (define-key sp-keymap (kbd "C-M-b") 'sp-backward-sexp)
-    (define-key sp-keymap (kbd "C-M-d") 'sp-down-sexp)
-    (define-key sp-keymap (kbd "C-M-a") 'sp-backward-down-sexp)
-    (define-key sp-keymap (kbd "C-S-a") 'sp-beginning-of-sexp)
-    (define-key sp-keymap (kbd "C-S-d") 'sp-end-of-sexp)
-
-    (define-key sp-keymap (kbd "C-M-e") 'sp-up-sexp)
-    (define-key emacs-lisp-mode-map (kbd ")") 'sp-up-sexp)
-    (define-key sp-keymap (kbd "C-M-u") 'sp-backward-up-sexp)
-    (define-key sp-keymap (kbd "C-M-t") 'sp-transpose-sexp)
-
-    (define-key sp-keymap (kbd "C-M-n") 'sp-next-sexp)
-    (define-key sp-keymap (kbd "C-M-p") 'sp-previous-sexp)
-
-    (define-key sp-keymap (kbd "C-M-k") 'sp-kill-sexp)
-    (define-key sp-keymap (kbd "C-M-w") 'sp-copy-sexp)
-
-    (define-key sp-keymap (kbd "M-<delete>") 'sp-unwrap-sexp)
-    (define-key sp-keymap (kbd "M-<backspace>") 'sp-backward-unwrap-sexp)
-
-    (define-key sp-keymap (kbd "C-<right>") 'sp-forward-slurp-sexp)
-    (define-key sp-keymap (kbd "C-<left>") 'sp-forward-barf-sexp)
-    (define-key sp-keymap (kbd "C-M-<left>") 'sp-backward-slurp-sexp)
-    (define-key sp-keymap (kbd "C-M-<right>") 'sp-backward-barf-sexp)
-
-    (define-key sp-keymap (kbd "M-D") 'sp-splice-sexp)
-    (define-key sp-keymap (kbd "C-M-<delete>") 'sp-splice-sexp-killing-forward)
-    (define-key sp-keymap (kbd "C-M-<backspace>") 'sp-splice-sexp-killing-backward)
-    (define-key sp-keymap (kbd "C-S-<backspace>") 'sp-splice-sexp-killing-around)
-
-    (define-key sp-keymap (kbd "C-]") 'sp-select-next-thing-exchange)
-    (define-key sp-keymap (kbd "C-<left_bracket>") 'sp-select-previous-thing)
-    (define-key sp-keymap (kbd "C-M-]") 'sp-select-next-thing)
-
-    (define-key sp-keymap (kbd "M-F") 'sp-forward-symbol)
-    (define-key sp-keymap (kbd "M-B") 'sp-backward-symbol)
-
-    (define-key sp-keymap (kbd "C-c s t") 'sp-prefix-tag-object)
-    (define-key sp-keymap (kbd "C-c s p") 'sp-prefix-pair-object)
-    (define-key sp-keymap (kbd "C-c s c") 'sp-convolute-sexp)
-    (define-key sp-keymap (kbd "C-c s a") 'sp-absorb-sexp)
-    (define-key sp-keymap (kbd "C-c s e") 'sp-emit-sexp)
-    (define-key sp-keymap (kbd "C-c s p") 'sp-add-to-previous-sexp)
-    (define-key sp-keymap (kbd "C-c s n") 'sp-add-to-next-sexp)
-    (define-key sp-keymap (kbd "C-c s j") 'sp-join-sexp)
-    (define-key sp-keymap (kbd "C-c s s") 'sp-split-sexp)
+    (smartparens-global-mode t)
+    (show-smartparens-global-mode t)
+    (use-package smartparens-config)
 
     (sp-local-pair 'web-mode "<" nil :when '(sacha/sp-web-mode-is-code-context))
-    
+  
     (sp-with-modes '(html-mode sgml-mode web-mode)
-      (sp-local-pair "<" ">"))))
+                   (sp-local-pair "<" ">"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Dired+ to enhance dired and commander.
@@ -1106,6 +1121,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-c g" . magit-status))
+  :config
   (use-package git-timemachine
     :ensure t
     :bind (("C-x v t" . git-timemachine)))
@@ -1114,7 +1130,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     :bind (("C-x v L" . git-link))
     :init
     (setq git-link-open-in-browser t))
-  :config
   (setq magit-use-overlays nil)
   ;; (diminish 'magit-auto-revert-mode)
   ;; (diminish 'magit-backup-mode)
@@ -1148,7 +1163,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package comment-dwim-2
   :ensure t
-  :bind ("M-;" . comment-dwim-2))	
+  :bind ("M-;" . comment-dwim-2))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  For editing the MediaWiki at work.  An old version of Mediawiki is being
@@ -1187,8 +1202,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (progn
     (setq key-chord-one-key-delay 0.16)
     (key-chord-mode 1)
-    (key-chord-define-global "jj"     'ace-jump-word-mode)
-    (key-chord-define-global "jl"     'ace-jump-line-mode)))
+    (key-chord-define-global "jj" 'ace-jump-word-mode)
+    (key-chord-define-global "jl" 'ace-jump-line-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  JSON formatting.  Not used so much but I know it will be helpful.
@@ -1230,3 +1245,23 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     ("w" whitespace-mode "whitespace" :color blue)
     ("q" nil "cancel" :color red))
   (global-set-key (kbd "C-c t") 'hydra-toggle/body))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Save recent file history.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package recentf
+  :ensure t
+  :init
+  (progn
+    (recentf-mode)
+    (setq recentf-max-saved-items 100)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Add numbers to EWW.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package eww-lnum
+  :ensure t
+  :init
+  (eval-after-load "eww"
+    '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
+            (define-key eww-mode-map "F" 'eww-lnum-universal))))
