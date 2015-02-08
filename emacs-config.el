@@ -1191,7 +1191,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package mediawiki
   :ensure t
   :config
-  (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer))
+  (eval-after-load 'mediawiki
+    (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Stripe dired buffers and tables in ORG mode for easier reading.
