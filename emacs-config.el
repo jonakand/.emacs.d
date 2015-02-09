@@ -983,7 +983,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
          ("C-x C-h" . mark-whole-buffer)
          ("C-x C-d" . dired)
          ("C-x C-g" . magit-status)
-         ("C-c C-g" . magit-status))
+         ("C-c C-g" . magit-status)
+         ("C-c C-t" . hydra-toggle/body)
+         ("C-c C-l" . hydra-launch/body))
   :init
   (progn
     (god-mode-all)
@@ -1221,7 +1223,11 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (setq key-chord-one-key-delay 0.16)
     (key-chord-mode 1)
     (key-chord-define-global "jj" 'ace-jump-word-mode)
-    (key-chord-define-global "jl" 'ace-jump-line-mode)))
+    (key-chord-define-global "jl" 'ace-jump-line-mode)
+    (key-chord-define-global "xb" 'helm-mini)
+    (key-chord-define-global "xo" 'other-window)
+    (key-chord-define-global "xk" 'kill-this-buffer)
+    (key-chord-define-global "xs" 'save-current-buffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  JSON formatting.  Not used so much but I know it will be helpful.
@@ -1267,7 +1273,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (defhydra hydra-launch (:color blue)
     "launch"
     ("i" ry/launch-internet-explorer "iexplore" :color blue)
-    ("w" ry/launch-windows-explorer "wexplore" :color blue))
+    ("w" ry/launch-windows-explorer "wexplore" :color blue)
+    ("q" nil "cancel" :color red))
 
   (global-set-key (kbd "C-c t") 'hydra-toggle/body)
   (global-set-key (kbd "C-c l") 'hydra-launch/body))
