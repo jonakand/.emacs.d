@@ -1033,6 +1033,12 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :diminish company-mode
   :config
   (progn
+    (use-package company-quickhelp
+      :ensure t
+      :config
+      (progn
+        (company-quickhelp-mode 1)
+        (setq company-quickhelp-delay 0.1)))
     (global-company-mode)
     (setq company-idle-delay 0)
     (setq company-show-numbers t)
