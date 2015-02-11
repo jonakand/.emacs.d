@@ -106,12 +106,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  So gnutls can find trustfiles on windows simply setting the path for the
-;;  trust files doesn't seem to work.
+;;  trust files doesn't seem to work.  This needs to be the full path or it will
+;;  not work.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (if (eq system-type 'windows-nt)
     (eval-after-load "gnutls" 
       '(progn 
-         (setq gnutls-trustfiles '("~/emacs/cacert.pem")))))
+         (setq gnutls-trustfiles '("h:/emacs/cacert.pem")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  DB2 related setup
@@ -222,6 +223,7 @@
 (global-set-key (kbd "C-M-B") 'ry/xml-format)
 (global-set-key (kbd "C-M-L") 'ry/xml-linearlize)
 (global-set-key (kbd "<C-S-return>") 'xquery-with-region)
+(global-set-key (kbd "C-c w") 'ry/xml-where)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  SQL related bindings.
@@ -740,6 +742,28 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (if (eq system-type 'windows-nt)      
       (shell-command "C:/Progra~1/Intern~1/iexplore.exe https://www.bing.com")
     (error "This command can only be used on Windows.")))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  The function below is a modified version of a function found at:
+;;  http://www.emacswiki.org/emacs/NxmlMode#toc11.  In additional to displaying
+;;  the current XPATH in the echo area it will be copied to the clipboard.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/xml-where ()
+  "Display the hierarchy of XML elements the point is on as a path."
+  (interactive)
+  (let ((path nil))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (while (and (< (point-min) (point)) ;; Doesn't error if point is at beginning of buffer
+                    (condition-case nil
+                        (progn
+                          (nxml-backward-up-element) ; always returns nil
+                          t)
+                      (error nil)))
+          (setq path (cons (xmltok-start-tag-local-name) path)))
+        (kill-new (format "/%s" (mapconcat 'identity path "/")))
+        (message "XPath copied: 「%s」" (mapconcat 'identity path "/"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Get things ready for async package installation.
@@ -1305,3 +1329,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (eval-after-load "eww"
     '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
             (define-key eww-mode-map "F" 'eww-lnum-universal))))
+
+(use-package sx
+  :ensure t)
