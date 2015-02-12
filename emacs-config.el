@@ -198,7 +198,7 @@
       browse-url-generic-program (if (eq system-type 'windows-nt)
                                      "C:/Program Files/Internet Explorer/iexplore.exe"))
 
-(bind-key "C-c B" 'browse-url-at-point)
+(global-set-key (kbd "C-c B") 'browse-url-at-point)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Fix what the return key does to work the way that I think it should.  When
@@ -220,10 +220,6 @@
 (global-set-key (kbd "C-x r M-w") 'my-copy-rectangle)
 (global-set-key (kbd "C-x r C-y") 'yank-replace-rectangle)
 (global-set-key (kbd "<f12>") 'ry/open-temp-buffer)
-(global-set-key (kbd "C-M-B") 'ry/xml-format)
-(global-set-key (kbd "C-M-L") 'ry/xml-linearlize)
-(global-set-key (kbd "<C-S-return>") 'xquery-with-region)
-(global-set-key (kbd "C-c w") 'ry/xml-where)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  SQL related bindings.
@@ -456,7 +452,7 @@ Region needs to contain a valid XML document."
 ;;  This function was taken from http://donnieknows.com/blog/hacking-xquery-emacs-berkeley-db-xml
 ;;  and modified to work with Saxon instead of Berkley DB.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun xquery-with-region (beg end)
+(defun ry/xquery-with-region (beg end)
   "Perform Xquery using Saxon with the current region."
   (interactive "*r")
   (let ((newbuffer nil)
@@ -470,13 +466,13 @@ Region needs to contain a valid XML document."
       (with-timeout
           (10 (insert "Gave up because query was taking too long."))
         (erase-buffer)
-        (insert (perform-xquery xquery t)))
+        (insert (ry/perform-xquery xquery t)))
       (nxml-mode)
       (goto-char (point-min)))
     (switch-to-buffer-other-window xquery-result)
     (other-window -1)))
 
-(defun perform-xquery (xquery &optional timed)
+(defun ry/perform-xquery (xquery &optional timed)
   "Perform the selected Xquery using Saxon."
   (setq file (make-temp-file "elisp-dbxml-"))
   (write-region xquery nil file)
@@ -1067,6 +1063,10 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (setq company-idle-delay 0)
     (setq company-show-numbers t)
     (setq company-dabbrev-downcase nil)
+    (setq company-dabbrev-ignore-buffers "\\`[ ]'")
+    (setq company-dabbrev-code-ignore-case t)
+    (setq company-dabbrev-code-other-buffers 'all)
+    (setq company-dabbrev-other-buffers 'all)
     
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "M-n") nil)
@@ -1306,10 +1306,18 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     ("w" ry/launch-windows-explorer "wexplore" :color blue)
     ("q" nil "cancel" :color red))
 
-  (global-set-key (kbd "C-c t") 'hydra-toggle/body)
-  (global-set-key (kbd "C-c l") 'hydra-launch/body))
-  
+  (defhydra hydra-xml (:color blue)
+    "xml"
+    ("f" ry/xml-format "format" :color blue)
+    ("l" ry/xml-linearlize "linearlize" :color blue)
+    ("w" ry/xml-where "where" :color blue)
+    ("x" ry/xquery-with-region "xquery" :color blue)
+    ("q" nil "cancel" :color red))
 
+  (global-set-key (kbd "C-c t") 'hydra-toggle/body)
+  (global-set-key (kbd "C-c l") 'hydra-launch/body)
+  (global-set-key (kbd "C-c x") 'hydra-xml/body))
+  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Save recent file history.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
