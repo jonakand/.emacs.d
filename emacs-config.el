@@ -86,7 +86,8 @@
                     "~/emacs/Hunspell/bin/"
                     "~/emacs/Gnutls/bin"
                     "~/emacs/Leiningen"
-                    "~/Git/bin"))))
+                    "~/Git/bin"
+                    "C:/IBM/SDP"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Set a couple environment values so that ispell can automatically load the
@@ -311,6 +312,9 @@
 (defun ry/sql-open-database ()
   "Open a SQLI process and name the SQL statement window with the name provided."
   (interactive)
+  (switch-to-buffer "*DB_HELPER*")
+  (god-local-mode)
+  (insert-file-contents "H:/emacs/Config/DB_INFO.TXT")
   (setq sql-set-product "db2")
   (sql-db2)
   (other-window 1)
@@ -1017,7 +1021,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (add-to-list 'god-exempt-major-modes 'dired-mode)
     (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
     (add-to-list 'god-exempt-major-modes 'org-capture-mode)
-        
+
     ;;  Change the color of the cursor to RED if god-mode is enabled.
     (add-hook 'post-command-hook
               (lambda ()
@@ -1286,19 +1290,24 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package hydra
   :ensure t
   :config
-  (defhydra hydra-toggle (:color blue)
-    "toggle"
-    ("b" menu-bar-mode "menu" :color blue)
-    ("d" toggle-debug-on-error "debug" :color blue)
-    ("f" flyspell-mode "flyspell" :color blue)
-    ("h" global-hl-line-mode "highlight" :color blue)
-    ("m" hidden-mode-line-mode "hide" :color blue)
-    ("n" narrow-or-widen-dwim "narrow" :color blue)
-    ("o" org-mode "org" :color blue)
-    ("s" smartparens-mode "smartparens" :color blue)
-    ("t" text-mode "text" :color blue)
-    ("w" whitespace-mode "whitespace" :color blue)
-    ("q" nil "cancel" :color red))
+  (defhydra hydra-toggle (:color pink)
+  "
+_a_ abbrev-mode:         %`abbrev-mode
+_b_ menu-bar-mode:       %`menu-bar-mode
+_d_ debug-on-error:      %`debug-on-error
+_f_ flyspell-mode:       %`flyspell-mode
+_h_ global-hl-line-mode: %`global-hl-line-mode
+_s_ smartparens-mode:    %`smartparens-mode
+
+"
+  ("a" abbrev-mode nil)
+  ("b" menu-bar-mode)
+  ("d" toggle-debug-on-error nil)
+  ("f" flyspell-mode nil)
+  ("h" global-hl-line-mode nil)
+  ("s" smartparens-mode nil)
+  ;; ("w" whitespace-mode nil)
+  ("q" nil "cancel"))
 
   (defhydra hydra-launch (:color blue)
     "launch"
@@ -1338,5 +1347,15 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
             (define-key eww-mode-map "F" 'eww-lnum-universal))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Stack exchange package.  Nice to be able to read SX in emacs.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package sx
+  :ensure t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Package for making commands work differently based on if a region is
+;;  selected or not.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package whole-line-or-region
   :ensure t)
