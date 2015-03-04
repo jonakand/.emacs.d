@@ -309,19 +309,42 @@
 ;;  the SQLi hook is not being called due to the way the sql-buffer is being set
 ;;  but for now it works.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ry/sql-open-database ()
+;; (defun ry/sql-open-database ()
+;;   "Open a SQLI process and name the SQL statement window with the name provided."
+;;   (interactive)
+;;   (switch-to-buffer "*DB_HELPER*")
+;;   (god-local-mode)
+;;   (insert-file-contents "H:/emacs/Config/DB_INFO.TXT")
+;;   (setq sql-set-product "db2")
+;;   (sql-db2)
+;;   (other-window 1)
+;;   (switch-to-buffer "*DATABASE*")
+;;   (sql-mode)
+;;   (sql-set-product "db2")
+;;   (setq sql-buffer "*SQL*")
+;;   (auto-complete-mode))
+
+(defun ry/sql-open-database (database username password)
   "Open a SQLI process and name the SQL statement window with the name provided."
-  (interactive)
+  (interactive (list
+                (read-string "Database: ")
+                (read-string "Username: ")
+                (read-passwd "Password: ")))
   (switch-to-buffer "*DB_HELPER*")
   (god-local-mode)
   (insert-file-contents "H:/emacs/Config/DB_INFO.TXT")
   (setq sql-set-product "db2")
-  (sql-db2)
+  
+  (sql-db2 (upcase database))
+  (sql-rename-buffer (upcase database))
+  (setq sql-buffer (current-buffer))
+  (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";"))
+  
   (other-window 1)
-  (switch-to-buffer "*DATABASE*")
+  (switch-to-buffer (concat "*DB: " (upcase database) "*"))
   (sql-mode)
   (sql-set-product "db2")
-  (setq sql-buffer "*SQL*")
+  (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
   (auto-complete-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -452,10 +475,17 @@ Region needs to contain a valid XML document."
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar " (current-buffer) t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Perform an XQUERY on the selected region.
+;;  Perform an XQUERY on the selected buffer/region.
 ;;  This function was taken from http://donnieknows.com/blog/hacking-xquery-emacs-berkeley-db-xml
 ;;  and modified to work with Saxon instead of Berkley DB.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/xquery ()
+  "Perform Xquery using Saxon with the current buffer."
+  (interactive "")
+  (let ((beg (point-min))
+        (end (point-max)))
+    (ry/xquery-with-region beg end)))
+
 (defun ry/xquery-with-region (beg end)
   "Perform Xquery using Saxon with the current region."
   (interactive "*r")
@@ -1316,11 +1346,19 @@ _s_ smartparens-mode:    %`smartparens-mode
     ("q" nil "cancel" :color red))
 
   (defhydra hydra-xml (:color blue)
-    "xml"
-    ("f" ry/xml-format "format" :color blue)
-    ("l" ry/xml-linearlize "linearlize" :color blue)
-    ("w" ry/xml-where "where" :color blue)
-    ("x" ry/xquery-with-region "xquery" :color blue)
+    "
+_f_ Format
+_l_ Linearlize
+_w_ Where
+_x_ Xquery buffer
+_X_ Xquery region
+
+"
+    ("f" ry/xml-format nil)
+    ("l" ry/xml-linearlize nil)
+    ("w" ry/xml-where nil)
+    ("x" ry/xquery nil)
+    ("X" ry/xquery-with-region nil)
     ("q" nil "cancel" :color red))
 
   (global-set-key (kbd "C-c t") 'hydra-toggle/body)
@@ -1359,3 +1397,22 @@ _s_ smartparens-mode:    %`smartparens-mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package whole-line-or-region
   :ensure t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Another folding package based on the active region.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package fold-this
+  :ensure t
+  :init
+  (progn
+    (global-set-key (kbd "C-c C-f") 'fold-this-all)
+    (global-set-key (kbd "C-c C-F") 'fold-this)
+    (global-set-key (kbd "C-c M-f") 'fold-this-unfold-all)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Ring the bell if one character movement is used too many times in a row.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package annoying-arrows-mode
+  :ensure t
+  :init
+  (annoying-arrows-mode))
