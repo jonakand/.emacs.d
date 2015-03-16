@@ -9,7 +9,7 @@
                ; mode-line-modified
                ; mode-line-remote
                ; mode-line-frame-identification
-               "%f" ;;mode-line-buffer-identification
+               "%b" ;;mode-line-buffer-identification
                "   "
                mode-line-position
                (vc-mode vc-mode)
@@ -28,10 +28,19 @@
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
+(put 'narrow-to-region 'disabled nil) 
+(put 'narrow-to-page 'disabled nil) 
+(put 'narrow-to-defun 'disabled nil) 
+
+(put 'erase-buffer 'disabled nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Show the function the cursor is currently in in the status line.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (which-function-mode 1)
+
+;; delete the selection with a keypress 
+(delete-selection-mode t) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remove message when killing a buffer in server mode
@@ -135,6 +144,8 @@
 ;;  Turn off line wrapping
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (set-default 'truncate-lines t)
+;; (global-visual-line-mode)
+;; (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Increase the threshold size to 100MB.  Need this as log files and test files
@@ -804,8 +815,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package paradox
   :ensure t
   :config
-  (setq paradox-execute-asynchronously t)
-  (setq paradox-github-token t))
+  (progn
+    (setq paradox-execute-asynchronously t)
+    (setq paradox-github-token t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Remove unnecessary modes from the modeline.  Probably not needed as
@@ -823,32 +835,33 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package solarized-theme
   :ensure t
   :config
-  (load-theme 'solarized-dark t)
-  (set-face-attribute 'mode-line nil
-                      :inverse-video t
-                      :weight 'bold
-                      :overline nil
-                      :underline nil
-                      :box nil
-                      :foreground "#93a1a1"
-                      :background "#073642")
-  (set-face-attribute 'mode-line-inactive nil
-                      :inverse-video t
-                      :weight 'bold
-                      :overline nil
-                      :underline nil
-                      :box nil
-                      :foreground "#657b83"
-                      :background "#073642")
-  (with-eval-after-load 'org
-                  (set-face-attribute 'org-block-begin-line nil
-                                      :underline t
-                                      :background "#073642")
-                  (set-face-attribute 'org-block-end-line nil
-                                      :overline t
-                                      :background "#073642")
-                  (set-face-attribute 'org-block-background nil
-                                      :background "#073642")))
+  (progn
+    (load-theme 'solarized-dark t)
+    (set-face-attribute 'mode-line nil
+                        :inverse-video t
+                        :weight 'bold
+                        :overline nil
+                        :underline nil
+                        :box nil
+                        :foreground "#93a1a1"
+                        :background "#073642")
+    (set-face-attribute 'mode-line-inactive nil
+                        :inverse-video t
+                        :weight 'bold
+                        :overline nil
+                        :underline nil
+                        :box nil
+                        :foreground "#657b83"
+                        :background "#073642")
+    (with-eval-after-load 'org
+      (set-face-attribute 'org-block-begin-line nil
+                          :underline t
+                          :background "#073642")
+      (set-face-attribute 'org-block-end-line nil
+                          :overline t
+                          :background "#073642")
+      (set-face-attribute 'org-block-background nil
+                          :background "#073642"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Rainbox delimiter mode.
@@ -863,28 +876,32 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartscan
   :ensure t
+  :commands (smartscan-symbol-go-forward smartscan-symbol-go-backward highlight-symbol-first)
   :config
-  (global-smartscan-mode)
-  (defun highlight-symbol-first ()
-    "Jump to the first location of symbol at point."
-    (interactive)
-    (push-mark)
-    (eval
-     `(progn
-        (goto-char (point-min))
-        (search-forward-regexp
-         (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
-         nil t)
-        (beginning-of-thing 'symbol))))
-  (bind-keys ("M-P" . highlight-symbol-first)))
+  (progn
+    (global-smartscan-mode)
+    (defun highlight-symbol-first ()
+      "Jump to the first location of symbol at point."
+      (interactive)
+      (push-mark)
+      (eval
+       `(progn
+          (goto-char (point-min))
+          (search-forward-regexp
+           (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
+           nil t)
+          (beginning-of-thing 'symbol))))
+    (bind-keys ("M-P" . highlight-symbol-first))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  NXML
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package nxml-mode
-  :commands 
-  :init
-  (progn 
+  :commands nxml-mode
+  :config
+  (progn
+    (setq nxml-child-indent 2)
+    (setq nxml-attribute-indent 4)
     (setq nxml-auto-insert-xml-declaration-flag nil)
     (setq nxml-slash-auto-complete-flag t)))
 
@@ -900,7 +917,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
    ("\\.as[cp]x\\'" . web-mode)
    ("\\.erb\\'" . web-mode)
    ("\\.mustache\\'" . web-mode)
-   ("\\.djhtml\\'" . web-mode)))
+   ("\\.djhtml\\'" . web-mode))
+  :init
+  (setq web-mode-enable-auto-pairing nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helm init
@@ -909,35 +928,32 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :ensure t
   :diminish helm-mode
   :bind (("C-M-s" . helm-occur)
+         ("C-x C-f" . helm-find-files)
          ("M-x" . helm-M-x)
          ("C-x b" . helm-mini)
+         ("C-x C-b" . helm-buffers-list)
          ("C-x r l" . helm-bookmarks)
+         ("C-h f" . helm-apropos)
+         ("C-h r" . helm-info-emacs)
+         ("C-h C-l" . helm-locate-library)
          ("M-y" . helm-show-kill-ring)
          ("C-x C-b" . helm-mini)
          ("<f7>" . helm-bookmarks)
          ("<f8>" . bookmark-set))
-  :init
+  :config
   (progn
     (require 'helm-config)
-    (helm-mode)
 
     (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
     (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
     (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
-    ;; From https://gist.github.com/antifuchs/9238468
-    (setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
-          helm-input-idle-delay 0.01  ; this actually updates things
-                                        ; reeeelatively quickly.
-          helm-quick-update t
-          helm-M-x-requires-pattern nil
-          helm-ff-skip-boring-files t
-          helm-split-window-in-side-p t
-          helm-buffers-fuzzy-matching t
-          helm-ff-search-library-in-sexp t
-          helm-scroll-amount 8
-          helm-ff-file-name-history-use-recentf t
-          htlm-ff-auto-update-initial-value nil)
+    (setq helm-quick-update                     t
+          helm-split-window-in-side-p           t
+          helm-buffers-fuzzy-matching           t
+          helm-ff-search-library-in-sexp        t
+          helm-scroll-amount                    8
+          helm-ff-file-name-history-use-recentf t)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Make helm always create a new window and always split the current window
@@ -947,7 +963,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
           (lambda (buf)
             (split-window-vertically)
             (other-window 1)
-            (switch-to-buffer buf)))))
+            (switch-to-buffer buf)))
+
+    (helm-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Enable multiple cursors
@@ -980,7 +998,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package "eldoc"  
   :diminish eldoc-mode
-  :commands eldoc-mode
   :init
   (progn
     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
@@ -990,20 +1007,18 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Load sunrise commander and set F11 to open it.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package sunrise-commander
-  :ensure t 
-  :commands sunrise
-  :bind ("<f11>" . sunrise)
-  :config
-  (progn
-    (sr-set-windows-default-ratio 'sr-windows-default-ratio 80)))
+;; (use-package sunrise-commander
+;;   :ensure t 
+;;   :bind ("<f11>" . sunrise)
+;;   :config
+;;   (progn
+;;     (sr-set-windows-default-ratio 'sr-windows-default-ratio 80)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Add org mode stuff to the load path.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package org
   :ensure t 
-  :commands org-mode
   :idle (load "~/.emacs.d/custom-org-mode.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1012,7 +1027,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package undo-tree
   :ensure t
   :diminish undo-tree-mode
-  :init
+  :commands undo-tree-visualize
+  :config
   (progn
     (global-undo-tree-mode)
     (setq undo-tree-visualizer-timestamps t)
@@ -1026,8 +1042,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :diminish god-mode
   :bind (("<escape>" . god-local-mode)
          ("C-x C-1" . delete-other-windows)
-         ("C-x C-2" . sacha/vsplit-last-buffer) ;; split-window-below)
-         ("C-x C-3" . sacha/hsplit-last-buffer) ;;'split-window-right)
+         ("C-x C-2" . sacha/vsplit-last-buffer)
+         ("C-x C-3" . sacha/hsplit-last-buffer)
          ("C-x C-0" . delete-window)
          ("C-x C-k" . kill-this-buffer)
          ("C-x C-S-k" . kill-other-buffers)
@@ -1094,8 +1110,10 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
         (company-quickhelp-mode 1)
         (setq company-quickhelp-delay 0.1)))
     (global-company-mode)
-    (setq company-idle-delay 0)
+    (setq company-idle-delay 0.5)
     (setq company-show-numbers t)
+    (setq company-tooltip-limit 10)
+    (setq company-tooltip-flip-when-above t)
     (setq company-dabbrev-downcase nil)
     (setq company-dabbrev-ignore-buffers "\\`[ ]'")
     (setq company-dabbrev-code-ignore-case t)
@@ -1187,7 +1205,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;  Dired+ to enhance dired and commander.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package dired+
-  :ensure t 
+  :ensure t
+  :commands dired
   :config
   (progn
     (toggle-diredp-find-file-reuse-dir 1)
@@ -1237,9 +1256,11 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package linum-relative
   :ensure t
+  :commands linum-mode
   :config
-  (setq linum-format 'linum-relative)
-  (setq linum-relative-current-symbol ""))
+  (progn
+    (setq linum-format 'linum-relative)
+    (setq linum-relative-current-symbol "")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Nice commenting/uncommenting.
@@ -1256,6 +1277,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package mediawiki
   :ensure t
+  :commands mediawiki-mode
   :config
   (eval-after-load 'mediawiki
     (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer)))
@@ -1265,6 +1287,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package stripe-buffer
   :ensure t
+  :defer t
   :config
   (progn
     (add-hook 'dired-mode-hook 'stripe-listify-buffer)
@@ -1278,38 +1301,42 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;  http://pages.sachachua.com/.emacs.d/Sacha.html
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package ace-jump-mode
-  :ensure t)
-
-(use-package key-chord
   :ensure t
-  :init
-  (progn
-    (setq key-chord-one-key-delay 0.16)
-    (key-chord-mode 1)
-    (key-chord-define-global "jj" 'ace-jump-word-mode)
-    (key-chord-define-global "jl" 'ace-jump-line-mode)
-    (key-chord-define-global "xb" 'helm-mini)
-    (key-chord-define-global "xo" 'other-window)
-    (key-chord-define-global "xk" 'kill-this-buffer)
-    (key-chord-define-global "xs" 'save-current-buffer)))
+  :commands ace-jump-mode)
+
+;; (use-package key-chord
+;;   :ensure t
+;;   :init
+;;   (progn
+;;     (setq key-chord-one-key-delay 0.16)
+;;     (key-chord-mode 1)
+;;     (key-chord-define-global "jj" 'ace-jump-word-mode)
+;;     (key-chord-define-global "jl" 'ace-jump-line-mode)
+;;     (key-chord-define-global "xb" 'helm-mini)
+;;     (key-chord-define-global "xo" 'other-window)
+;;     (key-chord-define-global "xk" 'kill-this-buffer)
+;;     (key-chord-define-global "xs" 'save-current-buffer)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  JSON formatting.  Not used so much but I know it will be helpful.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package json-reformat
-  :ensure t)
+  :ensure t
+  :commands (json-pretty-print json-pretty-print-buffer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Add Git diff information to the gutter to easily see what has changed.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package git-gutter+
   :ensure t
+  :commands git-gutter+-mode
   :diminish git-gutter+-mode
   :config
-  (setq git-gutter+-modified-sign "  ") ;; two space
-  (setq git-gutter+-added-sign "++")    ;; multiple character is OK
-  (setq git-gutter+-deleted-sign "--")
-  (set-face-background 'git-gutter+-modified "#073642"))
+  (progn
+    (setq git-gutter+-modified-sign "  ") ;; two space
+    (setq git-gutter+-added-sign "++")    ;; multiple character is OK
+    (setq git-gutter+-deleted-sign "--")
+    (set-face-background 'git-gutter+-modified "#073642")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Use hydra to define a toggle map and an application launch map.
@@ -1373,13 +1400,16 @@ _X_ Xquery region
   :init
   (progn
     (recentf-mode)
-    (setq recentf-max-saved-items 100)))
+    (setq recentf-max-saved-items 25)
+    (setq recentf-auto-cleanup 'never)
+    (add-to-list 'recentf-exclude "COMMIT_EDITMSG\\'")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Add numbers to EWW.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package eww-lnum
   :ensure t
+  :commands eww
   :init
   (eval-after-load "eww"
     '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
@@ -1389,7 +1419,8 @@ _X_ Xquery region
 ;;  Stack exchange package.  Nice to be able to read SX in emacs.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package sx
-  :ensure t)
+  :ensure t
+  :commands (sx-tab-feature sx-tab-frontpage sx-tab-hot sx-tab-newest sx-tab))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Package for making commands work differently based on if a region is
@@ -1403,16 +1434,20 @@ _X_ Xquery region
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package fold-this
   :ensure t
-  :init
-  (progn
-    (global-set-key (kbd "C-c C-f") 'fold-this-all)
-    (global-set-key (kbd "C-c C-F") 'fold-this)
-    (global-set-key (kbd "C-c M-f") 'fold-this-unfold-all)))
+  :bind (("C-c C-f" . fold-this-all)
+         ("C-c C-F" . fold-this)
+         ("C-c M-f" . fold-this-unfold-all)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Ring the bell if one character movement is used too many times in a row.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package annoying-arrows-mode
+(use-package anzu
   :ensure t
-  :init
-  (annoying-arrows-mode))
+  :diminish anzu-mode
+  :config
+  (progn
+    (global-anzu-mode) 
+    (global-set-key (kbd "M-%") 'anzu-query-replace) 
+    (global-set-key (kbd "C-M-%") 'anzu-query-replace-regexp)))
+
+(use-package re-builder
+  :ensure t
+  :config
+  (setq reb-re-syntax 'string))
