@@ -35,6 +35,11 @@
 (put 'erase-buffer 'disabled nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Make apropo do more.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq apropos-do-all t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Show the function the cursor is currently in in the status line.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (which-function-mode 1)
@@ -242,10 +247,10 @@
 (global-set-key (kbd "<M-f5>") 'ry/sql-connect)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Paragraph movement keys.
+;;  Transpose lines.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "M-A") 'backward-paragraph)
-(global-set-key (kbd "M-A") 'forward-paragraph)
+(global-set-key (kbd "M-<up>") 'move-line-up)
+(global-set-key (kbd "M-<down>") 'move-line-down)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  I dont use tags so this was poached from those keys.
@@ -284,6 +289,29 @@
 
 (bind-keys :map package-menu-mode-map
            ("q" . kill-this-buffer))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Transpose functions from Harry Schwartz.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun move-line-up ()
+  "Transpose a line up."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2))
+
+(defun move-line-down ()
+  "Transpose a line down."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line 1))
+
+(defun ry/replace-character-at-point (new-char)
+  "Replace the character at point in the same way that the command works in vim"
+  (interactive "c")
+  (delete-char 1)
+  (insert new-char)
+  (backward-char))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
@@ -1063,7 +1091,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (define-key god-local-mode-map (kbd "z") 'repeat)
     (define-key god-local-mode-map (kbd "i") 'god-local-mode)
     (define-key god-local-mode-map (kbd "v") 'scroll-up-command)
-
+    (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
+    
     (add-to-list 'god-exempt-major-modes 'dired-mode)
     (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
     (add-to-list 'god-exempt-major-modes 'org-capture-mode)
@@ -1347,8 +1376,13 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package hydra
   :ensure t
   :config
-  (defhydra hydra-toggle (:color pink)
-  "
+  (progn
+    ;;  Change the blue face color as it is hard to see in Solarized dark.
+    (set-face-attribute 'hydra-face-blue nil
+                        :foreground "#4169e1")
+    
+    (defhydra hydra-toggle (:color pink)
+      "
 _a_ abbrev-mode:         %`abbrev-mode
 _b_ menu-bar-mode:       %`menu-bar-mode
 _d_ debug-on-error:      %`debug-on-error
@@ -1357,23 +1391,23 @@ _h_ global-hl-line-mode: %`global-hl-line-mode
 _s_ smartparens-mode:    %`smartparens-mode
 
 "
-  ("a" abbrev-mode nil)
-  ("b" menu-bar-mode)
-  ("d" toggle-debug-on-error nil)
-  ("f" flyspell-mode nil)
-  ("h" global-hl-line-mode nil)
-  ("s" smartparens-mode nil)
-  ;; ("w" whitespace-mode nil)
-  ("q" nil "cancel"))
+      ("a" abbrev-mode nil)
+      ("b" menu-bar-mode)
+      ("d" toggle-debug-on-error nil)
+      ("f" flyspell-mode nil)
+      ("h" global-hl-line-mode nil)
+      ("s" smartparens-mode nil)
+      ;; ("w" whitespace-mode nil)
+      ("q" nil "cancel"))
 
-  (defhydra hydra-launch (:color blue)
-    "launch"
-    ("i" ry/launch-internet-explorer "iexplore" :color blue)
-    ("w" ry/launch-windows-explorer "wexplore" :color blue)
-    ("q" nil "cancel" :color red))
+    (defhydra hydra-launch (:color blue)
+      "launch"
+      ("i" ry/launch-internet-explorer "iexplore" :color blue)
+      ("w" ry/launch-windows-explorer "wexplore" :color blue)
+      ("q" nil "cancel" :color red))
 
-  (defhydra hydra-xml (:color blue)
-    "
+    (defhydra hydra-xml (:color blue)
+      "
 _f_ Format
 _l_ Linearlize
 _w_ Where
@@ -1381,16 +1415,16 @@ _x_ Xquery buffer
 _X_ Xquery region
 
 "
-    ("f" ry/xml-format nil)
-    ("l" ry/xml-linearlize nil)
-    ("w" ry/xml-where nil)
-    ("x" ry/xquery nil)
-    ("X" ry/xquery-with-region nil)
-    ("q" nil "cancel" :color red))
+      ("f" ry/xml-format nil)
+      ("l" ry/xml-linearlize nil)
+      ("w" ry/xml-where nil)
+      ("x" ry/xquery nil)
+      ("X" ry/xquery-with-region nil)
+      ("q" nil "cancel" :color red))
 
-  (global-set-key (kbd "C-c t") 'hydra-toggle/body)
-  (global-set-key (kbd "C-c l") 'hydra-launch/body)
-  (global-set-key (kbd "C-c x") 'hydra-xml/body))
+    (global-set-key (kbd "C-c t") 'hydra-toggle/body)
+    (global-set-key (kbd "C-c l") 'hydra-launch/body)
+    (global-set-key (kbd "C-c x") 'hydra-xml/body)))
   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Save recent file history.
@@ -1438,6 +1472,9 @@ _X_ Xquery region
          ("C-c C-F" . fold-this)
          ("C-c M-f" . fold-this-unfold-all)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Nice visual regex replace package.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package anzu
   :ensure t
   :diminish anzu-mode
@@ -1447,7 +1484,31 @@ _X_ Xquery region
     (global-set-key (kbd "M-%") 'anzu-query-replace) 
     (global-set-key (kbd "C-M-%") 'anzu-query-replace-regexp)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Visual feedback while creating regular expressions.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package re-builder
   :ensure t
   :config
   (setq reb-re-syntax 'string))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Tree file viewer.  Not sure if this will stay.  I usually use them for a
+;;  short time and then drop back to dired.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package neotree
+  :ensure t
+  :config
+  (setq neo-theme 'nerd))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Call the change--inner and then the starting character to modify the inside
+;;  portion of the group.  Not sure if this will get use.  One of those things
+;;  that could save a lot of time but there is a need to change a deep habit.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package change-inner
+  :ensure t
+  :config
+  (progn
+    (global-set-key (kbd "M-i") 'change-inner)
+    (global-set-key (kbd "M-o") 'change-outer)))
