@@ -1033,21 +1033,12 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Load sunrise commander and set F11 to open it.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (use-package sunrise-commander
-;;   :ensure t 
-;;   :bind ("<f11>" . sunrise)
-;;   :config
-;;   (progn
-;;     (sr-set-windows-default-ratio 'sr-windows-default-ratio 80)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Add org mode stuff to the load path.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package org
   :ensure t 
-  :idle (load "~/.emacs.d/custom-org-mode.el"))
+  :config
+  (load "~/.emacs.d/custom-org-mode.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  undo-tree config
@@ -1067,7 +1058,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package god-mode
   :ensure t
-  :diminish god-mode
+  ;;:diminish god-mode                   
   :bind (("<escape>" . god-local-mode)
          ("C-x C-1" . delete-other-windows)
          ("C-x C-2" . sacha/vsplit-last-buffer)
@@ -1332,20 +1323,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 (use-package ace-jump-mode
   :ensure t
   :commands ace-jump-mode)
-
-;; (use-package key-chord
-;;   :ensure t
-;;   :init
-;;   (progn
-;;     (setq key-chord-one-key-delay 0.16)
-;;     (key-chord-mode 1)
-;;     (key-chord-define-global "jj" 'ace-jump-word-mode)
-;;     (key-chord-define-global "jl" 'ace-jump-line-mode)
-;;     (key-chord-define-global "xb" 'helm-mini)
-;;     (key-chord-define-global "xo" 'other-window)
-;;     (key-chord-define-global "xk" 'kill-this-buffer)
-;;     (key-chord-define-global "xs" 'save-current-buffer)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  JSON formatting.  Not used so much but I know it will be helpful.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
