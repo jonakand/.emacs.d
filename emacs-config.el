@@ -1,3 +1,6 @@
+;;; emacs-config.el --- Emacs configuration
+;;; Commentary:
+;;; Code:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Setup the mode-line with a condensed amount of information.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,11 +43,31 @@
 (setq apropos-do-all t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Only GC every 20 MB
+;;  From: https://github.com/CQQL/dotfiles/blob/master/src/.emacs.d/lisp/globals.el
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq gc-cons-threshold 20000000)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Modify how scrolling happens.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq scroll-margin 5
+      scroll-preserve-screen-position 1)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Change the way recenter behaves so that TOP is the first one instead of
+;;  middle.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq recenter-positions '(top middle bottom))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Show the function the cursor is currently in in the status line.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (which-function-mode 1)
 
-;; delete the selection with a keypress 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; delete the selection with a key press.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (delete-selection-mode t) 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -249,8 +272,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Transpose lines.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "M-<up>") 'move-line-up)
-(global-set-key (kbd "M-<down>") 'move-line-down)
+;; (global-set-key (kbd "M-<up>") 'move-line-up)
+;; (global-set-key (kbd "M-<down>") 'move-line-down)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  I dont use tags so this was poached from those keys.
@@ -303,18 +326,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Transpose functions from Harry Schwartz.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun move-line-up ()
-  "Transpose a line up."
-  (interactive)
-  (transpose-lines 1)
-  (forward-line -2))
+;; (defun move-line-up ()
+;;   "Transpose a line up."
+;;   (interactive)
+;;   (transpose-lines 1)
+;;   (forward-line -2))
 
-(defun move-line-down ()
-  "Transpose a line down."
-  (interactive)
-  (forward-line 1)
-  (transpose-lines 1)
-  (forward-line 1))
+;; (defun move-line-down ()
+;;   "Transpose a line down."
+;;   (interactive)
+;;   (forward-line 1)
+;;   (transpose-lines 1)
+;;   (forward-line 1))
 
 (defun ry/replace-character-at-point (new-char)
   "Replace the character at point in the same way that the command works in vim"
@@ -390,10 +413,10 @@
   (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";"))
   
   (other-window 1)
-  (switch-to-buffer (concat "*DB: " (upcase database) "*"))
+  (switch-to-buffer (concat "*DB:" (upcase database) "*"))
   (sql-mode)
   (sql-set-product "db2")
-  (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
+  (setq sql-buffer (concat "*SQL:" (upcase database) "*"))
   (auto-complete-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1038,6 +1061,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :diminish eldoc-mode
   :init
   (progn
+    (setq eldoc-idle-delay 0.2)
     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
     (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
     (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
@@ -1140,11 +1164,13 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
         (company-quickhelp-mode 1)
         (setq company-quickhelp-delay 0.1)))
     (global-company-mode)
-    (setq company-idle-delay 0.5)
+    (setq company-idle-delay 0.1)
     (setq company-show-numbers t)
+    (setq company-selection-wrap-around t)
     (setq company-tooltip-limit 10)
     (setq company-tooltip-flip-when-above t)
     (setq company-dabbrev-downcase nil)
+    (setq company-dabbrev-ignore-invisible t)
     (setq company-dabbrev-ignore-buffers "\\`[ ]'")
     (setq company-dabbrev-code-ignore-case t)
     (setq company-dabbrev-code-other-buffers 'all)
@@ -1223,6 +1249,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :init
   (progn
     (smartparens-global-mode t)
+    (smartparens-strict-mode t)
     (show-smartparens-global-mode t)
     (use-package smartparens-config)
 
@@ -1500,6 +1527,9 @@ _X_ Xquery region
     (global-set-key (kbd "M-i") 'change-inner)
     (global-set-key (kbd "M-o") 'change-outer)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Programmers like to know where the 80th column is.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package fill-column-indicator
   :ensure t
   :config
@@ -1524,18 +1554,160 @@ _X_ Xquery region
         (turn-on-fci-mode)))
 
     (setq fci-rule-column 80)
-    (fci-mode 1)))
+    (fci-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Searching package similar to helm swoop.  I liked helm swoop but it was  slow
+;;  Searching package similar to helm swoop.  I liked helm swoop but it was slow
 ;;  for log files.  We will see if this is any faster.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package swiper
   :ensure t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Speedbar in the current frame.  Might be useful to list the current methods
+;;  in a file when working on Java.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package sr-speedbar
   :ensure t
   :config
   (progn
-    (setq sr-speedbar-skip-other-window-p nil) 
+    (setq sr-speedbar-skip-other-window-p nil)
     (setq speedbar-use-images nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Fix annoying buffer popups.  
+(use-package popwin
+  :ensure t
+  :config
+  (popwin-mode))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  On-the-fly syntax checking.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package flycheck
+  :ensure t
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode))
+
+(use-package lisp-mode
+  :mode ("Cask\\'" . emacs-lisp-mode)
+  :config
+  (progn
+    (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+    (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Highlight the symbol at point.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package highlight-symbol
+  :ensure t
+  :config
+  (progn
+    (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+    (setf highlight-symbol-idle-delay 0)))
+
+(use-package hippie-exp
+  :ensure t
+  :config (setf hippie-expand-try-functions-list
+                '(try-expand-dabbrev-visible
+                  try-expand-dabbrev
+                  try-expand-dabbrev-all-buffers
+                  try-expand-line
+                  try-complete-lisp-symbol)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Help to discover keybindings for the current mode.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package discover-my-major
+  :ensure t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Text manipulation helpers.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package move-text
+  :ensure t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Perform setup for eclim.  The setup for Windows is problematic so there are
+;;  a few documented steps below.
+;;  It would be nice in the future to have this be more generic, but I'm simply
+;;  happy that it is working.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package emacs-eclim
+  :ensure t
+  :config
+  (progn
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Windows setup so that eclim knows where the bat file is.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (custom-set-variables
+     '(eclim-eclipse-dirs '("C:/IBM/SDP"))
+     '(eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")
+     '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat"))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Toggle debugging.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (eclim-toggle-print-debug-messages)
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Again, a windows modification so that the eclim bat can be found.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun eclim-executable-find ()
+      (let (file)
+        (dolist (eclipse-root eclim-eclipse-dirs)
+          (and (file-exists-p
+                (setq file (expand-file-name "plugins" eclipse-root)))
+               (setq file (car (last (directory-files file t "^org.eclim_"))))
+               (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
+               (return (expand-file-name "eclim.bat" eclipse-root))))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Same as above.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun company-eclim-executable-find ()
+      (let (file)
+        (cl-dolist (eclipse-root '("c:/IBM/SDP"))
+          (and (file-exists-p (setq file (expand-file-name "plugins" eclipse-root)))
+               (setq file (car (last (directory-files file t "^org.eclim_"))))
+               (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
+               (cl-return (expand-file-name "eclim.bat" eclipse-root))))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  This is not a great thing to do but was the only way that I could find
+    ;;  to get the shell commands for eclim to work.  For some reason running
+    ;;  the commands from a different drive didn't work eventhough the full
+    ;;  path to the eclim.bat was specified.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun shell-command-to-string (command)
+      "Execute shell command COMMAND and return its output as a string."
+      (setq default-directory "C:/")
+      (with-output-to-string
+        (with-current-buffer
+          standard-output
+          (process-file shell-file-name nil t nil shell-command-switch command))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Again, I don't like to do this but there is an errant backslash (\) in
+    ;;  the file path.  This will simply do a regex replace on the backslash.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun eclim--call-process (&rest args)
+      "Calls eclim with the supplied arguments. Consider using
+`eclim/execute-command' instead, as it has argument expansion,
+error checking, and some other niceties.."
+      (let ((cmd (eclim--make-command args)))
+        (setq cmd2 (replace-regexp-in-string "\\\\" "" (format "%s" cmd)))
+        (when eclim-print-debug-messages (message "Executing: %s" cmd2))
+        (eclim--parse-result (shell-command-to-string cmd))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Use the company backend that comes with eclim instead.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (require 'company-emacs-eclim)
+    (company-emacs-eclim-setup)
+
+    ;; Clobber this keybinding for eclim use.
+    (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)))
+
+(provide 'emacs-config)
+;;; emacs-config.el ends here
