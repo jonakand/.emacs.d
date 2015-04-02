@@ -51,8 +51,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Modify how scrolling happens.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq scroll-margin 5
-      scroll-preserve-screen-position 1)
+(setq scroll-margin 5)
+(setq scroll-preserve-screen-position 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Change the way recenter behaves so that TOP is the first one instead of
@@ -197,8 +197,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Use four spaces inplace of tab characters.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq-default indent-tabs-mode nil
-              tab-width 4)
+(setq-default indent-tabs-mode nil)
+(setq tab-width 4)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Auto revert the buffer if the underlying file has changed.
@@ -270,12 +270,6 @@
 (global-set-key (kbd "<M-f5>") 'ry/sql-connect)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Transpose lines.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (global-set-key (kbd "M-<up>") 'move-line-up)
-;; (global-set-key (kbd "M-<down>") 'move-line-down)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  I dont use tags so this was poached from those keys.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "M-.") 'find-function-at-point)
@@ -317,27 +311,11 @@
 ;;  Small function to remove all ^M characters from a file.  Taken from:
 ;;  http://www.archivum.info/comp.emacs/2007-06/00348/Re-Ignore-%5EM-in-mixed-%28LF-and-CR+LF%29-line-ended-textfiles.html
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun remove-dos-eol ()
+(defun hide-dos-eol ()
   "Do not show ^M in files containing mixed UNIX and DOS line endings."
   (interactive)
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M []))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Transpose functions from Harry Schwartz.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun move-line-up ()
-;;   "Transpose a line up."
-;;   (interactive)
-;;   (transpose-lines 1)
-;;   (forward-line -2))
-
-;; (defun move-line-down ()
-;;   "Transpose a line down."
-;;   (interactive)
-;;   (forward-line 1)
-;;   (transpose-lines 1)
-;;   (forward-line 1))
 
 (defun ry/replace-character-at-point (new-char)
   "Replace the character at point in the same way that the command works in vim"
@@ -381,21 +359,6 @@
 ;;  the SQLi hook is not being called due to the way the sql-buffer is being set
 ;;  but for now it works.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defun ry/sql-open-database ()
-;;   "Open a SQLI process and name the SQL statement window with the name provided."
-;;   (interactive)
-;;   (switch-to-buffer "*DB_HELPER*")
-;;   (god-local-mode)
-;;   (insert-file-contents "H:/emacs/Config/DB_INFO.TXT")
-;;   (setq sql-set-product "db2")
-;;   (sql-db2)
-;;   (other-window 1)
-;;   (switch-to-buffer "*DATABASE*")
-;;   (sql-mode)
-;;   (sql-set-product "db2")
-;;   (setq sql-buffer "*SQL*")
-;;   (auto-complete-mode))
-
 (defun ry/sql-open-database (database username password)
   "Open a SQLI process and name the SQL statement window with the name provided."
   (interactive (list
@@ -416,7 +379,7 @@
   (switch-to-buffer (concat "*DB:" (upcase database) "*"))
   (sql-mode)
   (sql-set-product "db2")
-  (setq sql-buffer (concat "*SQL:" (upcase database) "*"))
+  (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
   (auto-complete-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -638,28 +601,6 @@ Don't mess with special buffers."
   "Kill the current buffer without prompting."  
   (interactive) 
   (kill-buffer (current-buffer)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Decode a HEX string/region to ASCII characters.
-;;  http://stackoverflow.com/questions/12003231/how-do-i-convert-a-string-of-hex-into-ascii-using-elisp
-;;
-;;  TODO : This function is questionable.  Need to double check.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun decode-hex-string (hex-string)
-  (apply #'concat 
-         (loop for i from 0 to (- (/ (length hex-string) 2) 1) 
-               for hex-byte = (substring hex-string (* 2 i) (* 2 (+ i 1)))
-               collect (format "%c" (string-to-number hex-byte 16)))))
-
-(defun hex-decode-region (start end) 
-  "Decode a hex string in the selected region."
-  (interactive "r")
-  (save-excursion
-    (let* ((decoded-text 
-            (decode-hex-string 
-             (buffer-substring start end))))
-      (delete-region start end)
-      (insert decoded-text))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  This is again from the emacs wiki.  This will cause a popup to be used
@@ -1016,6 +957,11 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
           helm-scroll-amount                    8
           helm-ff-file-name-history-use-recentf t)
 
+    (setq helm-mini-default-sources '(helm-source-buffers-list
+                                      helm-source-recentf
+                                      helm-source-bookmarks
+                                      helm-source-buffer-not-found))
+    
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Make helm always create a new window and always split the current window
     ;;  vertially.
@@ -1141,13 +1087,13 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :diminish golden-ratio-mode
   :config
   (progn 
-    (golden-ratio-mode)
+    (golden-ratio-mode)))
 
-    (defun pl/helm-alive-p ()
-      (if (boundp 'helm-alive-p)
-          (symbol-value 'helm-alive-p)))
+    ;; (defun pl/helm-alive-p ()
+    ;;   (if (boundp 'helm-alive-p)
+    ;;       (symbol-value 'helm-alive-p)))
 
-    (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)))
+    ;; (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Company mode
@@ -1164,7 +1110,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
         (company-quickhelp-mode 1)
         (setq company-quickhelp-delay 0.1)))
     (global-company-mode)
-    (setq company-idle-delay 0.1)
+    (setq company-idle-delay 0.5)
     (setq company-show-numbers t)
     (setq company-selection-wrap-around t)
     (setq company-tooltip-limit 10)
@@ -1507,15 +1453,6 @@ _X_ Xquery region
   (setq reb-re-syntax 'string))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Tree file viewer.  Not sure if this will stay.  I usually use them for a
-;;  short time and then drop back to dired.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package neotree
-  :ensure t
-  :config
-  (setq neo-theme 'nerd))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Call the change--inner and then the starting character to modify the inside
 ;;  portion of the group.  Not sure if this will get use.  One of those things
 ;;  that could save a lot of time but there is a need to change a deep habit.
@@ -1572,7 +1509,8 @@ _X_ Xquery region
   :config
   (progn
     (setq sr-speedbar-skip-other-window-p nil)
-    (setq speedbar-use-images nil)))
+    (setq speedbar-use-images nil)
+    (setq sr-speedbar-right-side t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Fix annoying buffer popups.  
@@ -1606,14 +1544,14 @@ _X_ Xquery region
     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
     (setf highlight-symbol-idle-delay 0)))
 
-(use-package hippie-exp
-  :ensure t
-  :config (setf hippie-expand-try-functions-list
-                '(try-expand-dabbrev-visible
-                  try-expand-dabbrev
-                  try-expand-dabbrev-all-buffers
-                  try-expand-line
-                  try-complete-lisp-symbol)))
+;; (use-package hippie-exp
+;;   :ensure t
+;;   :config (setf hippie-expand-try-functions-list
+;;                 '(try-expand-dabbrev-visible
+;;                   try-expand-dabbrev
+;;                   try-expand-dabbrev-all-buffers
+;;                   try-expand-line
+;;                   try-complete-lisp-symbol)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Help to discover keybindings for the current mode.
@@ -1637,6 +1575,12 @@ _X_ Xquery region
   :ensure t
   :config
   (progn
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Use the company backend that comes with eclim instead.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (require 'company-emacs-eclim)
+    (company-emacs-eclim-setup)
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Windows setup so that eclim knows where the bat file is.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1700,14 +1644,12 @@ error checking, and some other niceties.."
         (when eclim-print-debug-messages (message "Executing: %s" cmd2))
         (eclim--parse-result (shell-command-to-string cmd))))
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Use the company backend that comes with eclim instead.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (require 'company-emacs-eclim)
-    (company-emacs-eclim-setup)
-
     ;; Clobber this keybinding for eclim use.
-    (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)))
+    (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
+    (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
+
+(use-package smartscan
+  :ensure t)
 
 (provide 'emacs-config)
 ;;; emacs-config.el ends here
