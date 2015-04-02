@@ -1089,12 +1089,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (progn 
     (golden-ratio-mode)))
 
-    ;; (defun pl/helm-alive-p ()
-    ;;   (if (boundp 'helm-alive-p)
-    ;;       (symbol-value 'helm-alive-p)))
-
-    ;; (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Company mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1543,15 +1537,6 @@ _X_ Xquery region
   (progn
     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
     (setf highlight-symbol-idle-delay 0)))
-
-;; (use-package hippie-exp
-;;   :ensure t
-;;   :config (setf hippie-expand-try-functions-list
-;;                 '(try-expand-dabbrev-visible
-;;                   try-expand-dabbrev
-;;                   try-expand-dabbrev-all-buffers
-;;                   try-expand-line
-;;                   try-complete-lisp-symbol)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Help to discover keybindings for the current mode.
