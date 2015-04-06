@@ -40,6 +40,7 @@
   (package-install 'use-package))
 
 (require 'use-package)
+(setq use-package-verbose t)
 
 (add-hook 'after-init-hook (lambda () (load "~/.emacs.d/emacs-config.el")))
 (custom-set-variables
