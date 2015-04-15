@@ -876,7 +876,27 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (setq nxml-child-indent 2)
     (setq nxml-attribute-indent 4)
     (setq nxml-auto-insert-xml-declaration-flag nil)
-    (setq nxml-slash-auto-complete-flag t)))
+    (setq nxml-slash-auto-complete-flag t)
+    
+    (require 'sgml-mode)
+    (require 'nxml-mode)
+
+    (use-package hideshow
+      :ensure t
+      :config
+      (progn
+        (add-to-list 'hs-special-modes-alist
+                     '(nxml-mode
+                       "<!--\\|<[^/>]*[^/]>"
+                       "-->\\|</[^/>]*[^/]>"
+                       "<!--"
+                       sgml-skip-tag-forward
+                       nil))
+
+        (add-hook 'nxml-mode-hook 'hs-minor-mode))
+
+      ;; optional key bindings, easier than hs defaults
+      (define-key nxml-mode-map (kbd "C-c h") 'hs-toggle-hiding))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Web-mode initialization stuff.
@@ -913,6 +933,9 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
          ("C-x C-b" . helm-mini)
          ("<f7>" . helm-bookmarks)
          ("<f8>" . bookmark-set))
+         ;;(:map helm-map ("<tab>" . helm-execute-persistent-action)))
+         ;; :map helm-map ("C-i" . helm-execute-persistent-action)
+         ;; :map helm-map ("C-z" . helm-select-action))
   :config
   (progn
     (require 'helm-config)
@@ -926,9 +949,8 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
           helm-buffers-fuzzy-matching           t
           helm-ff-search-library-in-sexp        t
           helm-scroll-amount                    8
-          helm-ff-file-name-history-use-recentf t)
-
-    (setq helm-mini-default-sources '(helm-source-buffers-list
+          helm-ff-file-name-history-use-recentf t
+          helm-mini-default-sources '(helm-source-buffers-list
                                       helm-source-recentf
                                       helm-source-bookmarks
                                       helm-source-buffer-not-found))
@@ -1160,7 +1182,7 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :init
   (progn
     (smartparens-global-mode t)
-    (smartparens-strict-mode t)
+    ;; (smartparens-strict-mode t)
     (show-smartparens-global-mode t)
     (use-package smartparens-config)
 
@@ -1471,6 +1493,7 @@ _X_ Xquery region
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package sr-speedbar
   :ensure t
+  :disabled t
   :config
   (progn
     (setq sr-speedbar-skip-other-window-p nil)
@@ -1478,7 +1501,8 @@ _X_ Xquery region
     (setq sr-speedbar-right-side t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Fix annoying buffer popups.  
+;;  Fix annoying buffer popups.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package popwin
   :ensure t
   :config
@@ -1489,6 +1513,7 @@ _X_ Xquery region
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package flycheck
   :ensure t
+  :disable t
   :config
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
@@ -1531,6 +1556,8 @@ _X_ Xquery region
   :ensure t
   :config
   (progn
+    (require 'eclim-problems)
+    
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Use the company backend that comes with eclim instead.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1604,8 +1631,21 @@ error checking, and some other niceties.."
     (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
     (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Useful for jumping between symbols.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartscan
   :ensure t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Midnight mode.
+;;  This will eventually be used to close any DB connections that I forget to
+;;  close during the day.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package midnight
+  :ensure t
+  :config
+  (midnight-delay-set 'midnight-delay "7:00am"))
 
 (provide 'emacs-config)
 ;;; emacs-config.el ends here
