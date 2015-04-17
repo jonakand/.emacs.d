@@ -1355,18 +1355,18 @@ _s_ smartparens-mode:    %`smartparens-mode
 
     (defhydra hydra-xml (:color blue)
       "
-_f_ Format
-_l_ Linearlize
-_w_ Where
-_x_ Xquery buffer
-_X_ Xquery region
+_F_ormat
+_L_inearlize
+_W_here
+_X_query buffer
+Xquery _r_egion
 
 "
-      ("f" ry/xml-format nil)
-      ("l" ry/xml-linearlize nil)
-      ("w" ry/xml-where nil)
-      ("x" ry/xquery nil)
-      ("X" ry/xquery-with-region nil)
+      ("F" ry/xml-format nil)
+      ("L" ry/xml-linearlize nil)
+      ("W" ry/xml-where nil)
+      ("X" ry/xquery nil)
+      ("r" ry/xquery-with-region nil)
       ("q" nil "cancel" :color red))
 
     (global-set-key (kbd "C-c t") 'hydra-toggle/body)
