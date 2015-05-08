@@ -1,33 +1,18 @@
-;;; emacs-config.el --- Emacs configuration
-;;; Commentary:
-;;; Code:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Setup the mode-line with a condensed amount of information.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (setq-default mode-line-format
-             '("%e" ; print error message about full memory.
+             '("%e"
                mode-line-front-space
-               ; mode-line-mule-info
-               ; mode-line-client
-               ; mode-line-modified
-               ; mode-line-remote
-               ; mode-line-frame-identification
-               "%b" ;;mode-line-buffer-identification
+               "%b"
                "   "
                mode-line-position
                (vc-mode vc-mode)
                "  "
                mode-line-modes
                "   "
-               ; mode-line-misc-info
                display-time-string
                "   "
-               ;battery-mode-line-string
                mode-line-end-spaces))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Enable some functions.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
@@ -37,85 +22,37 @@
 
 (put 'erase-buffer 'disabled nil)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Make apropo do more.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq apropos-do-all t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Only GC every 20 MB
-;;  From: https://github.com/CQQL/dotfiles/blob/master/src/.emacs.d/lisp/globals.el
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq gc-cons-threshold 20000000)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Modify how scrolling happens.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq scroll-margin 5)
 (setq scroll-preserve-screen-position 1)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Change the way recenter behaves so that TOP is the first one instead of
-;;  middle.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq recenter-positions '(top middle bottom))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Show the function the cursor is currently in in the status line.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (which-function-mode 1)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; delete the selection with a key press.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(delete-selection-mode t) 
+(delete-selection-mode t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Remove message when killing a buffer in server mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Disable file dialog
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq use-file-dialog nil)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; "y or n" instead of "yes or no"
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (fset 'yes-or-no-p 'y-or-n-p)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Highlight regions and add special behaviors to regions.
-;; "C-h d transient" for more info
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq transient-mark-mode t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Make it so that slections work like in other editors.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (delete-selection-mode 1)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; show-paren-mode: subtle highlighting of matching parens (global-mode)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (show-paren-mode +1)
 (setq show-paren-style 'parenthesis)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Turn off cursor blink
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(blink-cursor-mode 0) 
+(blink-cursor-mode 0)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Set the font to something nice
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (if (eq system-type 'windows-nt)
     (set-face-attribute 'default nil :font "Consolas-11:antialias=subpixel"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Set the exec-path so Emacs can find programs not on the windows path.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (if (eq system-type 'windows-nt)
     (setq exec-path
           (append exec-path
@@ -126,97 +63,42 @@
                     "~/Git/bin"
                     "C:/IBM/SDP"))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Set a couple environment values so that ispell can automatically load the
-;; correct dictionary.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(if (eq system-type 'windows-nt)
-    (progn
-      (setenv "DICTIONARY" "en_US")
-      (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Graphviz needs an environment value set so it can locate dot.exe as PATH is
-;; not used.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (if (eq system-type 'windows-nt)
     (setenv "GRAPHVIZ_DOT" "~/emacs/Graphviz/bin/dot.exe"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  So gnutls can find trustfiles on windows simply setting the path for the
-;;  trust files doesn't seem to work.  This needs to be the full path or it will
-;;  not work.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (if (eq system-type 'windows-nt)
     (eval-after-load "gnutls" 
       '(progn 
          (setq gnutls-trustfiles '("h:/emacs/cacert.pem")))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  DB2 related setup
-;;  Taken from http://www.ibm.com/developerworks/data/library/techarticle/0206mathew/0206mathew.html
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(if (eq system-type 'windows-nt)
-    (setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe"))
+;; (set-default 'truncate-lines t)
+(global-visual-line-mode)
+(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;;  -t - ';' (semicolon) is treated as the command line terminator. 
-;;  +ec - Print SQLCODE.
-;;  +m - Print number of rows affected by statement.
-;;  Taken from http://www.ibm.com/developerworks/data/library/techarticle/0206mathew/0206mathew.html
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(if (eq system-type 'windows-nt)
-    (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Turn off line wrapping
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(set-default 'truncate-lines t)
-;; (global-visual-line-mode)
-;; (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Increase the threshold size to 100MB.  Need this as log files and test files
-;;  tend to be large.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (set-default 'large-file-warning-threshold 1000000000)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Save temp files in c:/temp
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq backup-directory-alist
       `((".*" . "~/.emacs.d/BACKUP")))
 (setq auto-save-file-name-transforms
       `((".*" , "~/.emacs.d/BACKUP" t)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Indicate empty lines.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq indicate-empty-lines t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Use four spaces inplace of tab characters.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq-default indent-tabs-mode nil)
 (setq tab-width 4)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Auto revert the buffer if the underlying file has changed.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-auto-revert-mode t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Setup Hunspell
-;; rw-hunspell is no longer used as Emacs 24.4 made Hunspell integration very
-;; easy.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(bind-key "C-x p" 'pop-to-mark-command)
+(setq set-mark-command-repeat-pop t)
+
 (setq ispell-personal-dictionary "~/emacs/Config/en_US_personal")
 (setq ispell-silently-savep t)
 (setq ispell-quietly t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Add hook to Java and emacs lisp mode to spellcheck comments.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (progn
+      (setenv "DICTIONARY" "en_US")
+      (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell")))
+
 (add-hook 'java-mode-hook
           (lambda ()
             (flyspell-prog-mode)))
@@ -225,30 +107,86 @@
           (lambda ()
             (flyspell-prog-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  This suggestion came from the emacse wiki as a way to speedup flyspell.
-;;  http://www.emacswiki.org/emacs/FlySpell
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq flyspell-issue-message-flag nil)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Setup URL browsing based on the system type.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program (if (eq system-type 'windows-nt)
-                                     "C:/Program Files/Internet Explorer/iexplore.exe"))
+(global-set-key (kbd "<f1>") 'ry/flyspell-check-previous-highlighted-word)
+(global-set-key (kbd "<f2>") 'flyspell-correct-word-before-point)
+(global-set-key (kbd "<f3>") 'ry/flyspell-check-next-highlighted-word)
+(global-set-key (kbd "<f4>") 'ispell-buffer)
 
-(global-set-key (kbd "C-c B") 'browse-url-at-point)
+(defun flyspell-emacs-popup-textual (event poss word)
+  "A textual flyspell popup menu."
+  (require 'popup)
+  (let* ((corrects (if flyspell-sort-corrections
+                       (sort (car (cdr (cdr poss))) 'string<)
+                     (car (cdr (cdr poss)))))
+         (cor-menu (if (consp corrects)
+                       (mapcar (lambda (correct)
+                                 (list correct correct))
+                               corrects)
+                     '()))
+         (affix (car (cdr (cdr (cdr poss)))))
+         show-affix-info
+         (base-menu  (let ((save (if (and (consp affix) show-affix-info)
+                                     (list
+                                      (list (concat "Save affix: " (car affix))
+                                            'save)
+                                      '("Accept (session)" session)
+                                      '("Accept (buffer)" buffer))
+                                   '(("Save word" save)
+                                     ("Accept (session)" session)
+                                     ("Accept (buffer)" buffer)))))
+                       (if (consp cor-menu)
+                           (append cor-menu (cons "" save))
+                         save)))
+         (menu (mapcar
+                (lambda (arg) (if (consp arg) (car arg) arg))
+                base-menu)))
+    (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Fix what the return key does to work the way that I think it should.  When
-;;  it is pressed move to the next line and also indent.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(eval-after-load "flyspell"
+  '(progn
+     (fset 'flyspell-emacs-popup 'flyspell-emacs-popup-textual)))
+
+(defun ry/flyspell-check-next-highlighted-word ()
+  "Custom function to spell check next highlighted word"
+  (interactive)
+  (flyspell-goto-next-error)
+  (flyspell-correct-word-before-point))
+
+(defun ry/flyspell-check-previous-highlighted-word (&optional arg)
+  "Correct the closer misspelled word.
+This function scans a mis-spelled word before the cursor. If it finds one
+it proposes replacement for that word. With prefix arg, count that many
+misspelled words backwards."
+  (interactive)
+  (let ((pos1 (point))
+        (pos  (point))
+        (arg  (if (or (not (numberp arg)) (< arg 1)) 1 arg))
+        ov ovs)
+    (if (catch 'exit
+          (while (and (setq pos (previous-overlay-change pos))
+                      (not (= pos pos1)))
+            (setq pos1 pos)
+            (if (> pos (point-min))
+                (progn
+                  (setq ovs (overlays-at (1- pos)))
+                  (while (consp ovs)
+                    (setq ov (car ovs))
+                    (setq ovs (cdr ovs))
+                    (if (and (flyspell-overlay-p ov)
+                             (= 0 (setq arg (1- arg))))
+                        (throw 'exit t)))))))
+        (save-excursion
+          (goto-char pos)
+          ;; (ispell-word)
+      (flyspell-correct-word-before-point)
+          (setq flyspell-word-cache-word nil) ;; Force flyspell-word re-check
+          (flyspell-word))
+      (error "No word to correct before point"))))
+
 (define-key global-map (kbd "RET") 'newline-and-indent)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Bindings for changing window sizes.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
 (global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
 (global-set-key (kbd "S-C-<down>") 'shrink-window)
@@ -262,37 +200,18 @@
 (global-set-key (kbd "<f12>") 'ry/open-temp-buffer)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  SQL related bindings.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "<f5>") 'ry/sql-send-paragraph)
-(global-set-key (kbd "<S-f5>") 'ry/sql-open-database)
-(global-set-key (kbd "<C-f5>") 'ry/sql-send-export-paragraph)
-(global-set-key (kbd "<M-f5>") 'ry/sql-connect)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  I dont use tags so this was poached from those keys.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "M-.") 'find-function-at-point)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Spell checking keys.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(global-set-key (kbd "<f1>") 'ry/flyspell-check-previous-highlighted-word)
-(global-set-key (kbd "<f2>") 'flyspell-correct-word-before-point)
-(global-set-key (kbd "<f3>") 'ry/flyspell-check-next-highlighted-word)
-(global-set-key (kbd "<f4>") 'ispell-buffer)
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program (if (eq system-type 'windows-nt)
+                                     "C:/Program Files/Internet Explorer/iexplore.exe"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  In my workflow only the current buffer is killed, so this mapping is done
-;;  instead of the default one.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "C-c B") 'browse-url-at-point)
+
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Remap move-beginning-of-line to prelude-move-beginning-of-line so that it
-;;  puts the cursor to the first non whitepace character or beginning of the
-;;  line if pressed again.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -354,11 +273,16 @@
    (format "*TEMP%d*" num))
   (god-local-mode 1))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Open a DB2 SQLI window.  This probably isn't a super way of doing this as
-;;  the SQLi hook is not being called due to the way the sql-buffer is being set
-;;  but for now it works.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (progn  
+      (setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe")
+      (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m"))))
+
+(global-set-key (kbd "<f5>") 'ry/sql-send-paragraph)
+(global-set-key (kbd "<S-f5>") 'ry/sql-open-database)
+(global-set-key (kbd "<C-f5>") 'ry/sql-send-export-paragraph)
+(global-set-key (kbd "<M-f5>") 'ry/sql-connect)
+
 (defun ry/sql-open-database (database username password)
   "Open a SQLI process and name the SQL statement window with the name provided."
   (interactive (list
@@ -382,9 +306,6 @@
   (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
   (auto-complete-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Connect to a DB2 database.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/sql-connect (database username password)
   "Custom SQL connect"
   (interactive (list
@@ -393,11 +314,6 @@
                 (read-passwd "Password: ")))
   (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Sense I have a hard time remembering to limit my queries this method was
-;;  created to do it for me.  Simply append the FETCH FIRST clause to the SQL
-;;  statement prior to sending the paragraph.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/sql-send-paragraph ()
   "Add FETCH FIRST clause to the SQL statement prior to sending"
   (interactive)
@@ -415,9 +331,6 @@
             (sql-send-string (concat (buffer-substring-no-properties start (1- end)) " FETCH FIRST 50 ROWS ONLY WITH UR;")))
         (sql-send-string (buffer-substring-no-properties start end))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Prefix the region with an EXPORT command and send it to the DB2 process.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/sql-send-export-paragraph ()
   "Prefix the current paragraph with an EXPORT command and 
 send the paragraph to the SQL process."
@@ -444,12 +357,12 @@ send the paragraph to the SQL process."
       (goto-char (point-min))
       (setq more-lines t)
       (while more-lines
-     	(setq cur-length (- (line-end-position) (line-beginning-position)))
-     	(if (< cur-length max-length)
-     	    (progn 
-     	      (goto-char (line-end-position))
-     	      (insert-char 32 (- max-length cur-length))))
-     	(setq more-lines (= 0 (forward-line 1)))))
+        (setq cur-length (- (line-end-position) (line-beginning-position)))
+        (if (< cur-length max-length)
+            (progn 
+              (goto-char (line-end-position))
+              (insert-char 32 (- max-length cur-length))))
+        (setq more-lines (= 0 (forward-line 1)))))
     (kill-rectangle (point-min) (point-max))
     (erase-buffer)
     (insert-file-contents-literally temp-file)
@@ -491,10 +404,6 @@ point reaches the beginning or end of the buffer, stop there."
     (when (= orig-point (point))
       (move-beginning-of-line 1))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Functions for formatting XML documents.  These will call an external Java
-;;  program to handle the formatting as that is my bread-and-butter.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/xml-format (beg end)
   "Call an external Java program to format the current region
 as an XML document.  Region needs to contain a valid XML document."
@@ -509,11 +418,6 @@ Region needs to contain a valid XML document."
   (save-excursion
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar " (current-buffer) t)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Perform an XQUERY on the selected buffer/region.
-;;  This function was taken from http://donnieknows.com/blog/hacking-xquery-emacs-berkeley-db-xml
-;;  and modified to work with Saxon instead of Berkley DB.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/xquery ()
   "Perform Xquery using Saxon with the current buffer."
   (interactive "")
@@ -551,9 +455,31 @@ Region needs to contain a valid XML document."
   (concat "" result))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Simple little function for switching buffers.  First enable god-mode for the
-;;  buffer being left so that it is on when coming back.
+;;  The function below is a modified version of a function found at:
+;;  http://www.emacswiki.org/emacs/NxmlMode#toc11.  In additional to displaying
+;;  the current XPATH in the echo area it will be copied to the clipboard.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/xml-where ()
+  "Display the hierarchy of XML elements the point is on as a path."
+  (interactive)
+  (let ((path nil))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (while (and (< (point-min) (point)) ;; Doesn't error if point is at beginning of buffer
+                    (condition-case nil
+                        (progn
+                          (nxml-backward-up-element) ; always returns nil
+                          t)
+                      (error nil)))
+          (setq path (cons (xmltok-start-tag-local-name) path)))
+        (kill-new (format "/%s" (mapconcat 'identity path "/")))
+        (message "XPath copied: 「%s」" (mapconcat 'identity path "/"))))))
+
+(global-set-key (kbd "C-x 2") 'sacha/vsplit-last-buffer)
+(global-set-key (kbd "C-x 3") 'sacha/hsplit-last-buffer)
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+
 (defun ry/switch-buffer ()
   "Function to switch the current buffer to God-mode
  prior to switching buffers."
@@ -561,11 +487,6 @@ Region needs to contain a valid XML document."
   (god-local-mode 1)
   (helm-mini))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Make window splitting split with the previous buffer instead of using the
-;;  same buffer for the new window.
-;;  Taken from http://pages.sachachua.com/.emacs.d/Sacha.html
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun sacha/vsplit-last-buffer (prefix)
   "Split the window vertically and display the previous buffer."
   (interactive "p")
@@ -581,10 +502,6 @@ Region needs to contain a valid XML document."
   (other-window 1 nil)
   (unless prefix (switch-to-next-buffer)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Kill buffers other than the current one.
-;;  http://emacsredux.com/blog/2013/03/30/kill-other-buffers/
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun kill-other-buffers ()
   "Kill all buffers but the current one.
 Don't mess with special buffers."
@@ -593,108 +510,11 @@ Don't mess with special buffers."
     (unless (or (eql buffer (current-buffer)) (not (buffer-file-name buffer)))
       (kill-buffer buffer))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Kill the current buffer without prompting.
-;; http://www.masteringemacs.org/articles/2014/02/28/my-emacs-keybindings/
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun kill-this-buffer () 
   "Kill the current buffer without prompting."  
   (interactive) 
   (kill-buffer (current-buffer)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  This is again from the emacs wiki.  This will cause a popup to be used
-;;  instead of having a new window to be opened when checking the current word.
-;;  Typically I will correct words as they are found instead of doing a whole
-;;  buffer at a time so this will allow me to do that without having the
-;;  display thrash with.  
-;;  http://www.emacswiki.org/emacs/FlySpell
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun flyspell-emacs-popup-textual (event poss word)
-  "A textual flyspell popup menu."
-  (require 'popup)
-  (let* ((corrects (if flyspell-sort-corrections
-                       (sort (car (cdr (cdr poss))) 'string<)
-                     (car (cdr (cdr poss)))))
-         (cor-menu (if (consp corrects)
-                       (mapcar (lambda (correct)
-                                 (list correct correct))
-                               corrects)
-                     '()))
-         (affix (car (cdr (cdr (cdr poss)))))
-         show-affix-info
-         (base-menu  (let ((save (if (and (consp affix) show-affix-info)
-                                     (list
-                                      (list (concat "Save affix: " (car affix))
-                                            'save)
-                                      '("Accept (session)" session)
-                                      '("Accept (buffer)" buffer))
-                                   '(("Save word" save)
-                                     ("Accept (session)" session)
-                                     ("Accept (buffer)" buffer)))))
-                       (if (consp cor-menu)
-                           (append cor-menu (cons "" save))
-                         save)))
-         (menu (mapcar
-                (lambda (arg) (if (consp arg) (car arg) arg))
-                base-menu)))
-    (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu))))
-
-(eval-after-load "flyspell"
-  '(progn
-     (fset 'flyspell-emacs-popup 'flyspell-emacs-popup-textual)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Check the next misspelled word and display the popup instead of splitting
-;;  the window.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ry/flyspell-check-next-highlighted-word ()
-  "Custom function to spell check next highlighted word"
-  (interactive)
-  (flyspell-goto-next-error)
-  (flyspell-correct-word-before-point))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  This function is taken from the flyspell code with only a minor modification
-;;  made.  It calls the flyspell correct word before point instead of ispell
-;;  word.  Doing this will display the corrections in a popup instead of by
-;;  splitting the window.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ry/flyspell-check-previous-highlighted-word (&optional arg)
-  "Correct the closer misspelled word.
-This function scans a mis-spelled word before the cursor. If it finds one
-it proposes replacement for that word. With prefix arg, count that many
-misspelled words backwards."
-  (interactive)
-  (let ((pos1 (point))
-	(pos  (point))
-	(arg  (if (or (not (numberp arg)) (< arg 1)) 1 arg))
-	ov ovs)
-    (if (catch 'exit
-	  (while (and (setq pos (previous-overlay-change pos))
-		      (not (= pos pos1)))
-	    (setq pos1 pos)
-	    (if (> pos (point-min))
-		(progn
-		  (setq ovs (overlays-at (1- pos)))
-		  (while (consp ovs)
-		    (setq ov (car ovs))
-		    (setq ovs (cdr ovs))
-		    (if (and (flyspell-overlay-p ov)
-			     (= 0 (setq arg (1- arg))))
-			(throw 'exit t)))))))
-	(save-excursion
-	  (goto-char pos)
-	  ;; (ispell-word)
-      (flyspell-correct-word-before-point)
-	  (setq flyspell-word-cache-word nil) ;; Force flyspell-word re-check
-	  (flyspell-word))
-      (error "No word to correct before point"))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Narrow or widen intelligenetly.
-;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun narrow-or-widen-dwim (p)
   "If the buffer is narrowed, it widens. Otherwise, it narrows
 intelligently.  Intelligently means: region, org-src-block,
@@ -719,11 +539,6 @@ narrowed."
         ((derived-mode-p 'prog-mode) (narrow-to-defun))
         (t (error "Please select a region to narrow to"))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  This is another one of those little functions that is handy in certain
-;;  situations but I'm not sure if I will remember that it is available in the
-;;  future.  Time will tell.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun xah/copy-file-path (&optional φdir-path-only-p)
   "Copy the current buffer's file path or dired path to `kill-ring'.
 If `universal-argument' is called, copy only the dir path.
@@ -740,9 +555,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
        (file-name-directory fPath)))
     (message "File path copied: 「%s」" fPath)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  A couple helper functions for launching applications when on Windows.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/launch-windows-explorer ()
   "Open Windows explorer."
   (interactive)
@@ -757,54 +569,20 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
       (shell-command "C:/Progra~1/Intern~1/iexplore.exe https://www.bing.com")
     (error "This command can only be used on Windows.")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  The function below is a modified version of a function found at:
-;;  http://www.emacswiki.org/emacs/NxmlMode#toc11.  In additional to displaying
-;;  the current XPATH in the echo area it will be copied to the clipboard.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun ry/xml-where ()
-  "Display the hierarchy of XML elements the point is on as a path."
-  (interactive)
-  (let ((path nil))
-    (save-excursion
-      (save-restriction
-        (widen)
-        (while (and (< (point-min) (point)) ;; Doesn't error if point is at beginning of buffer
-                    (condition-case nil
-                        (progn
-                          (nxml-backward-up-element) ; always returns nil
-                          t)
-                      (error nil)))
-          (setq path (cons (xmltok-start-tag-local-name) path)))
-        (kill-new (format "/%s" (mapconcat 'identity path "/")))
-        (message "XPath copied: 「%s」" (mapconcat 'identity path "/"))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Get things ready for async package installation.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package async
   :ensure t)
 
 (use-package paradox
   :ensure t
+  :commands (paradox-mode paradox-upgrade-packages)
   :config
   (progn
     (setq paradox-execute-asynchronously t)
     (setq paradox-github-token t)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Remove unnecessary modes from the modeline.  Probably not needed as
-;;  use-package should handle this.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package diminish
   :ensure t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Load the sollarized dark theme.  The package is from MELPA.  I liike to have
-;;  the mode-line in different colors to make the active/inactive window more
-;;  easily found.  The light gray is pleasing.  Also add the different faces for
-;;  org blocks so that they stand out more.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package solarized-theme
   :ensure t
   :config
@@ -836,39 +614,18 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
       (set-face-attribute 'org-block-background nil
                           :background "#073642"))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Rainbox delimiter mode.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package rainbow-delimiters
   :ensure t 
   :config
   (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Enable smartscan mode.  M-n and M-p to move to next/previous 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartscan
   :ensure t
   :commands (smartscan-symbol-go-forward smartscan-symbol-go-backward highlight-symbol-first)
   :config
   (progn
-    (global-smartscan-mode)
-    (defun highlight-symbol-first ()
-      "Jump to the first location of symbol at point."
-      (interactive)
-      (push-mark)
-      (eval
-       `(progn
-          (goto-char (point-min))
-          (search-forward-regexp
-           (rx symbol-start ,(thing-at-point 'symbol) symbol-end)
-           nil t)
-          (beginning-of-thing 'symbol))))
-    (bind-keys ("M-P" . highlight-symbol-first))))
+    (global-smartscan-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  NXML
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package nxml-mode
   :commands nxml-mode
   :config
@@ -898,9 +655,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
       ;; optional key bindings, easier than hs defaults
       (define-key nxml-mode-map (kbd "C-c h") 'hs-toggle-hiding))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Web-mode initialization stuff.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package web-mode
   :ensure t
   :mode 
@@ -914,28 +668,22 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   :init
   (setq web-mode-enable-auto-pairing nil))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helm init
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package helm
   :ensure t
   :diminish helm-mode
   :bind (("C-M-s" . helm-occur)
          ("C-x C-f" . helm-find-files)
          ("M-x" . helm-M-x)
-         ("C-x b" . helm-mini)
+         ("C-x b" . ry/switch-buffer)
          ("C-x C-b" . helm-buffers-list)
          ("C-x r l" . helm-bookmarks)
          ("C-h f" . helm-apropos)
          ("C-h r" . helm-info-emacs)
          ("C-h C-l" . helm-locate-library)
          ("M-y" . helm-show-kill-ring)
-         ("C-x C-b" . helm-mini)
+         ("C-x C-b" . ry/switch-buffer)
          ("<f7>" . helm-bookmarks)
          ("<f8>" . bookmark-set))
-         ;;(:map helm-map ("<tab>" . helm-execute-persistent-action)))
-         ;; :map helm-map ("C-i" . helm-execute-persistent-action)
-         ;; :map helm-map ("C-z" . helm-select-action))
   :config
   (progn
     (require 'helm-config)
@@ -967,9 +715,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
 
     (helm-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Enable multiple cursors
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package multiple-cursors
   :ensure t
   :bind (("C-S-s C-S-s" . mc/edit-lines)
@@ -977,25 +722,15 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
          ("C-<" . mc/mark-previous-like-this)
          ("C-c *" . mc/mark-all-like-this)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; GURU mode 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package guru-mode
   :ensure t
   :init
   (guru-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Expand region by symantic units.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package expand-region
   :ensure t
-  :bind ("C-=" . er/expand-region))
+  :bind (("C-=" . er/expand-region)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Eldoc mode for lisp coding.
-;;  http://pages.sachachua.com/.emacs.d/Sacha.html#unnumbered-47
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package "eldoc"  
   :diminish eldoc-mode
   :init
@@ -1005,20 +740,16 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
     (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Add org mode stuff to the load path.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package org
   :ensure t 
+  :commands (org-agenda org-capture)
   :config
   (load "~/.emacs.d/custom-org-mode.el"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  undo-tree config
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package undo-tree
   :ensure t
   :diminish undo-tree-mode
+  :bind (("C-x u" . undo-tree-visualize))
   :commands undo-tree-visualize
   :config
   (progn
@@ -1026,9 +757,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (setq undo-tree-visualizer-timestamps t)
     (setq undo-tree-visualizer-diff t)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  GOD mode config with some keymaps to make it easier to use.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package god-mode
   :ensure t
   ;;:diminish god-mode                   
@@ -1072,9 +800,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
                     (set-cursor-color "#839496")
                     (setq cursor-type 'bar)))))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Init golden ratio mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package golden-ratio
   :ensure t
   :diminish golden-ratio-mode
@@ -1082,9 +807,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (progn 
     (golden-ratio-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Company mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package company
   :ensure t
   :diminish company-mode
@@ -1129,13 +851,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
       (set-face-attribute 'company-tooltip-common nil
                           :inherit font-lock-constant-face))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Smartparens init
-;;  Some of the configs taken from Sacha's config the rest is taken from
-;;  mwfogleman.
-;;  http://pages.sachachua.com/.emacs.d/Sacha.html
-;;  https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package smartparens
   :ensure t
   :diminish smartparens-mode
@@ -1191,9 +906,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (sp-with-modes '(html-mode sgml-mode web-mode)
                    (sp-local-pair "<" ">"))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Dired+ to enhance dired and commander.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package dired+
   :ensure t
   :commands dired
@@ -1204,11 +916,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (require 'dired-sort-menu)
     (setq dired-hide-details-mode nil)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Setup Magit
-;;  Taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
-;;  but originally came from Magnars.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package magit
   :ensure t
   :bind (("C-x g" . magit-status)
@@ -1241,9 +948,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
              ("<C-tab>" . magit-section-cycle)
              ("q" . magit-quit-session)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Realtive line numbers for easier jumping within a file and running macros.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package linum-relative
   :ensure t
   :commands linum-mode
@@ -1252,19 +956,10 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (setq linum-format 'linum-relative)
     (setq linum-relative-current-symbol "")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Nice commenting/uncommenting.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package comment-dwim-2
   :ensure t
-  :bind ("M-;" . comment-dwim-2))
+  :bind (("M-;" . comment-dwim-2)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  For editing the MediaWiki at work.  An old version of Mediawiki is being
-;;  used which is incompatible so this is only being used for the little code
-;;  coloring that it provides.  As such the keybinding for C-x C-s that is
-;;  provided by the mode is overwritten by the default action.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package mediawiki
   :ensure t
   :commands mediawiki-mode
@@ -1272,9 +967,6 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (eval-after-load 'mediawiki
     (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Stripe dired buffers and tables in ORG mode for easier reading.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package stripe-buffer
   :ensure t
   :defer t
@@ -1285,24 +977,19 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (setq stripe-hl-line "#073642")
     (set-face-attribute stripe-highlight-face nil :background "#073642")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Ace jump and key chord look helpful/interesting.  The config for key chord
-;;  was taken from Sacha Chua.
-;;  http://pages.sachachua.com/.emacs.d/Sacha.html
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package ace-jump-mode
+;; (use-package ace-jump-mode
+;;   :ensure t
+;;   :bind (("C-c SPC" . ace-jump-char-mode))
+;;   :commands ace-jump-mode)
+
+(use-package avy
   :ensure t
-  :commands ace-jump-mode)
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  JSON formatting.  Not used so much but I know it will be helpful.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  :bind (("C-c SPC" . avy-goto-char)))
+
 (use-package json-reformat
   :ensure t
   :commands (json-pretty-print json-pretty-print-buffer))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Add Git diff information to the gutter to easily see what has changed.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package git-gutter+
   :ensure t
   :commands git-gutter+-mode
@@ -1314,70 +1001,69 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
     (setq git-gutter+-deleted-sign "--")
     (set-face-background 'git-gutter+-modified "#073642")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Use hydra to define a toggle map and an application launch map.
-;;  This is similar to the version done on the page below, which seems like a
-;;  very good idea.
-;;  https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package hydra
   :ensure t
   :config
   (progn
+    (require 'whitespace)
+    
     ;;  Change the blue face color as it is hard to see in Solarized dark.
     (set-face-attribute 'hydra-face-blue nil
                         :foreground "#4169e1")
     
     (defhydra hydra-toggle (:color pink)
       "
-_a_ abbrev-mode:         %`abbrev-mode
-_b_ menu-bar-mode:       %`menu-bar-mode
-_d_ debug-on-error:      %`debug-on-error
-_f_ flyspell-mode:       %`flyspell-mode
-_h_ global-hl-line-mode: %`global-hl-line-mode
-_s_ smartparens-mode:    %`smartparens-mode
+_a_bbrev-mode:         %`abbrev-mode
+_m_enu-bar-mode:       %`menu-bar-mode
+_d_ebug-on-error:      %`debug-on-error
+_f_lyspell-mode:       %`flyspell-mode
+_g_lobal-hl-line-mode: %`global-hl-line-mode
+_w_hitepace-mode:      %`whitespace-mode
+_s_martparens-mode:    %`smartparens-mode
 
 "
       ("a" abbrev-mode nil)
-      ("b" menu-bar-mode)
+      ("m" menu-bar-mode nil)
       ("d" toggle-debug-on-error nil)
       ("f" flyspell-mode nil)
-      ("h" global-hl-line-mode nil)
+      ("g" global-hl-line-mode nil)
       ("s" smartparens-mode nil)
-      ;; ("w" whitespace-mode nil)
+      ("w" whitespace-mode nil)
       ("q" nil "cancel"))
 
     (defhydra hydra-launch (:color blue)
-      "launch"
-      ("i" ry/launch-internet-explorer "iexplore" :color blue)
-      ("w" ry/launch-windows-explorer "wexplore" :color blue)
+      "
+_i_nternet Explorer
+_w_indows Explorer
+
+"
+      ("i" ry/launch-internet-explorer nil)
+      ("w" ry/launch-windows-explorer nil)
       ("q" nil "cancel" :color red))
 
     (defhydra hydra-xml (:color blue)
       "
-_F_ormat
-_L_inearlize
-_W_here
-_X_query buffer
+_f_ormat
+_l_inearlize
+_w_here
+_x_query buffer
 Xquery _r_egion
 
 "
-      ("F" ry/xml-format nil)
-      ("L" ry/xml-linearlize nil)
-      ("W" ry/xml-where nil)
-      ("X" ry/xquery nil)
+      ("f" ry/xml-format nil)
+      ("l" ry/xml-linearlize nil)
+      ("w" ry/xml-where nil)
+      ("x" ry/xquery nil)
       ("r" ry/xquery-with-region nil)
       ("q" nil "cancel" :color red))
 
     (global-set-key (kbd "C-c t") 'hydra-toggle/body)
     (global-set-key (kbd "C-c l") 'hydra-launch/body)
     (global-set-key (kbd "C-c x") 'hydra-xml/body)))
-  
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Save recent file history.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (use-package recentf
   :ensure t
+  :commands (helm-mini)
   :init
   (progn
     (recentf-mode)
@@ -1385,9 +1071,6 @@ Xquery _r_egion
     (setq recentf-auto-cleanup 'never)
     (add-to-list 'recentf-exclude "COMMIT_EDITMSG\\'")))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Add numbers to EWW.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package eww-lnum
   :ensure t
   :commands eww
@@ -1396,64 +1079,35 @@ Xquery _r_egion
     '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
             (define-key eww-mode-map "F" 'eww-lnum-universal))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Stack exchange package.  Nice to be able to read SX in emacs.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package sx
   :ensure t
   :commands (sx-tab-feature sx-tab-frontpage sx-tab-hot sx-tab-newest sx-tab))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Package for making commands work differently based on if a region is
-;;  selected or not.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package whole-line-or-region
   :ensure t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Another folding package based on the active region.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package fold-this
   :ensure t
   :bind (("C-c C-f" . fold-this-all)
          ("C-c C-F" . fold-this)
          ("C-c M-f" . fold-this-unfold-all)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Nice visual regex replace package.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package anzu
   :ensure t
   :diminish anzu-mode
-  :config
-  (progn
-    (global-anzu-mode) 
-    (global-set-key (kbd "M-%") 'anzu-query-replace) 
-    (global-set-key (kbd "C-M-%") 'anzu-query-replace-regexp)))
+  :bind (("C-M-s" . anzu-query-replace)
+         ("C-M-%" . anzu-query-replace-regexp)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Visual feedback while creating regular expressions.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package re-builder
   :ensure t
   :config
   (setq reb-re-syntax 'string))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Call the change--inner and then the starting character to modify the inside
-;;  portion of the group.  Not sure if this will get use.  One of those things
-;;  that could save a lot of time but there is a need to change a deep habit.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package change-inner
   :ensure t
-  :config
-  (progn
-    (global-set-key (kbd "M-i") 'change-inner)
-    (global-set-key (kbd "M-o") 'change-outer)))
+  :bind (("M-i" . change-inner)
+         ("M-o" . change-outer)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Programmers like to know where the 80th column is.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package fill-column-indicator
   :ensure t
   :config
@@ -1480,17 +1134,9 @@ Xquery _r_egion
     (setq fci-rule-column 80)
     (fci-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Searching package similar to helm swoop.  I liked helm swoop but it was slow
-;;  for log files.  We will see if this is any faster.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package swiper
   :ensure t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Speedbar in the current frame.  Might be useful to list the current methods
-;;  in a file when working on Java.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package sr-speedbar
   :ensure t
   :disabled t
@@ -1500,20 +1146,14 @@ Xquery _r_egion
     (setq speedbar-use-images nil)
     (setq sr-speedbar-right-side t)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Fix annoying buffer popups.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package popwin
   :ensure t
   :config
   (popwin-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  On-the-fly syntax checking.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package flycheck
   :ensure t
-  :disable t
+  :disabled t
   :config
   (add-hook 'after-init-hook #'global-flycheck-mode))
 
@@ -1524,9 +1164,6 @@ Xquery _r_egion
     (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
     (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Highlight the symbol at point.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package highlight-symbol
   :ensure t
   :config
@@ -1534,24 +1171,22 @@ Xquery _r_egion
     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
     (setf highlight-symbol-idle-delay 0)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Help to discover keybindings for the current mode.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package discover-my-major
   :ensure t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Text manipulation helpers.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package move-text
   :ensure t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Perform setup for eclim.  The setup for Windows is problematic so there are
-;;  a few documented steps below.
-;;  It would be nice in the future to have this be more generic, but I'm simply
-;;  happy that it is working.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package cider
+  :ensure t
+  :bind (("<f10>" . cider-jack-in))
+  :config
+  (progn
+    (add-hook 'cider-mode-hook #'eldoc-mode)
+    (setq nrepl-hide-special-buffers t)
+    (setq cider-repl-tab-command #'indent-for-tab-command)
+    (add-hook 'cider-repl-mode-hook #'subword-mode)))
+
 (use-package emacs-eclim
   :ensure t
   :config
@@ -1578,7 +1213,8 @@ Xquery _r_egion
     (eclim-toggle-print-debug-messages)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Again, a windows modification so that the eclim bat can be found.
+    ;;  Again, a windows modification so that the eclim bat can be found for my
+    ;;  particular work setup.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (defun eclim-executable-find ()
       (let (file)
@@ -1601,13 +1237,13 @@ Xquery _r_egion
                (cl-return (expand-file-name "eclim.bat" eclipse-root))))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  This is not a great thing to do but was the only way that I could find
-    ;;  to get the shell commands for eclim to work.  For some reason running
-    ;;  the commands from a different drive didn't work eventhough the full
-    ;;  path to the eclim.bat was specified.
+    ;;  This is a built in function that I have duplicated for emacs-eclim use.
+    ;;  emacs-eclim will fail on windows when executing the eclim.bat fome the 
+    ;;  current directory on the F:/.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (defun shell-command-to-string (command)
-      "Execute shell command COMMAND and return its output as a string."
+    (defun ry/shell-command-to-string (command)
+      "Execute shell command COMMAND and return its output as a string
+using C:/ as the default directory."
       (setq default-directory "C:/")
       (with-output-to-string
         (with-current-buffer
@@ -1615,8 +1251,7 @@ Xquery _r_egion
           (process-file shell-file-name nil t nil shell-command-switch command))))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Again, I don't like to do this but there is an errant backslash (\) in
-    ;;  the file path.  This will simply do a regex replace on the backslash.
+    ;;  This is the same issue that lead to the above function being created.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (defun eclim--call-process (&rest args)
       "Calls eclim with the supplied arguments. Consider using
@@ -1625,23 +1260,12 @@ error checking, and some other niceties.."
       (let ((cmd (eclim--make-command args)))
         (setq cmd2 (replace-regexp-in-string "\\\\" "" (format "%s" cmd)))
         (when eclim-print-debug-messages (message "Executing: %s" cmd2))
-        (eclim--parse-result (shell-command-to-string cmd))))
+        (eclim--parse-result (ry/shell-command-to-string cmd))))
 
     ;; Clobber this keybinding for eclim use.
     (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
     (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Useful for jumping between symbols.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package smartscan
-  :ensure t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Midnight mode.
-;;  This will eventually be used to close any DB connections that I forget to
-;;  close during the day.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package midnight
   :ensure t
   :config
