@@ -1,0 +1,2199 @@
+#+TITLE: Emacs Configuration
+#+LANGUAGE:  en
+#+AUTHOR: Ryan Yanson
+#+OPTIONS:   H:3 num:t   toc:3 \n:nil @:t ::t |:t ^:nil -:t f:t *:t <:nil
+#+OPTIONS:   TeX:t LaTeX:nil skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:   author:t creator:t timestamp:t
+#+DESCRIPTION: My custom emacs configuration
+#+KEYWORDS:  My custom emacs configuration
+#+INFOJS_OPT: view:nil toc:t ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
+#+EXPORT_SELECT_TAGS: export
+#+EXPORT_EXCLUDE_TAGS: 
+#+HTML_HEAD: <style type="text/css">body{font-family:"lucida grande",tahoma,verdana,arial,sans-serif;font-size:11px;color:#333}.fbbody a{color:#3b5998;outline-style:none;text-decoration:none;font-size:11px;font-weight:bold;width:100%;height:100%}.fbbody a:hover{text-decoration:underline}table,.fbgreybox{margin:5px;background-color:#f7f7f7;border:1px solid #ccc;color:#333;padding:10px;font-size:13px;font-weight:bold}.fbbluebox,.org-src-container{background-color:#eceff6;border:1px solid #d4dae8;color:#333;padding:10px;font-size:13px;font-weight:bold;word-wrap:break-word;}.fbinfobox{background-color:#fff9d7;border:1px solid #e2c822;color:#333;padding:10px;font-size:13px;font-weight:bold}.tag{background-color:#fff9d7;border:1px solid #e2c822;color:#333;padding:10px;font-size:13px;font-weight:bold}.fberrorbox{background-color:#ffebe8;border:1px solid #dd3c10;color:#333;padding:10px;font-size:13px;font-weight:bold}hr,.fbcontentdivider{margin-top:15px;margin-bottom:15px;width:520px;height:1px;background-color:#d8dfea}.fbtab{padding:8px;background-color:#d8dfea;color:#3b5998;font-weight:bold;float:left;margin-right:4px;text-decoration:none}.fbtab:hover{background-color:#3b5998;color:#fff;cursor:hand}.timestamp{font-weight:bold}ul.org-ul{list-style-type:none;padding:0;margin:0;border:1px solid #d4dae8;font-weight:normal}.timestamp{font-weight:bold;float:right}ul.org-ul li{margin-top:0;margin-bottom:5px}.org-ul li:nth-child(odd){background-color:#d4dae8}.org-ul li:last-child{margin-bottom:0}</style>
+------
+* Introduction
+* Usage
+This file can be used to load emacs provided use-package is available prior.  If use package is not
+available the sample init in the next section can be used to bootstrap use-package so that loading 
+will work.  As long as use-package is in place all package downloads will happen automatically.
+
+* Init
+My init file contains the lines below.  It is just enough to bootstrap use-package
+and then load this document.
+
+#+begin_src emacs-lisp :tangle no
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Start the server
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (eq system-type 'windows-nt)
+    (progn
+      (require 'server) 
+      (server-start)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Remove unnecessary gui stuff
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Remove spash screen
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(setq inhibit-splash-screen t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Load ITS related settings.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load "~/emacs/Config/its-config.el" t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Bootstrap use-package.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'package)
+(setq package-enable-at-startup nil)
+
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                         ("melpa" . "http://melpa.org/packages/")))
+
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+
+(require 'diminish)
+(require 'bind-key)
+
+(setq use-package-verbose t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Tangle and byte compile the source ORG document if it is newer than the
+;;  previously tangled and compiled file.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((src "~/.emacs.d/emacs-config.org")
+      (dst "~/.emacs.d/emacs-config.elc"))
+  (if (file-newer-than-file-p src dst)
+      (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t)))
+    (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
+#+end_src
+
+* Modeline configuration
+The mode-line is configured using the code below.  I like to have a simplified
+mode-line so many of the usual things have been removed.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(setq-default mode-line-format
+             '("%e"
+               mode-line-front-space
+               "%b"
+               "   "
+               mode-line-position
+               (vc-mode vc-mode)
+               "  "
+               mode-line-modes
+               "   "
+               display-time-string
+               "   "
+               mode-line-end-spaces))
+#+end_src
+
+* Enable functions
+Enable editing functions that are disabled by default.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+
+(put 'narrow-to-region 'disabled nil) 
+(put 'narrow-to-page 'disabled nil) 
+(put 'narrow-to-defun 'disabled nil) 
+
+(put 'erase-buffer 'disabled nil)
+#+end_src
+
+* Apropos
+Make apropos a little more helpful.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq apropos-do-all t)
+#+end_src
+
+* Garbage collection
+Change garbage collection to only happen every 20 MB.  Originally found on
+https://github.com/CQQL/dotfiles/blob/master/src/.emacs.d/lisp/globals.el
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq gc-cons-threshold 20000000)
+#+end_src
+
+* Scrolling
+I dislike the way that Emacs scrolls by default.  I also do not feel like brining
+in an extra package for scrolling so this is a compromise.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq scroll-margin 5)
+(setq scroll-preserve-screen-position 1)
+#+end_src
+
+* Recenter positions
+Like scrolling the default recenter command has a strange order that recenters 
+happen.  This was a very nice pickup from Abo Abo.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq recenter-positions '(top middle bottom))
+#+end_src
+
+* Which function
+Show the current function name in the status line.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(which-function-mode 1)
+#+end_src
+
+* Overwrite region
+With this option enabled a highlighted region will be overwritten if one is active 
+and I start typing.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(delete-selection-mode t) 
+#+end_src
+
+* Killing buffer in server mode
+This removes the message that is displayed when killing a buffer in server mode.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)
+#+end_src
+
+* File dialog
+Disable the file dialog.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq use-file-dialog nil)
+#+end_src
+
+* Y-N prompts
+Use 'Y' and 'N' instead of yes and no for prompts.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+* Transient mark mode
+Enable transient mark mode so that highlighting regions activates special behaviors.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq transient-mark-mode t)
+#+end_src
+
+* Delete selection
+Set this to enable the deletion of regions.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(delete-selection-mode 1)
+#+end_src
+
+* Show parentheses
+Enable subtle highlighting of matching parentheses.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(show-paren-mode +1)
+(setq show-paren-style 'parenthesis)
+#+end_src
+
+* Blinking cursor
+Disable the annoying blinking cursor.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(blink-cursor-mode 0) 
+#+end_src
+
+* Font
+Set the default font to Consolas when on a Windows machine.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(if (eq system-type 'windows-nt)
+    (set-face-attribute 'default nil :font "Consolas-11:antialias=subpixel"))
+#+end_src
+
+* Path
+Add some paths to the path when on Windows machines.  When at work I do not want
+to update the path so this is a work around.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(if (eq system-type 'windows-nt)
+    (setq exec-path
+          (append exec-path
+                  '("~/emacs/Graphviz/bin"
+                    "~/emacs/Hunspell/bin/"
+                    "~/emacs/Gnutls/bin"
+                    "~/emacs/Leiningen"
+                    "~/Git/bin"
+                    "C:/IBM/SDP"))))
+#+end_src
+
+* GraphViz
+Set an environment variable for the GraphViz program.  Simply setting the path
+does not work as expected.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(if (eq system-type 'windows-nt)
+    (setenv "GRAPHVIZ_DOT" "~/emacs/Graphviz/bin/dot.exe"))
+#+end_src
+
+* GnuTLS
+Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.
+Setting it prior to load does not work properly.  Also setting this path does 
+not work unless the full path is provided.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(if (eq system-type 'windows-nt)
+    (eval-after-load "gnutls" 
+      '(progn 
+         (setq gnutls-trustfiles '("h:/emacs/cacert.pem")))))
+#+end_src
+
+* Working with long lines
+This setting is used to truncate lines instead of wrapping them.  I like the 
+idea of visual-line-mode but never got used to it.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+;; (set-default 'truncate-lines t)
+(global-visual-line-mode)
+(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+#+end_src
+
+* Large files
+I work with log files quite often and sometimes they are very large.  The 
+setting below will allow files to be opened without warnings until they are
+over 100MB in size.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(set-default 'large-file-warning-threshold 1000000000)
+#+end_src
+
+* Backup files
+Set values so that backup files are not littering my directories.  The BACKUP
+folder will be ignored by git.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq backup-directory-alist
+      `((".*" . "~/.emacs.d/BACKUP")))
+(setq auto-save-file-name-transforms
+      `((".*" , "~/.emacs.d/BACKUP" t)))
+#+end_src
+
+* Tabs
+Use four spaces in place of tab characters.  Things get weird when programs 
+don't treat tabs the same.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(setq-default indent-tabs-mode nil)
+(setq tab-width 4)
+#+end_src
+
+* File refreshing
+Automatically revert the buffer to the contents of the file on the disk if it has 
+changed.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(global-auto-revert-mode t)
+#+end_src
+
+* Navigation
+I am starting to get used to idea of setting mark and moving back and forth.  This
+key binding was taken from Sacha Chua.  
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(bind-key "C-x p" 'pop-to-mark-command)
+(setq set-mark-command-repeat-pop t)
+#+end_src
+
+* Spelling
+** Configuration
+I am very poor at spelling.  The following will enable flyspell and use Hunspell
+as the background spelling process.  The dictionary and Hunspell are installed 
+below my home directory on my Windows machines.
+
+#+begin_src emacs-lisp :tangle yes :exports code  
+(setq ispell-personal-dictionary "~/emacs/Config/en_US_personal")
+(setq ispell-silently-savep t)
+(setq ispell-quietly t)
+#+end_src
+
+Flyspell will need a couple environment variables set to know what the default
+dictionary is and its path.  This may be done in Linux but is not done properly
+in Windows, so set it up here.
+
+#+begin_src emacs-lisp :tangle yes :exports code  
+(if (eq system-type 'windows-nt)
+    (progn
+      (setenv "DICTIONARY" "en_US")
+      (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell")))
+#+end_src
+
+Enable spelling for comments in programming modes too.
+
+#+begin_src emacs-lisp :tangle yes :exports code  
+(add-hook 'java-mode-hook
+          (lambda ()
+            (flyspell-prog-mode)))
+            
+(add-hook 'emacs-lisp-mode-hook
+          (lambda ()
+            (flyspell-prog-mode)))
+#+end_src
+
+This was a suggestion from [[http://www.emacswiki.org/emacs/FlySpell]] as a way to 
+speed up flyspell by not writing messages.
+
+#+begin_src emacs-lisp :tangle yes :exports code   
+(setq flyspell-issue-message-flag nil)
+#+end_src
+
+** Key bindings
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(global-set-key (kbd "<f1>") 'ry/flyspell-check-previous-highlighted-word)
+(global-set-key (kbd "<f2>") 'flyspell-correct-word-before-point)
+(global-set-key (kbd "<f3>") 'ry/flyspell-check-next-highlighted-word)
+(global-set-key (kbd "<f4>") 'ispell-buffer)
+#+end_src
+
+** Functions
+This function was taken from http://www.emacswiki.org/emacs/FlySpell.  It will 
+enable the use of a popup for flyspell instead of it's normal mode of operation.
+Company uses a popup so why not have a similar behavior for Flyspell.  This 
+could be annoying if checking a whole buffer but I usually do not check a whole
+buffer at once.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(defun flyspell-emacs-popup-textual (event poss word)
+  "A textual flyspell popup menu."
+  (require 'popup)
+  (let* ((corrects (if flyspell-sort-corrections
+                       (sort (car (cdr (cdr poss))) 'string<)
+                     (car (cdr (cdr poss)))))
+         (cor-menu (if (consp corrects)
+                       (mapcar (lambda (correct)
+                                 (list correct correct))
+                               corrects)
+                     '()))
+         (affix (car (cdr (cdr (cdr poss)))))
+         show-affix-info
+         (base-menu  (let ((save (if (and (consp affix) show-affix-info)
+                                     (list
+                                      (list (concat "Save affix: " (car affix))
+                                            'save)
+                                      '("Accept (session)" session)
+                                      '("Accept (buffer)" buffer))
+                                   '(("Save word" save)
+                                     ("Accept (session)" session)
+                                     ("Accept (buffer)" buffer)))))
+                       (if (consp cor-menu)
+                           (append cor-menu (cons "" save))
+                         save)))
+         (menu (mapcar
+                (lambda (arg) (if (consp arg) (car arg) arg))
+                base-menu)))
+    (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu))))
+#+end_src
+
+Add a hook for the function defined above using popups for spell checking.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(eval-after-load "flyspell"
+  '(progn
+     (fset 'flyspell-emacs-popup 'flyspell-emacs-popup-textual)))
+#+end_src
+
+Function to check the next highlighted word.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(defun ry/flyspell-check-next-highlighted-word ()
+  "Custom function to spell check next highlighted word"
+  (interactive)
+  (flyspell-goto-next-error)
+  (flyspell-correct-word-before-point))
+#+end_src
+
+This is a slightly modified version of function with the same name from Flyspell.
+It uses flyspell-correct-word-before-point instead of ispell-word so that the
+popup defined above will be used for corrections.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(defun ry/flyspell-check-previous-highlighted-word (&optional arg)
+  "Correct the closer misspelled word.
+This function scans a mis-spelled word before the cursor. If it finds one
+it proposes replacement for that word. With prefix arg, count that many
+misspelled words backwards."
+  (interactive)
+  (let ((pos1 (point))
+	(pos  (point))
+	(arg  (if (or (not (numberp arg)) (< arg 1)) 1 arg))
+	ov ovs)
+    (if (catch 'exit
+	  (while (and (setq pos (previous-overlay-change pos))
+		      (not (= pos pos1)))
+	    (setq pos1 pos)
+	    (if (> pos (point-min))
+		(progn
+		  (setq ovs (overlays-at (1- pos)))
+		  (while (consp ovs)
+		    (setq ov (car ovs))
+		    (setq ovs (cdr ovs))
+		    (if (and (flyspell-overlay-p ov)
+			     (= 0 (setq arg (1- arg))))
+			(throw 'exit t)))))))
+	(save-excursion
+	  (goto-char pos)
+	  ;; (ispell-word)
+      (flyspell-correct-word-before-point)
+	  (setq flyspell-word-cache-word nil) ;; Force flyspell-word re-check
+	  (flyspell-word))
+      (error "No word to correct before point"))))
+#+end_src
+
+* Key bindings
+** Alter return key behavior
+This changes the way the return key behaves.  When return is pressed it will
+insert a newline and also indent the next line.  Good for programming.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(define-key global-map (kbd "RET") 'newline-and-indent)
+#+end_src
+
+** Change window size
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
+(global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
+(global-set-key (kbd "S-C-<down>") 'shrink-window)
+(global-set-key (kbd "S-C-<up>") 'enlarge-window)
+#+end_src
+
+
+#+begin_src emacs-lisp :tangle yes :exports code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Key bindingd for custom functions.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "C-x r M-w") 'my-copy-rectangle)
+(global-set-key (kbd "C-x r C-y") 'yank-replace-rectangle)
+(global-set-key (kbd "<f12>") 'ry/open-temp-buffer)
+#+end_src
+
+
+#+begin_src emacs-lisp :tangle yes :exports code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  I dont use tags so this was poached from those keys.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(global-set-key (kbd "M-.") 'find-function-at-point)
+#+end_src
+
+* Browsing
+** Configuration
+I mainly use Internet Explorer when on Windows machines so browse the current URL using it.
+#+begin_src emacs-lisp :tangle yes :exports code
+(setq browse-url-browser-function 'browse-url-generic
+      browse-url-generic-program (if (eq system-type 'windows-nt)
+                                     "C:/Program Files/Internet Explorer/iexplore.exe"))
+#+end_src
+
+** Key binding
+#+begin_src emacs-lisp :tangle yes :exports code
+(global-set-key (kbd "C-c B") 'browse-url-at-point)
+#+end_src
+
+** Buffer management
+I only kill the current buffer most of the time.  The binding below is used so
+that I do not need to select which buffer to kill.  If I need to kill a bunch of
+buffers or one that is not the current one I will use helm.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+#+end_src
+
+** Beginning of line
+I program most of the time.  Moving to the beginning of the means moving to the
+first non-whitepace character instead of moving to the true beginning on the 
+line.  This was taken from the Prelude configuration.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
+
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes :exports code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Kill buffers for dired mode and package menu mode instead of burying them.
+;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(eval-after-load "dired"
+  (progn
+    '(bind-keys :map dired-mode-map
+                ("q" . kill-this-buffer))))
+
+(bind-keys :map package-menu-mode-map
+           ("q" . kill-this-buffer))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Small function to remove all ^M characters from a file.  Taken from:
+;;  http://www.archivum.info/comp.emacs/2007-06/00348/Re-Ignore-%5EM-in-mixed-%28LF-and-CR+LF%29-line-ended-textfiles.html
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun hide-dos-eol ()
+  "Do not show ^M in files containing mixed UNIX and DOS line endings."
+  (interactive)
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M []))
+
+(defun ry/replace-character-at-point (new-char)
+  "Replace the character at point in the same way that the command works in vim"
+  (interactive "c")
+  (delete-char 1)
+  (insert new-char)
+  (backward-char))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Helper for copying a rectangle.
+;;  Taken from http://www.emacswiki.org/emacs/RectangleCommands
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun my-copy-rectangle (start end)
+  "Copy the region-rectangle instead of `kill-rectangle'."
+  (interactive "r")
+  (setq killed-rectangle (extract-rectangle start end)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Helper for replacing/yanking one rectangle with another.
+;;  Taken from http://www.emacswiki.org/emacs/RectangleCommands
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun yank-replace-rectangle (start end)
+  "Similar like yank-rectangle, but deletes selected rectangle first."
+  (interactive "r")
+  (delete-rectangle start end)
+  (pop-to-mark-command)
+  (yank-rectangle))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Function to open a *TEMP#* buffer based on the numeric argument passed.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/open-temp-buffer (&optional num)
+  "Open a numbered *TEMP#* buffer based on argument."
+  (interactive "p")
+  (switch-to-buffer
+   (format "*TEMP%d*" num))
+  (god-local-mode 1))
+#+end_src
+
+* SQL
+Work uses DB2 and DataStudio.  Opening RAD and DataStudio at the same time is a 
+major drain on resources, especially when WAS is also running.  Instead I will 
+stay in Emacs to do my database work. 
+** Setup
+The code below is used to setup a few configurations based on if the client is
+Windows or not.  The configuration was lifted from a nice document located
+[[http://www.ibm.com/developerworks/data/library/techarticle/0206mathew/0206mathew.html]]][here].
+
+| Option | Decription                                               |
+|--------+----------------------------------------------------------|
+| -t     | Semicolon (;) is treated as the command line terminator. |
+| +ec    | Print SQLCODE.                                           |
+| +m     | Print number of rows affected by statement.              |
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(if (eq system-type 'windows-nt)
+    (progn  
+      (setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe")
+      (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m"))))
+#+end_src
+** Key bindings
+The key bindings below revolve around the F5 key.  This was done to be similar to
+the main key used in DataStudio.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(global-set-key (kbd "<f5>") 'ry/sql-send-paragraph)
+(global-set-key (kbd "<S-f5>") 'ry/sql-open-database)
+(global-set-key (kbd "<C-f5>") 'ry/sql-send-export-paragraph)
+(global-set-key (kbd "<M-f5>") 'ry/sql-connect)
+#+end_src
+
+** Functions
+Custom function for opening DB2 database connections.  This may not be the best 
+way to achieve multiple database connections at once as the SQLi hook is not being
+invoked but I do not have enough knowledge of sql.el to find the solution.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/sql-open-database (database username password)
+  "Open a SQLI process and name the SQL statement window with the name provided."
+  (interactive (list
+                (read-string "Database: ")
+                (read-string "Username: ")
+                (read-passwd "Password: ")))
+  (switch-to-buffer "*DB_HELPER*")
+  (god-local-mode)
+  (insert-file-contents "H:/emacs/Config/DB_INFO.TXT")
+  (setq sql-set-product "db2")
+  
+  (sql-db2 (upcase database))
+  (sql-rename-buffer (upcase database))
+  (setq sql-buffer (current-buffer))
+  (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";"))
+  
+  (other-window 1)
+  (switch-to-buffer (concat "*DB:" (upcase database) "*"))
+  (sql-mode)
+  (sql-set-product "db2")
+  (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
+  (auto-complete-mode))
+#+end_src
+
+Custom function for connecting to a database.  This is no longer in use as I will
+use the function above instead.  
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/sql-connect (database username password)
+  "Custom SQL connect"
+  (interactive (list
+                (read-string "Database: ")
+                (read-string "Username: ")
+                (read-passwd "Password: ")))
+  (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";")))
+#+end_src
+
+The method below was created because I have a tendency to forget to put a restriction
+on the number of rows returned by my queries.  It needs some serious TLC to get it 
+working correctly.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/sql-send-paragraph ()
+  "Add FETCH FIRST clause to the SQL statement prior to sending"
+  (interactive)
+  (let ((start (save-excursion
+                 (backward-paragraph)
+                 (point)))
+        (end (save-excursion
+               (forward-paragraph)
+               (point))))
+    (save-restriction
+      (narrow-to-region start end)
+      (if (not (search-forward-regexp "select" nil t))
+          (if (not (search-forward-regexp "fetch" nil t))
+              (sql-send-string (buffer-substring-no-properties start end))
+            (sql-send-string (concat (buffer-substring-no-properties start (1- end)) " FETCH FIRST 50 ROWS ONLY WITH UR;")))
+        (sql-send-string (buffer-substring-no-properties start end))))))
+#+end_src
+
+The function below is used quite often.  It is not the prettiest but it gets the
+job done.  It will wrap the current SQL statement in an EXPORT prior to sending.  
+This is helpful when I want to see a large XML document or I want to retrieve a
+row that exceeds the maximum number of characters that the DB2 CLP will return.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/sql-send-export-paragraph ()
+  "Prefix the current paragraph with an EXPORT command and 
+send the paragraph to the SQL process."
+  (interactive)
+  (let ((start (save-excursion
+                 (backward-paragraph)
+                 (point)))
+        (end (save-excursion
+               (forward-paragraph)
+               (point)))
+        (temp-file
+         (make-temp-file "DB2-EXPORT-" nil)))
+    (sql-send-string (concat "EXPORT TO " temp-file " OF DEL MODIFIED BY COLDEL0x09 " (buffer-substring-no-properties start end)))
+    (switch-to-buffer "*EXPORT*")
+    (sleep-for 1)
+    (insert-file-contents-literally (concat temp-file ".001.xml"))
+    (goto-char (point-min))
+    (while (re-search-forward "<\\?xml version=\"1.0\" encoding=\"UTF-8\" \\?>" nil t)
+      (replace-match "\n  <?xml version=\"1.0\" encoding=\"UTF-8\" ?>" nil nil))
+    (goto-char (point-min))
+    (kill-line)
+    (goto-longest-line (point-min) (point-max))
+    (let ((max-length (- (line-end-position) (line-beginning-position))))
+      (goto-char (point-min))
+      (setq more-lines t)
+      (while more-lines
+     	(setq cur-length (- (line-end-position) (line-beginning-position)))
+     	(if (< cur-length max-length)
+     	    (progn 
+     	      (goto-char (line-end-position))
+     	      (insert-char 32 (- max-length cur-length))))
+     	(setq more-lines (= 0 (forward-line 1)))))
+    (kill-rectangle (point-min) (point-max))
+    (erase-buffer)
+    (insert-file-contents-literally temp-file)
+    (while (re-search-forward "\"<XDS\.\*\$" nil t)
+      (replace-match "" nil nil))
+    (goto-char (point-min))
+    (while (re-search-forward "\"" nil t)
+      (replace-match "" nil nil))
+    (goto-char (point-min))
+    (goto-char (line-end-position))
+    (yank-rectangle)
+    (god-local-mode 1)))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes :exports code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Taken from Prelude.  Make the point move to the beginning of the line in the
+;;  same way Eclipse does.  Really move back-and-forth between the hard
+;;  beginning of the line and the first non-space character.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun prelude-move-beginning-of-line (arg)
+  "Move point back to indentation of beginning of line.
+
+Move point to the first non-whitespace character on this line.
+If point is already there, move to the beginning of the line.
+Effectively toggle between the first non-whitespace character and
+the beginning of the line.
+
+If ARG is not nil or 1, move forward ARG - 1 lines first. If
+point reaches the beginning or end of the buffer, stop there."
+  (interactive "^p")
+  (setq arg (or arg 1))
+
+  ;; Move lines first
+  (when (/= arg 1)
+    (let ((line-move-visual nil))
+      (forward-line (1- arg))))
+
+  (let ((orig-point (point)))
+    (back-to-indentation)
+    (when (= orig-point (point))
+      (move-beginning-of-line 1))))
+#+end_src
+
+* XML
+** Key bindings
+See the Hydra configuration for the key bindings for XML.
+
+| Key     | Command                 |
+|---------+-------------------------|
+| C-c x f | Pretty-print XML region |
+| C-c x l | Compact XML region      |
+| C-c x w | Get current xpath       |
+| C-c x x | Run xquery on buffer    |
+| C-c x X | Run xquery on region    |
+
+** Functions
+I am a Java programmer so I created my own utility for formatting XML documents.  The
+listing is below.  Basically it accepts the XML document to be formatted and an 
+optional argument to indicate if you want the compact formatting or pretty print.
+#+begin_src java :tangle no
+package com.brookwood.util;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Scanner;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+/*******************************************************************************
+ * This class is used to format an XML document.  If the document is to be 
+ * "pretty" printed the "--pretty" parameter should be passed before the document
+ * to be formatted.  If the pretty flag is not set the XML will be formatted to
+ * be on a single line.
+ * 
+ * @author Ryan Yanson
+ *
+ ******************************************************************************/
+public class XMLFormatter {
+
+	/***************************************************************************
+	 * Main entry point for program.
+	 * 
+	 * @param	args The command line arguments.
+	 **************************************************************************/
+	public static void main(String[] args) {
+		(new XMLFormatter()).run(args);
+	}
+
+	/***************************************************************************
+	 * Format the XML document passed.  If the first argument is "--pretty" then
+	 * format the document for printing, else format it on a single line.
+	 * 
+	 * @param	args The arguments passed from the command line.
+	 **************************************************************************/
+	private void run(String[] args) {
+		Boolean doIndent = false;
+		
+		if (args.length >= 1) {
+			doIndent = args[0].equalsIgnoreCase("--pretty") ? true : false;
+		}
+		
+		Scanner sc = new Scanner(System.in);
+		StringBuilder xml = new StringBuilder();
+		
+		while (sc.hasNextLine()) {
+			String line = sc.nextLine();
+			
+			//  Remove spaces between tags.
+			line = line.replaceAll(">\\s+<", "><");
+			line = line.replaceAll("^\\s+<", "<");
+			
+			xml.append(line);
+		}
+		
+		sc.close();
+		
+		System.out.print(serializeXML(createDOM(xml.toString()), doIndent));
+		System.exit(0);
+	}
+	
+	/***************************************************************************
+	 * Create a W3C DOM object.
+	 * 
+	 * @param cissEvent The CISS event in XML format.
+	 * @return a DOM object.
+	 * @throws IOException
+	 * @throws SAXException
+	 **************************************************************************/
+	public Document createDOM(String xmlString) {
+		try {
+			InputSource source = new InputSource(new StringReader(xmlString));
+			
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			return builder.parse(source);
+		} catch (SAXException e) {
+			System.err.println("SAXException while processing XML string : " + e.getMessage());
+			System.exit(1);
+		} catch (IOException e) {
+			System.err.println("IOException while processing XML string : " + e.getMessage());
+			System.exit(1);
+		} catch (ParserConfigurationException e) {
+			System.err.println("ParserConfigurationException while processing XML string : " + e.getMessage());
+			System.exit(1);
+		}
+		
+		return null;
+	}
+	
+	/***************************************************************************
+	 * Serialize an XML document for printing or onto a single line.
+	 * 
+	 * @param	document The document to format.
+	 * @param	doIndent A Boolean indicating if pretty printing should be used.
+	 * @return	The serialized XML document.
+	 **************************************************************************/
+	public String serializeXML(Document document, Boolean doIndent) {
+		DOMImplementation domImplementation = document.getImplementation();
+		
+		if (domImplementation.hasFeature("LS", "3.0") && domImplementation.hasFeature("Core", "2.0")) {
+			DOMImplementationLS domImplementationLS = (DOMImplementationLS) domImplementation.getFeature("LS", "3.0");
+			LSSerializer lsSerializer = domImplementationLS.createLSSerializer();
+			lsSerializer.setNewLine("\n");
+			
+			DOMConfiguration domConfiguration = lsSerializer.getDomConfig();
+			
+			if (domConfiguration.canSetParameter("format-pretty-print", doIndent)) {
+				lsSerializer.getDomConfig().setParameter("format-pretty-print", doIndent);
+				
+				LSOutput lsOutput = domImplementationLS.createLSOutput();
+				lsOutput.setEncoding("UTF-8");
+				
+				StringWriter stringWriter = new StringWriter();
+
+				lsOutput.setCharacterStream(stringWriter);
+				lsSerializer.write(document, lsOutput);
+				
+				return stringWriter.toString();
+			} else {
+				throw new RuntimeException("DOMConfiguration 'format-pretty-print' parameter isn't settable.");
+			}
+		} else {
+			throw new RuntimeException("DOM 3.0 LS and/or DOM 2.0 Core not supported.");
+		}
+	}
+	
+}
+#+end_src
+
+Pretty-print the selected region using the Java utility defined above.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/xml-format (beg end)
+  "Call an external Java program to format the current region
+as an XML document.  Region needs to contain a valid XML document."
+  (interactive "*r")
+  (save-excursion
+    (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar --pretty" (current-buffer) t)))
+#+end_src
+
+Compact the XML document in the active region using the Java utility defined above.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/xml-linearlize (beg end)
+  "Call an external Java program to linearlize the current region.  
+Region needs to contain a valid XML document."
+  (interactive "*r")
+  (save-excursion
+    (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar " (current-buffer) t)))
+#+end_src
+
+I work with a lot of XML documents.  Most of the time I can just look at the document
+and see what I need.  Occasional it can be helpful to write an Xquery to explore the
+document.  The code below is a modified version of the functions provided on
+http://donnieknows.com/blog/hacking-xquery-emacs-berkeley-db-xml.  While the article 
+uses Berkley DB XML I opted to use Saxon.  Saxon is easy to obtain and the installation
+is simply unzipping a file and placing a JAR where I want.  This works well on work
+machines.
+
+An additional function was also created for performing an Xquery using the entire
+buffer instead of an active region.  I find it annoying to have to select things when
+I typically write the Xquery as if the buffer was the whole document.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/xquery ()
+  "Perform Xquery using Saxon with the current buffer."
+  (interactive "")
+  (let ((beg (point-min))
+        (end (point-max)))
+    (ry/xquery-with-region beg end)))
+
+(defun ry/xquery-with-region (beg end)
+  "Perform Xquery using Saxon with the current region."
+  (interactive "*r")
+  (let ((newbuffer nil)
+        (buffer (get-buffer "xquery-result"))
+        (xquery (buffer-substring beg end)))
+    (setq xquery-result
+          (cond
+           ((buffer-live-p buffer) buffer)
+           (t (setq newbuffer t) (generate-new-buffer "xquery-result"))))
+    (with-current-buffer xquery-result
+      (with-timeout
+          (10 (insert "Gave up because query was taking too long."))
+        (erase-buffer)
+        (insert (ry/perform-xquery xquery t)))
+      (nxml-mode)
+      (goto-char (point-min)))
+    (switch-to-buffer-other-window xquery-result)
+    (other-window -1)))
+
+(defun ry/perform-xquery (xquery &optional timed)
+  "Perform the selected Xquery using Saxon."
+  (setq file (make-temp-file "elisp-dbxml-"))
+  (write-region xquery nil file)
+  (setq result (shell-command-to-string
+                (concat "java -cp H:/emacs/Java/saxon9he.jar net.sf.saxon.Query -q:\"" file "\" !indent=yes\n")))
+  (delete-file file)
+  (concat "" result))
+#+end_src
+
+This function is a modified version of the function found at 
+http://www.emacswiki.org/emacs/NxmlMode#toc11.  In addition to displaying the
+current xpath in the echo area it will be copied to the clipboard.  This has
+proven to be useful many times when someone asks me for the xpaths for all tags
+in a document.  It can be added to a macro to generate the list automatically.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  The function below is a modified version of a function found at:
+;;  http://www.emacswiki.org/emacs/NxmlMode#toc11.  In additional to displaying
+;;  the current XPATH in the echo area it will be copied to the clipboard.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ry/xml-where ()
+  "Display the hierarchy of XML elements the point is on as a path."
+  (interactive)
+  (let ((path nil))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (while (and (< (point-min) (point)) ;; Doesn't error if point is at beginning of buffer
+                    (condition-case nil
+                        (progn
+                          (nxml-backward-up-element) ; always returns nil
+                          t)
+                      (error nil)))
+          (setq path (cons (xmltok-start-tag-local-name) path)))
+        (kill-new (format "/%s" (mapconcat 'identity path "/")))
+        (message "XPath copied: 「%s」" (mapconcat 'identity path "/"))))))
+#+end_src
+* Buffer management
+** Key bindings
+#+begin_src emacs-lisp :tangle yes :exports code
+(global-set-key (kbd "C-x 2") 'sacha/vsplit-last-buffer)
+(global-set-key (kbd "C-x 3") 'sacha/hsplit-last-buffer)
+(global-set-key (kbd "C-x k") 'kill-this-buffer)
+#+end_src
+
+** Functions
+Enable god-mode prior to switching buffers.  This is done as I am trying to use
+god-mode as a poor-mans evil mode and constantly forget to switch back into 
+god-mode.  It would probably be better to force myself to do the switching but
+I cannot get it.
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/switch-buffer ()
+  "Function to switch the current buffer to God-mode
+ prior to switching buffers."
+  (interactive)
+  (god-local-mode 1)
+  (helm-mini))
+#+end_src
+
+Two handy little functions courtesy of Sacha Chua, http://pages.sachachua.com/.emacs.d/Sacha.html.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun sacha/vsplit-last-buffer (prefix)
+  "Split the window vertically and display the previous buffer."
+  (interactive "p")
+  (split-window-vertically)
+  (other-window 1 nil)
+  (unless prefix
+    (switch-to-next-buffer)))
+
+(defun sacha/hsplit-last-buffer (prefix)
+  "Split the window horizontally and display the previous buffer."
+  (interactive "p")
+  (split-window-horizontally)
+  (other-window 1 nil)
+  (unless prefix (switch-to-next-buffer)))
+#+end_src
+
+I don't use this function but am leaving it in case I do find a need for it.  Taken
+from http://emacsredux.com/blog/2013/03/30/kill-other-buffers/. 
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun kill-other-buffers ()
+  "Kill all buffers but the current one.
+Don't mess with special buffers."
+  (interactive)
+  (dolist (buffer (buffer-list))
+    (unless (or (eql buffer (current-buffer)) (not (buffer-file-name buffer)))
+      (kill-buffer buffer))))
+#+end_src
+
+When I am working it is rare that I will kill a buffer other then the currently 
+active one.  This function will kill the current buffer without prompting me.  
+It was found at http://www.masteringemacs.org/articles/2014/02/28/my-emacs-keybindings/
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun kill-this-buffer () 
+  "Kill the current buffer without prompting."  
+  (interactive) 
+  (kill-buffer (current-buffer)))
+#+end_src
+   
+* Narrow and widen
+This function narrows and widens intelligently.  It was found at
+https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun narrow-or-widen-dwim (p)
+  "If the buffer is narrowed, it widens. Otherwise, it narrows
+intelligently.  Intelligently means: region, org-src-block,
+org-subtree, or defun, whichever applies first.  Narrowing to
+org-src-block actually calls `org-edit-src-code'.
+
+With prefix P, don't widen, just narrow even if buffer is already
+narrowed."
+  (interactive "P")
+  (declare (interactive-only))
+  (cond ((and (buffer-narrowed-p) (not p)) (widen))
+        ((and (boundp 'org-src-mode) org-src-mode (not p))
+         (org-edit-src-exit))
+        ((region-active-p)
+         (narrow-to-region (region-beginning) (region-end)))
+        ((derived-mode-p 'org-mode)
+         (cond ((ignore-errors (org-edit-src-code))
+                (delete-other-windows))
+               ((org-at-block-p)
+                (org-narrow-to-block))
+               (t (org-narrow-to-subtree))))
+        ((derived-mode-p 'prog-mode) (narrow-to-defun))
+        (t (error "Please select a region to narrow to"))))
+#+end_src
+
+* Current file path
+This little function has proven to be very helpful.  It's not used often but when
+I need the current path it makes it easy to get it.  It was originally found in 
+Xah Lee's site.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun xah/copy-file-path (&optional φdir-path-only-p)
+  "Copy the current buffer's file path or dired path to `kill-ring'.
+If `universal-argument' is called, copy only the dir path.
+Version 2015-01-14
+URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
+  (interactive "P")
+  (let ((fPath
+         (if (equal major-mode 'dired-mode)
+             default-directory
+           (buffer-file-name))))
+    (kill-new
+     (if (equal φdir-path-only-p nil)
+         fPath
+       (file-name-directory fPath)))
+    (message "File path copied: 「%s」" fPath)))
+#+end_src
+
+* Launching Windows programs
+The following functions were created as an easy way to launch a couple Windows
+programs.  I usually forget they are in here though.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/launch-windows-explorer ()
+  "Open Windows explorer."
+  (interactive)
+  (if (eq system-type 'windows-nt)
+      (shell-command "explorer.exe")
+    (error "This command can only be used on Windows.")))
+
+(defun ry/launch-internet-explorer ()
+  "Open Internet Explorer."
+  (interactive)
+  (if (eq system-type 'windows-nt)      
+      (shell-command "C:/Progra~1/Intern~1/iexplore.exe https://www.bing.com")
+    (error "This command can only be used on Windows.")))
+#+end_src
+
+* Packages
+** Paradox
+Being able to use Emacs while packages are updated is a fantastic thing.  Paradox 
+makes this happen.  The async package should be brought in automatically but for
+some reason it is here anyway.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package async
+  :ensure t)
+
+(use-package paradox
+  :ensure t
+  :commands (paradox-mode paradox-upgrade-packages)
+  :config
+  (progn
+    (setq paradox-execute-asynchronously t)
+    (setq paradox-github-token t)))
+#+end_src
+
+** Diminish
+Diminish reduces the clutter from the mode-line.  Just as with the async package,
+it really should be brought in as a dependency of another (use-package).
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package diminish
+  :ensure t)
+#+end_src
+
+** Solarized color theme
+This is the Solarized color theme that is common to VIM.  I change the mode-line
+to have a different color and also change a couple faces for code block in 
+org-mode so that they stand out more.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package solarized-theme
+  :ensure t
+  :config
+  (progn
+    (load-theme 'solarized-dark t)
+    (set-face-attribute 'mode-line nil
+                        :inverse-video t
+                        :weight 'bold
+                        :overline nil
+                        :underline nil
+                        :box nil
+                        :foreground "#93a1a1"
+                        :background "#073642")
+    (set-face-attribute 'mode-line-inactive nil
+                        :inverse-video t
+                        :weight 'bold
+                        :overline nil
+                        :underline nil
+                        :box nil
+                        :foreground "#657b83"
+                        :background "#073642")
+    (with-eval-after-load 'org
+      (set-face-attribute 'org-block-begin-line nil
+                          :underline t
+                          :background "#073642")
+      (set-face-attribute 'org-block-end-line nil
+                          :overline t
+                          :background "#073642")
+      (set-face-attribute 'org-block-background nil
+                          :background "#073642"))))
+#+end_src
+
+** Rainbow Delimiters
+Make delimiters a little easier to match up without having to be on one of them.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package rainbow-delimiters
+  :ensure t 
+  :config
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+#+end_src
+
+** Smartscan
+Smartscan mode allows for finding the next/previous occurrence of the symbol 
+under point.  
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package smartscan
+  :ensure t
+  :commands (smartscan-symbol-go-forward smartscan-symbol-go-backward highlight-symbol-first)
+  :config
+  (progn
+    (global-smartscan-mode)))
+#+end_src
+
+** NXML Mode
+Use the fantastic NXML mode for XML editing.  Folding of a document based on the
+current tag is bound to ==C-c h== but as much as I like the idea of folding I 
+don't end up using it very much.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package nxml-mode
+  :commands nxml-mode
+  :config
+  (progn
+    (setq nxml-child-indent 2)
+    (setq nxml-attribute-indent 4)
+    (setq nxml-auto-insert-xml-declaration-flag nil)
+    (setq nxml-slash-auto-complete-flag t)
+    
+    (require 'sgml-mode)
+    (require 'nxml-mode)
+
+    (use-package hideshow
+      :ensure t
+      :config
+      (progn
+        (add-to-list 'hs-special-modes-alist
+                     '(nxml-mode
+                       "<!--\\|<[^/>]*[^/]>"
+                       "-->\\|</[^/>]*[^/]>"
+                       "<!--"
+                       sgml-skip-tag-forward
+                       nil))
+
+        (add-hook 'nxml-mode-hook 'hs-minor-mode))
+
+      ;; optional key bindings, easier than hs defaults
+      (define-key nxml-mode-map (kbd "C-c h") 'hs-toggle-hiding))))
+#+end_src
+
+** Web Mode
+Enable web mode for various file extensions.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package web-mode
+  :ensure t
+  :mode 
+  (("\\.phtml\\'" . web-mode)
+   ("\\.tpl\\.php\\'" . web-mode)
+   ("\\.jsp\\'" . web-mode)
+   ("\\.as[cp]x\\'" . web-mode)
+   ("\\.erb\\'" . web-mode)
+   ("\\.mustache\\'" . web-mode)
+   ("\\.djhtml\\'" . web-mode))
+  :init
+  (setq web-mode-enable-auto-pairing nil))
+#+end_src
+
+** Helm
+Use Helm everywhere.  I like the UI for Helm and the way that it allows for
+narrowing search results.  The downside is that it is the single largest hit to
+startup time in this config.  If I could get used to IDO after using Helm for
+so long I would because of the startup time issue.  I'm not sure if other 
+people have this issue or not as I was unable to find any similar problems when
+doing a couple searches.  On an SSD the load time is fine but on my work 
+machine which a HDD it is painful.
+
+The configuration is pretty basic with the exception being mapping the tab
+key to helm-execute-persistent-action.  This was done so that it behaves in a
+similar way as bash.  Also I like to force Helm to always split the current 
+window vertically.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package helm
+  :ensure t
+  :diminish helm-mode
+  :bind (("C-M-s" . helm-occur)
+         ("C-x C-f" . helm-find-files)
+         ("M-x" . helm-M-x)
+         ("C-x b" . ry/switch-buffer)
+         ("C-x C-b" . helm-buffers-list)
+         ("C-x r l" . helm-bookmarks)
+         ("C-h f" . helm-apropos)
+         ("C-h r" . helm-info-emacs)
+         ("C-h C-l" . helm-locate-library)
+         ("M-y" . helm-show-kill-ring)
+         ("C-x C-b" . ry/switch-buffer)
+         ("<f7>" . helm-bookmarks)
+         ("<f8>" . bookmark-set))
+  :config
+  (progn
+    (require 'helm-config)
+
+    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
+    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+    (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+    (setq helm-quick-update                     t
+          helm-split-window-in-side-p           t
+          helm-buffers-fuzzy-matching           t
+          helm-ff-search-library-in-sexp        t
+          helm-scroll-amount                    8
+          helm-ff-file-name-history-use-recentf t
+          helm-mini-default-sources '(helm-source-buffers-list
+                                      helm-source-recentf
+                                      helm-source-bookmarks
+                                      helm-source-buffer-not-found))
+    
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Make helm always create a new window and always split the current window
+    ;;  vertically.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (setq helm-display-function
+          (lambda (buf)
+            (split-window-vertically)
+            (other-window 1)
+            (switch-to-buffer buf)))
+
+    (helm-mode)))
+#+end_src
+
+** Multiple Cursors
+Enable the use of multiple cursors.  This is a fantastic package that gets a lot
+of use in my work.  People think you are a wizard when they see you editing 
+multiple lines/places at once.  Similar to macros but easier to visualize.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package multiple-cursors
+  :ensure t
+  :bind (("C-S-s C-S-s" . mc/edit-lines)
+         ("C->" . mc/mark-next-symbol-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-c *" . mc/mark-all-like-this)))
+#+end_src
+
+** Guru Mode
+Disable arrow keys and force yourself to use the Emacs bindings for navigation.
+I put this one when I first stared to use Emacs and it has stuck.  I now get 
+annoyed in other applications when they do not behave as I want.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package guru-mode
+  :ensure t
+  :init
+  (guru-mode))
+#+end_src
+
+** Expand Region
+A very helpful package for expanding the current region by semantic units.  
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package expand-region
+  :ensure t
+  :bind (("C-=" . er/expand-region)))
+#+end_src
+
+** Eldoc Mode
+Enable Eldoc for Lisp modes.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package "eldoc"  
+  :diminish eldoc-mode
+  :init
+  (progn
+    (setq eldoc-idle-delay 0.2)
+    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
+#+end_src
+
+** Org-Mode
+What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My
+org-mode configuration is contained in another file but will eventually be 
+merged into this one and documented.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package org
+  :ensure t 
+  :commands (org-agenda org-capture)
+  :config
+  (load "~/.emacs.d/custom-org-mode.el"))
+#+end_src
+
+** Undo Tree
+Visual way to unto changes.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package undo-tree
+  :ensure t
+  :diminish undo-tree-mode
+  :bind (("C-x u" . undo-tree-visualize))
+  :commands undo-tree-visualize
+  :config
+  (progn
+    (global-undo-tree-mode)
+    (setq undo-tree-visualizer-timestamps t)
+    (setq undo-tree-visualizer-diff t)))
+#+end_src
+
+** God Mode
+I am not a huge fan of VIM but I can admit that the modal editing is better 
+for my hands.  I spent all this time getting used to the Emacs keybindings so
+I am using god-mode instead of evil.
+
+In addition to adding keybindings to help work with this mode I have added a 
+hook to the post-command-hook to change the cursor.  The cursor will be a red
+box when god-mode is enabled and a regular pipe otherwise.  This done to help
+me remember which mode I am in.  At one time I had the mode-line change color
+but I didn't care for the colors on Solarized when I changed from Monokai.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package god-mode
+  :ensure t
+  ;;:diminish god-mode                   
+  :bind (("<escape>" . god-local-mode)
+         ("C-x C-1" . delete-other-windows)
+         ("C-x C-2" . sacha/vsplit-last-buffer)
+         ("C-x C-3" . sacha/hsplit-last-buffer)
+         ("C-x C-0" . delete-window)
+         ("C-x C-k" . kill-this-buffer)
+         ("C-x C-S-k" . kill-other-buffers)
+         ("C-x C-o" . other-window)
+         ("C-c C-r" . org-capture)
+         ("C-C C-a" . org-agenda)
+         ("C-x C-h" . mark-whole-buffer)
+         ("C-x C-d" . dired)
+         ("C-x C-g" . magit-status)
+         ("C-c C-g" . magit-status)
+         ("C-c C-t" . hydra-toggle/body)
+         ("C-c C-l" . hydra-launch/body))
+  :init
+  (progn
+    (god-mode-all)
+    
+    (define-key god-local-mode-map (kbd "z") 'repeat)
+    (define-key god-local-mode-map (kbd "i") 'god-local-mode)
+    (define-key god-local-mode-map (kbd "v") 'scroll-up-command)
+    (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
+    
+    (add-to-list 'god-exempt-major-modes 'dired-mode)
+    (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
+    (add-to-list 'god-exempt-major-modes 'org-capture-mode)
+
+    ;;  Change the color of the cursor to RED if god-mode is enabled.
+    (add-hook 'post-command-hook
+              (lambda ()
+                (if (or god-local-mode buffer-read-only)
+                    (progn                   
+                      (set-cursor-color "#b22222")
+                      (setq cursor-type 'box))
+                  (progn
+                    (set-cursor-color "#839496")
+                    (setq cursor-type 'bar)))))))
+#+end_src
+
+** Golden Ratio
+Use the golden ratio to size windows when multiples are open.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package golden-ratio
+  :ensure t
+  :diminish golden-ratio-mode
+  :config
+  (progn 
+    (golden-ratio-mode)))
+#+end_src
+
+** Company Mode
+Completion is done using Company mode.  I was originally using Auto Complete but
+switched to Company.  I cannot remember the reason for the switch but the config
+is gone now so I am here to stay unless there is some big reason to switch back.
+
+The main modification is to use C-n and C-p to cycle through candidates and the
+faces for the popup.  The faces are done using the color package so that it 
+fits in with my theme.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package company
+  :ensure t
+  :diminish company-mode
+  :config
+  (progn
+    (use-package company-quickhelp
+      :ensure t
+      :config
+      (progn
+        (company-quickhelp-mode 1)
+        (setq company-quickhelp-delay 0.1)))
+    (global-company-mode)
+    (setq company-idle-delay 0.5)
+    (setq company-show-numbers t)
+    (setq company-selection-wrap-around t)
+    (setq company-tooltip-limit 10)
+    (setq company-tooltip-flip-when-above t)
+    (setq company-dabbrev-downcase nil)
+    (setq company-dabbrev-ignore-invisible t)
+    (setq company-dabbrev-ignore-buffers "\\`[ ]'")
+    (setq company-dabbrev-code-ignore-case t)
+    (setq company-dabbrev-code-other-buffers 'all)
+    (setq company-dabbrev-other-buffers 'all)
+    
+    (with-eval-after-load 'company
+      (define-key company-active-map (kbd "M-n") nil)
+      (define-key company-active-map (kbd "M-p") nil)
+      (define-key company-active-map (kbd "C-n") #'company-select-next)
+      (define-key company-active-map (kbd "C-p") #'company-select-previous))
+
+    (require 'color)
+    (let ((bg (face-attribute 'default :background)))
+      (set-face-attribute 'company-tooltip nil
+                          :inherit 'default
+                          :background (color-lighten-name bg 2))
+      (set-face-attribute 'company-scrollbar-bg nil
+                          :background (color-lighten-name bg 10))
+      (set-face-attribute 'company-scrollbar-fg nil
+                          :background (color-lighten-name bg 5))
+      (set-face-attribute 'company-tooltip-selection nil
+                          :inherit font-lock-function-name-face)
+      (set-face-attribute 'company-tooltip-common nil
+                          :inherit font-lock-constant-face))))
+#+end_src
+
+** Smartparens
+This Smartparens configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+and http://pages.sachachua.com/.emacs.d/Sacha.html.
+I am still trying to incorporate the package into my workflow.  It seems that 
+it will be a very powerful addition to my work.  Strict mode was removed as I
+am not at a point where I am able to work with it as well as I would like.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package smartparens
+  :ensure t
+  :diminish smartparens-mode
+  :bind
+  (("C-M-f" . sp-forward-sexp)
+   ("C-M-b" . sp-backward-sexp)
+   ("C-M-d" . sp-down-sexp)
+   ("C-M-a" . sp-backward-down-sexp)
+   ("C-S-a" . sp-beginning-of-sexp)
+   ("C-S-d" . sp-end-of-sexp)
+   ("C-M-e" . sp-up-sexp)
+   ("C-M-u" . sp-backward-up-sexp)
+   ("C-M-t" . sp-transpose-sexp)
+   ("C-M-n" . sp-next-sexp)
+   ("C-M-p" . sp-previous-sexp)
+   ("C-M-k" . sp-kill-sexp)
+   ("C-M-w" . sp-copy-sexp)
+   ("M-<delete>" . sp-unwrap-sexp)
+   ("M-S-<backspace>" . sp-backward-unwrap-sexp)
+   ("C-<right>" . sp-forward-slurp-sexp)
+   ("C-<left>" . sp-forward-barf-sexp)
+   ("C-M-<left>" . sp-backward-slurp-sexp)
+   ("C-M-<right>" . sp-backward-barf-sexp)
+   ("M-D" . sp-splice-sexp)
+   ("C-M-<delete>" . sp-splice-sexp-killing-forward)
+   ("C-M-<backspace>" . sp-splice-sexp-killing-backward)
+   ("C-M-S-<backspace>" . sp-splice-sexp-killing-around)
+   ("C-]" . sp-select-next-thing-exchange)
+   ("C-<left_bracket>" . sp-select-previous-thing)
+   ("C-M-]" . sp-select-next-thing)
+   ("M-F" . sp-forward-symbol)
+   ("M-B" . sp-backward-symbol)
+   ("H-t" . sp-prefix-tag-object)
+   ("H-p" . sp-prefix-pair-object)
+   ("H-s c" . sp-convolute-sexp)
+   ("H-s a" . sp-absorb-sexp)
+   ("H-s e" . sp-emit-sexp)
+   ("H-s p" . sp-add-to-previous-sexp)
+   ("H-s n" . sp-add-to-next-sexp)
+   ("H-s j" . sp-join-sexp)
+   ("H-s s" . sp-split-sexp)
+   ("M-9" . sp-backward-sexp)
+   ("M-0" . sp-forward-sexp))
+  :init
+  (progn
+    (smartparens-global-mode t)
+    ;; (smartparens-strict-mode t)
+    (show-smartparens-global-mode t)
+    (use-package smartparens-config)
+
+    (sp-local-pair 'web-mode "<" nil :when '(sacha/sp-web-mode-is-code-context))
+  
+    (sp-with-modes '(html-mode sgml-mode web-mode)
+                   (sp-local-pair "<" ">"))))
+#+end_src
+
+** Dired+
+I like to see line highlighting for every other row when looking at directory
+listings.  
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package dired+
+  :ensure t
+  :commands dired
+  :config
+  (progn
+    (toggle-diredp-find-file-reuse-dir 1)
+    (add-to-list 'load-path "~/.emacs.d/extra")
+    (require 'dired-sort-menu)
+    (setq dired-hide-details-mode nil)))
+#+end_src
+
+** Magit
+The only reason I use git is to save this configuration, but I can see how this
+mode could be very useful.  Perhaps someday work will make the switch.  This
+configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status)
+         ("C-c g" . magit-status))
+  :config
+  (use-package git-timemachine
+    :ensure t
+    :bind (("C-x v t" . git-timemachine)))
+  (use-package git-link
+    :ensure t
+    :bind (("C-x v L" . git-link))
+    :init
+    (setq git-link-open-in-browser t))
+  (setq magit-use-overlays nil)
+  ;; (diminish 'magit-auto-revert-mode)
+  ;; (diminish 'magit-backup-mode)
+  (defadvice magit-status (around magit-fullscreen activate)
+    (window-configuration-to-register :magit-fullscreen)
+    ad-do-it
+    (delete-other-windows))
+
+  (defun magit-quit-session ()
+    "Restores the previous window configuration and kills the magit buffer"
+    (interactive)
+    (kill-buffer)
+    (jump-to-register :magit-fullscreen))
+
+  (bind-keys :map magit-status-mode-map
+             ("TAB" . magit-section-toggle)
+             ("<C-tab>" . magit-section-cycle)
+             ("q" . magit-quit-session)))
+#+end_src
+
+** Lineum Relative
+I don't typically have need to show line numbers but when I do it is helpful to
+see the relative line numbers instead of only the absolute.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package linum-relative
+  :ensure t
+  :commands linum-mode
+  :config
+  (progn
+    (setq linum-format 'linum-relative)
+    (setq linum-relative-current-symbol "")))
+#+end_src
+
+** Comment DWIM 2
+Commenting should be DWIM.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package comment-dwim-2
+  :ensure t
+  :bind (("M-;" . comment-dwim-2)))
+#+end_src
+
+** Mediawiki
+For editing the MediaWiki at work.  An old version of Mediawiki is being   
+used which is incompatible so this is only being used for the little code  
+coloring that it provides.  As such the keybinding for C-x C-s that is 
+provided by the mode is overwritten by the default action.             
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package mediawiki
+  :ensure t
+  :commands mediawiki-mode
+  :config
+  (eval-after-load 'mediawiki
+    (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer)))
+#+end_src
+
+** Stripe Buffer
+Stripe dired buggers and org-mode tables for easier reading.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package stripe-buffer
+  :ensure t
+  :defer t
+  :config
+  (progn
+    (add-hook 'dired-mode-hook 'stripe-listify-buffer)
+    (add-hook 'org-mode-hook 'turn-on-stripe-table-mode)
+    (setq stripe-hl-line "#073642")
+    (set-face-attribute stripe-highlight-face nil :background "#073642")))
+#+end_src
+
+** Ace Jump
+Ace jump looks like it could be helpful.  The configuration needs to be updated
+to include keybindings.  I originaly also had key chord mixed in here but decided
+that it was not going to get any use.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+;; (use-package ace-jump-mode
+;;   :ensure t
+;;   :bind (("C-c SPC" . ace-jump-char-mode))
+;;   :commands ace-jump-mode)
+
+(use-package avy
+  :ensure t
+  :bind (("C-c SPC" . avy-goto-char)))
+#+end_src
+
+** JSON Reformat
+Work requires me to work with JSON objects every blue moon.  Being able to 
+pretty print them is a good thing.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package json-reformat
+  :ensure t
+  :commands (json-pretty-print json-pretty-print-buffer))
+#+end_src
+
+** Git Gutter+
+Add Git diff information to the gutter so that I can easily track changes.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package git-gutter+
+  :ensure t
+  :commands git-gutter+-mode
+  :diminish git-gutter+-mode
+  :config
+  (progn
+    (setq git-gutter+-modified-sign "  ") ;; two space
+    (setq git-gutter+-added-sign "++")    ;; multiple character is OK
+    (setq git-gutter+-deleted-sign "--")
+    (set-face-background 'git-gutter+-modified "#073642")))
+#+end_src
+
+** Hydra
+Hyrda is a very cool package.  Prior to hydra I was using custom maps for a 
+couple small groups of related commands.  The original configuration was similar
+to the one here, https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org.  
+Hydra has taken over this duty and I have a couple more uses in mind as well.
+
+Whitespace mode was marked as required so that the mode toggle hydra would
+work correctly.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package hydra
+  :ensure t
+  :config
+  (progn
+    (require 'whitespace)
+    
+    ;;  Change the blue face color as it is hard to see in Solarized dark.
+    (set-face-attribute 'hydra-face-blue nil
+                        :foreground "#4169e1")
+    
+    (defhydra hydra-toggle (:color pink)
+      "
+_a_bbrev-mode:         %`abbrev-mode
+_m_enu-bar-mode:       %`menu-bar-mode
+_d_ebug-on-error:      %`debug-on-error
+_f_lyspell-mode:       %`flyspell-mode
+_g_lobal-hl-line-mode: %`global-hl-line-mode
+_w_hitepace-mode:      %`whitespace-mode
+_s_martparens-mode:    %`smartparens-mode
+
+"
+      ("a" abbrev-mode nil)
+      ("m" menu-bar-mode nil)
+      ("d" toggle-debug-on-error nil)
+      ("f" flyspell-mode nil)
+      ("g" global-hl-line-mode nil)
+      ("s" smartparens-mode nil)
+      ("w" whitespace-mode nil)
+      ("q" nil "cancel"))
+
+    (defhydra hydra-launch (:color blue)
+      "
+_i_nternet Explorer
+_w_indows Explorer
+
+"
+      ("i" ry/launch-internet-explorer nil)
+      ("w" ry/launch-windows-explorer nil)
+      ("q" nil "cancel" :color red))
+
+    (defhydra hydra-xml (:color blue)
+      "
+_f_ormat
+_l_inearlize
+_w_here
+_x_query buffer
+Xquery _r_egion
+
+"
+      ("f" ry/xml-format nil)
+      ("l" ry/xml-linearlize nil)
+      ("w" ry/xml-where nil)
+      ("x" ry/xquery nil)
+      ("r" ry/xquery-with-region nil)
+      ("q" nil "cancel" :color red))
+
+    (global-set-key (kbd "C-c t") 'hydra-toggle/body)
+    (global-set-key (kbd "C-c l") 'hydra-launch/body)
+    (global-set-key (kbd "C-c x") 'hydra-xml/body)))
+#+end_src
+
+** Recentf
+Save the recent file history.  This is used by Helm.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package recentf
+  :ensure t
+  :commands (helm-mini)
+  :init
+  (progn
+    (recentf-mode)
+    (setq recentf-max-saved-items 25)
+    (setq recentf-auto-cleanup 'never)
+    (add-to-list 'recentf-exclude "COMMIT_EDITMSG\\'")))
+#+end_src
+
+** Eww Lnum
+Add numbers to links in web pages when using Eww the same way that Surf or other
+minimal web browsers do.  I don't use eww very often but it is helpful when I do.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package eww-lnum
+  :ensure t
+  :commands eww
+  :init
+  (eval-after-load "eww"
+    '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
+            (define-key eww-mode-map "F" 'eww-lnum-universal))))
+#+end_src
+
+** Stackexchange
+Everyone uses Stackexchange.  Why not interact with it through Emacs.
+
+#+begin_src emacs-lisp :tangle yes :exports code 
+(use-package sx
+  :ensure t
+  :commands (sx-tab-feature sx-tab-frontpage sx-tab-hot sx-tab-newest sx-tab))
+#+end_src
+
+** Whole Line or Region
+This package makes commands work differently based on if a region is selected
+or not.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package whole-line-or-region
+  :ensure t)
+#+end_src
+
+** Fold This
+A folding package based on the active region.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package fold-this
+  :ensure t
+  :bind (("C-c C-f" . fold-this-all)
+         ("C-c C-F" . fold-this)
+         ("C-c M-f" . fold-this-unfold-all)))
+#+end_src
+
+** Anzu 
+Anzu is a visual regular expression/replace package.  It includes some nice
+highlighting ability while doing replaces or searches.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package anzu
+  :ensure t
+  :diminish anzu-mode
+  :bind (("C-M-s" . anzu-query-replace)
+         ("C-M-%" . anzu-query-replace-regexp)))
+#+end_src
+
+** Re-builder
+Visual regular expression building.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package re-builder
+  :ensure t
+  :config
+  (setq reb-re-syntax 'string))
+#+end_src
+
+** Change Inner
+Call the change--inner and then the starting character to modify the inside
+portion of the group.  Not sure if this will get use.  One of those things
+that could save a lot of time but there is a need to change a deep habit.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package change-inner
+  :ensure t
+  :bind (("M-i" . change-inner)
+         ("M-o" . change-outer)))
+#+end_src
+
+** Fill Column Indicator
+I like to know where column 80 is.  This used to be a big deal years ago and is
+not so much an issue now but I sill like to know where it is in the rare event
+that I need to print a listing.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package fill-column-indicator
+  :ensure t
+  :config
+  (progn    
+    (defun sanityinc/fci-enabled-p () (symbol-value 'fci-mode))
+    
+    (defvar sanityinc/fci-mode-suppressed nil)
+    (make-variable-buffer-local 'sanityinc/fci-mode-suppressed)
+    
+    (defadvice popup-create (before suppress-fci-mode activate)
+      "Suspend fci-mode while popups are visible"
+      (let ((fci-enabled (sanityinc/fci-enabled-p)))
+        (when fci-enabled
+          (setq sanityinc/fci-mode-suppressed fci-enabled)
+          (turn-off-fci-mode))))
+    
+    (defadvice popup-delete (after restore-fci-mode activate)
+      "Restore fci-mode when all popups have closed"
+      (when (and sanityinc/fci-mode-suppressed
+                 (null popup-instances))
+        (setq sanityinc/fci-mode-suppressed nil)
+        (turn-on-fci-mode)))
+
+    (setq fci-rule-column 80)
+    (fci-mode)))
+#+end_src
+
+** Swiper
+Searching similar to helm swoop.  Swoop was slow in some situations.  Need to 
+evaluate if swiper is faster and if I really have a need for the ability that 
+the package provides.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package swiper
+  :ensure t)
+#+end_src
+
+** Sr-Speedbar
+Speedbar.  It seems like such a nice thing to have and yet I rarely ever use it.
+When in Eclipse I use it all the time but the need is not really there when using
+Emacs.  May be I will enable it again at some point in time.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package sr-speedbar
+  :ensure t
+  :disabled t
+  :config
+  (progn
+    (setq sr-speedbar-skip-other-window-p nil)
+    (setq speedbar-use-images nil)
+    (setq sr-speedbar-right-side t)))
+#+end_src
+
+** Popwin
+Fix annoying buffer popups.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package popwin
+  :ensure t
+  :config
+  (popwin-mode))
+#+end_src
+
+** Flycheck
+On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it
+is really needed as the syntax highlighing is not working.  Maybe I will look 
+in to it.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package flycheck
+  :ensure t
+  :disabled t
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode))
+#+end_src
+
+** Lisp Mode
+Lisp mode hooks for cask files for if/when I start looking in to
+cask.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package lisp-mode
+  :mode ("Cask\\'" . emacs-lisp-mode)
+  :config
+  (progn
+    (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+    (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)))
+#+end_src
+
+** Highlight Symbol
+Not sure if this package will stay around either.  It is used for highlighting 
+the sysmbol at point.  Highlights a lot if it is enabled in a buffer that has a
+lot of the same word.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package highlight-symbol
+  :ensure t
+  :config
+  (progn
+    (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+    (setf highlight-symbol-idle-delay 0)))
+#+end_src
+
+** Discover My Major
+Helps to discover keybindings for the current mode.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package discover-my-major
+  :ensure t)
+#+end_src
+
+** Move Text
+Text manipulation helpers.  Need to do some more research on this.  Cannot 
+remember why I added this package.  Could be for the transpose command.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package move-text
+  :ensure t)
+#+end_src
+
+** CIDER
+I do not write Clojure code but I would like to learn when time permits.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package cider
+  :ensure t
+  :bind (("<f10>" . cider-jack-in))
+  :config
+  (progn
+    (add-hook 'cider-mode-hook #'eldoc-mode)
+    (setq nrepl-hide-special-buffers t)
+    (setq cider-repl-tab-command #'indent-for-tab-command)
+    (add-hook 'cider-repl-mode-hook #'subword-mode)))
+#+end_src
+
+** Eclim
+And then there is emacs-eclim.  This took a lot of experimentation to get working.
+Eventhough it is working the way that it is working is not the best.  There are a 
+number of comments in the code that detail why things were done the way there 
+were.  
+
+I wonder if the issue for the problems is that I am running an old 
+version of Eclipse or the fact that the machine that I do my Java work is a 
+Windows one.  I would have to imagine it is a little of both.
+
+The changes that were made to get it working are not pretty.  
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package emacs-eclim
+  :ensure t
+  :config
+  (progn
+    (require 'eclim-problems)
+    
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Use the company backend that comes with eclim instead.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (require 'company-emacs-eclim)
+    (company-emacs-eclim-setup)
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Windows setup so that eclim knows where the bat file is.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (custom-set-variables
+     '(eclim-eclipse-dirs '("C:/IBM/SDP"))
+     '(eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")
+     '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat"))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Toggle debugging.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (eclim-toggle-print-debug-messages)
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Again, a windows modification so that the eclim bat can be found for my
+    ;;  particular work setup.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun eclim-executable-find ()
+      (let (file)
+        (dolist (eclipse-root eclim-eclipse-dirs)
+          (and (file-exists-p
+                (setq file (expand-file-name "plugins" eclipse-root)))
+               (setq file (car (last (directory-files file t "^org.eclim_"))))
+               (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
+               (return (expand-file-name "eclim.bat" eclipse-root))))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Same as above.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun company-eclim-executable-find ()
+      (let (file)
+        (cl-dolist (eclipse-root '("c:/IBM/SDP"))
+          (and (file-exists-p (setq file (expand-file-name "plugins" eclipse-root)))
+               (setq file (car (last (directory-files file t "^org.eclim_"))))
+               (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
+               (cl-return (expand-file-name "eclim.bat" eclipse-root))))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  This is a built in function that I have duplicated for emacs-eclim use.
+    ;;  emacs-eclim will fail on windows when executing the eclim.bat fome the 
+    ;;  current directory on the F:/.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun ry/shell-command-to-string (command)
+      "Execute shell command COMMAND and return its output as a string
+using C:/ as the default directory."
+      (setq default-directory "C:/")
+      (with-output-to-string
+        (with-current-buffer
+          standard-output
+          (process-file shell-file-name nil t nil shell-command-switch command))))
+
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  This is the same issue that lead to the above function being created.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (defun eclim--call-process (&rest args)
+      "Calls eclim with the supplied arguments. Consider using
+`eclim/execute-command' instead, as it has argument expansion,
+error checking, and some other niceties.."
+      (let ((cmd (eclim--make-command args)))
+        (setq cmd2 (replace-regexp-in-string "\\\\" "" (format "%s" cmd)))
+        (when eclim-print-debug-messages (message "Executing: %s" cmd2))
+        (eclim--parse-result (ry/shell-command-to-string cmd))))
+
+    ;; Clobber this keybinding for eclim use.
+    (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
+    (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
+#+end_src
+
+** Midnight Mode
+This will eventually be used to close any DB connections that I forget to close
+during the day.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package midnight
+  :ensure t
+  :config
+  (midnight-delay-set 'midnight-delay "7:00am"))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(provide 'emacs-config)
+;;; emacs-config.el ends here
+#+end_src
+

@@ -2,9 +2,9 @@
 ;; Start the server
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (if (eq system-type 'windows-nt)
-  (progn
-    (require 'server) 
-    (server-start)))
+    (progn
+      (require 'server) 
+      (server-start)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remove unnecessary gui stuff
@@ -31,7 +31,6 @@
 
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                          ("melpa" . "http://melpa.org/packages/")))
-                         ;; ("SC"   . "http://joseito.republika.pl/sunrise-commander/")))
 
 (package-initialize)
 
@@ -39,20 +38,20 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(require 'use-package)
+(eval-when-compile
+  (require 'use-package))
+
+(require 'diminish)
+(require 'bind-key)
+
 (setq use-package-verbose t)
 
-(add-hook 'after-init-hook (lambda () (load "~/.emacs.d/emacs-config.el")))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(magit-use-overlays nil)
- '(paradox-github-token t))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Tangle and byte compile the source ORG document if it is newer than the
+;;  previously tangled and compiled file.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((src "~/.emacs.d/emacs-config.org")
+      (dst "~/.emacs.d/emacs-config.elc"))
+  (if (file-newer-than-file-p src dst)
+      (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t)))
+    (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
