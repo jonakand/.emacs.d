@@ -333,7 +333,10 @@ in Windows, so set it up here.
 (if (eq system-type 'windows-nt)
     (progn
       (setenv "DICTIONARY" "en_US")
-      (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell")))
+      (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell"))
+  (progn
+    (setenv "DICTIONARY" "en US")
+    (setenv "DICTPATH" "/usr/share/hunspell")))
 #+end_src
 
 Enable spelling for comments in programming modes too.
@@ -1491,7 +1494,8 @@ but I didn't care for the colors on Solarized when I changed from Monokai.
     (add-to-list 'god-exempt-major-modes 'dired-mode)
     (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
     (add-to-list 'god-exempt-major-modes 'org-capture-mode)
-
+    (add-to-list 'god-exempt-major-modes 'eshell-mode)
+    
     ;;  Change the color of the cursor to RED if god-mode is enabled.
     (add-hook 'post-command-hook
               (lambda ()
@@ -1513,7 +1517,11 @@ Use the golden ratio to size windows when multiples are open.
   :diminish golden-ratio-mode
   :config
   (progn 
-    (golden-ratio-mode)))
+    (golden-ratio-mode)
+    (setq golden-ratio-exclude-modes
+          '("dired-mode"
+            "ediff-mode"
+            "eshell-mode"))))
 #+end_src
 
 ** Company Mode
@@ -1683,6 +1691,8 @@ configuration was taken from https://github.com/mwfogleman/config/blob/master/ho
     (interactive)
     (kill-buffer)
     (jump-to-register :magit-fullscreen))
+
+  (setq magit-last-seen-setup-instructions "1.4.0")
 
   (bind-keys :map magit-status-mode-map
              ("TAB" . magit-section-toggle)
