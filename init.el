@@ -53,5 +53,7 @@
 (let ((src "~/.emacs.d/emacs-config.org")
       (dst "~/.emacs.d/emacs-config.elc"))
   (if (file-newer-than-file-p src dst)
-      (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t)))
+      (progn
+        (require 'ob-tangle)
+        (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t))))
     (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
