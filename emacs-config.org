@@ -1465,7 +1465,6 @@ but I didn't care for the colors on Solarized when I changed from Monokai.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package god-mode
   :ensure t
-  ;;:diminish god-mode                   
   :bind (("<escape>" . god-local-mode)
          ("C-x C-1" . delete-other-windows)
          ("C-x C-2" . sacha/vsplit-last-buffer)
@@ -1491,10 +1490,21 @@ but I didn't care for the colors on Solarized when I changed from Monokai.
     (define-key god-local-mode-map (kbd "v") 'scroll-up-command)
     (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
     
-    (add-to-list 'god-exempt-major-modes 'dired-mode)
-    (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
-    (add-to-list 'god-exempt-major-modes 'org-capture-mode)
-    (add-to-list 'god-exempt-major-modes 'eshell-mode)
+    (add-to-list 'god-exempt-major-modes '(dired-mode
+                                           org-agenda-mode
+                                           org-capture-mode
+                                           eshell-mode))
+
+    (require 'god-mode-isearch)
+    (define-key isearch-mode-map (kbd "<escape>") 'god-mode-isearch-activate)
+    (define-key god-mode-isearch-map (kbd "<escape>") 'god-mode-isearch-disable)
+
+    ;;  When capturing notes I want to start with god mode disabled.  Adding org-mode
+    ;;  to the god-exempt-major-modes list did not work for some reason.  Looking at
+    ;;   the buffer name does.
+    (add-to-list 'god-exempt-predicates
+                 '(lambda ()
+                    (string-equal (buffer-name) "CAPTURE-refile.org")))
     
     ;;  Change the color of the cursor to RED if god-mode is enabled.
     (add-hook 'post-command-hook
