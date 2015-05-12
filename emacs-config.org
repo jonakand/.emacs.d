@@ -1250,10 +1250,11 @@ under point.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package smartscan
   :ensure t
-  :commands (smartscan-symbol-go-forward smartscan-symbol-go-backward highlight-symbol-first)
+  :commands (smartscan-symbol-go-forward smartscan-symbol-go-backward)
+  :bind (("M-n" . smartscan-symbol-go-backward)
+         ("M-p" . smartscan-symbol-go-backward))
   :config
-  (progn
-    (global-smartscan-mode)))
+  (add-hook 'prog-mode-hook 'smartscan-mode))
 #+end_src
 
 ** NXML Mode
@@ -1432,7 +1433,9 @@ merged into this one and documented.
   :ensure t 
   :commands (org-agenda org-capture)
   :config
-  (load "~/.emacs.d/custom-org-mode.el"))
+  (progn
+    (eval-after-load "org-mode"
+      (load "~/.emacs.d/custom-org-mode.el"))))
 #+end_src
 
 ** Undo Tree
@@ -1502,9 +1505,11 @@ but I didn't care for the colors on Solarized when I changed from Monokai.
     ;;  When capturing notes I want to start with god mode disabled.  Adding org-mode
     ;;  to the god-exempt-major-modes list did not work for some reason.  Looking at
     ;;   the buffer name does.
-    (add-to-list 'god-exempt-predicates
-                 '(lambda ()
-                    (string-equal (buffer-name) "CAPTURE-refile.org")))
+    (defun ry/god-org-capture-p ()
+      "Return non-nil if buffer is an org capture buffer."
+      (not (string-equal (buffer-name) "CAPTURE-refile.org")))
+    
+    (add-to-list 'god-exempt-predicates 'ry/god-org-capture-p)
     
     ;;  Change the color of the cursor to RED if god-mode is enabled.
     (add-hook 'post-command-hook
@@ -1763,17 +1768,12 @@ Stripe dired buggers and org-mode tables for easier reading.
     (set-face-attribute stripe-highlight-face nil :background "#073642")))
 #+end_src
 
-** Ace Jump
-Ace jump looks like it could be helpful.  The configuration needs to be updated
+** Avy Jump
+Avy jump looks like it could be helpful.  The configuration needs to be updated
 to include keybindings.  I originaly also had key chord mixed in here but decided
 that it was not going to get any use.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-;; (use-package ace-jump-mode
-;;   :ensure t
-;;   :bind (("C-c SPC" . ace-jump-char-mode))
-;;   :commands ace-jump-mode)
-
 (use-package avy
   :ensure t
   :bind (("C-c SPC" . avy-goto-char)))
@@ -1817,6 +1817,7 @@ work correctly.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package hydra
   :ensure t
+  :commands (hydra-toggle/body hydra-launch/body hydra-xml/body)
   :config
   (progn
     (require 'whitespace)
@@ -1952,6 +1953,7 @@ Visual regular expression building.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package re-builder
   :ensure t
+  :commands (re-builder)
   :config
   (setq reb-re-syntax 'string))
 #+end_src
@@ -1976,6 +1978,7 @@ that I need to print a listing.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package fill-column-indicator
   :ensure t
+  :commands (fci-mode)
   :config
   (progn    
     (defun sanityinc/fci-enabled-p () (symbol-value 'fci-mode))
@@ -2008,7 +2011,8 @@ the package provides.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package swiper
-  :ensure t)
+  :ensure t
+  :commands (swiper))
 #+end_src
 
 ** Sr-Speedbar
@@ -2019,6 +2023,7 @@ Emacs.  May be I will enable it again at some point in time.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package sr-speedbar
   :ensure t
+  :commands (sr-speedbar-toggle)
   :disabled t
   :config
   (progn
@@ -2082,7 +2087,8 @@ Helps to discover keybindings for the current mode.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package discover-my-major
-  :ensure t)
+  :ensure t
+  :commands discover-my-major)
 #+end_src
 
 ** Move Text
