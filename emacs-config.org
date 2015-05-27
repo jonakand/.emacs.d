@@ -613,12 +613,14 @@ Windows or not.  The configuration was lifted from a nice document located
       (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m"))))
 #+end_src
 
-This list will be used to hold the SQL buffers that have the DB2 process.  Periodically a
-midnight script will run that will "cleanup" the open connections.  This is done as I have
-a tendency to leave a connection open when I leave for the day.
+This list will be used to hold the SQL buffers that have the DB2 process.  I have a tendency
+to leave DB connections alive when I leave for the day.  These settings will keep a list of 
+connection buffers and will close any hanging buffers at 5:00 PM.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (setq db-buffers-list ())
+
+(run-at-time "17:00" 3600 'ry/sql-connection-cleanup)
 #+end_src
 
 ** Key bindings
@@ -680,6 +682,10 @@ invoked but I do not have enough knowledge of sql.el to find the solution.
   
   (setq database-conn-p t))
 #+end_src
+
+This function will be used as part of a run-at-time function.  It will look at the list of known
+DB2 buffers and close the related connection if it sees that the connection is still open.  There
+is a hole if the connection in established outside of the normal method used by me.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/sql-connection-cleanup ()
@@ -2260,17 +2266,6 @@ error checking, and some other niceties.."
     ;; Clobber this keybinding for eclim use.
     (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
     (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
-#+end_src
-
-** Midnight Mode
-This will eventually be used to close any DB connections that I forget to close
-during the day.
-
-#+begin_src emacs-lisp :tangle yes :exports code
-(use-package midnight
-  :ensure t
-  :config
-  (midnight-delay-set 'midnight-delay "7:00am"))
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes :exports code
