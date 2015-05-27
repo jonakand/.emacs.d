@@ -612,6 +612,15 @@ Windows or not.  The configuration was lifted from a nice document located
       (setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe")
       (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m"))))
 #+end_src
+
+This list will be used to hold the SQL buffers that have the DB2 process.  Periodically a
+midnight script will run that will "cleanup" the open connections.  This is done as I have
+a tendency to leave a connection open when I leave for the day.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(setq db-buffers-list ())
+#+end_src
+
 ** Key bindings
 The key bindings below revolve around the F5 key.  This was done to be similar to
 the main key used in DataStudio.
@@ -627,10 +636,6 @@ the main key used in DataStudio.
 Custom function for opening DB2 database connections.  This may not be the best 
 way to achieve multiple database connections at once as the SQLi hook is not being
 invoked but I do not have enough knowledge of sql.el to find the solution.
-
-#+begin_src emacs-lisp :tangle yes :exports code
-(setq db-buffers-list ())
-#+end_src
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/sql-open-database (database username password)
@@ -663,6 +668,20 @@ invoked but I do not have enough knowledge of sql.el to find the solution.
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes :exports code
+(defun ry/sql-reopen-database (username password)
+  "Reconnect to the database that the current buffer was connected to."
+  (interactive (list       
+                (read-string "Username: ")
+                (read-passwd "Password: ")))
+
+  ;;  TODO : Need to check to make sure the current buffer is a DB buffer.
+
+  (sql-send-string (concat "CONNECT TO " database-name " USER " username " USING " password ";"))
+  
+  (setq database-conn-p t))
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/sql-connection-cleanup ()
   (interactive)
   "This function will look for open database connections
@@ -678,7 +697,7 @@ only opened by ry/sql-open-database."
                  (setq database-conn-p nil))
                 ((not database-conn-p)
                  (message "Skipping %s as it is not connected." database-name))
-                (t (message "Default condition met!"))))
+               (t (message "Default condition met!"))))
         (progn
           (message "Buffer no longer exists, removing %s." db-buffer)
           (setq db-buffers-list (delete db-buffer db-buffers-list)))))))
