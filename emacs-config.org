@@ -1406,6 +1406,8 @@ window vertically.
     (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
     (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
+    (add-to-list 'helm-boring-buffer-regexp-list "*DB_HELPER*")
+
     (setq helm-quick-update                     t
           helm-split-window-in-side-p           t
           helm-buffers-fuzzy-matching           t
