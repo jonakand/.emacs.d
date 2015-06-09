@@ -1382,54 +1382,52 @@ similar way as bash.  Also I like to force Helm to always split the current
 window vertically.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-(use-package helm
-  :ensure t
-  :diminish helm-mode
-  :bind (("C-M-s" . helm-occur)
-         ("C-x C-f" . helm-find-files)
-         ("M-x" . helm-M-x)
-         ("C-x b" . ry/switch-buffer)
-         ("C-x C-b" . helm-buffers-list)
-         ("C-x r l" . helm-bookmarks)
-         ("C-h f" . helm-apropos)
-         ("C-h r" . helm-info-emacs)
-         ("C-h C-l" . helm-locate-library)
-         ("M-y" . helm-show-kill-ring)
-         ("C-x C-b" . ry/switch-buffer)
-         ("<f7>" . helm-bookmarks)
-         ("<f8>" . bookmark-set))
-  :config
-  (progn
-    (require 'helm-config)
+  (use-package helm
+    :ensure t
+    :diminish helm-mode
+    :bind (("C-M-s" . helm-occur)
+           ("C-x C-f" . helm-find-files)
+           ("M-x" . helm-M-x)
+           ("C-x b" . ry/switch-buffer)
+           ("C-x C-b" . helm-buffers-list)
+           ("C-x r l" . helm-bookmarks)
+           ("C-h f" . helm-apropos)
+           ("C-h r" . helm-info-emacs)
+           ("C-h C-l" . helm-locate-library)
+           ("M-y" . helm-show-kill-ring)
+           ("C-x C-b" . ry/switch-buffer)
+           ("<f7>" . helm-bookmarks)
+           ("<f8>" . bookmark-set))
+    :config
+    (progn
+      (require 'helm-config)
 
-    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
-    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-    (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+      (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
+      (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+      (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
-    (add-to-list 'helm-boring-buffer-regexp-list "*DB_HELPER*")
+      (setq helm-quick-update                     t
+            helm-split-window-in-side-p           t
+            helm-buffers-fuzzy-matching           t
+            helm-ff-search-library-in-sexp        t
+            helm-scroll-amount                    8
+            helm-ff-file-name-history-use-recentf t
+            helm-mini-default-sources '(helm-source-buffers-list
+                                        helm-source-recentf
+                                        helm-source-bookmarks
+                                        helm-source-buffer-not-found))
+      
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;;  Make helm always create a new window and always split the current window
+      ;;  vertically.
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      (setq helm-display-function
+            (lambda (buf)
+              (split-window-vertically)
+              (other-window 1)
+              (switch-to-buffer buf)))
 
-    (setq helm-quick-update                     t
-          helm-split-window-in-side-p           t
-          helm-buffers-fuzzy-matching           t
-          helm-ff-search-library-in-sexp        t
-          helm-scroll-amount                    8
-          helm-ff-file-name-history-use-recentf t
-          helm-mini-default-sources '(helm-source-buffers-list
-                                      helm-source-recentf
-                                      helm-source-bookmarks
-                                      helm-source-buffer-not-found))
-    
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Make helm always create a new window and always split the current window
-    ;;  vertically.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (setq helm-display-function
-          (lambda (buf)
-            (split-window-vertically)
-            (other-window 1)
-            (switch-to-buffer buf)))
-
-    (helm-mode)))
+      (helm-mode)))
 #+end_src
 
 ** Multiple Cursors
@@ -1554,8 +1552,9 @@ but I didn't care for the colors on Solarized when I changed from Monokai.
     
     (setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
-    (add-to-list 'god-exempt-major-modes 'org-mode)
+    (add-to-list 'god-exempt-major-modes 'org)
     (add-to-list 'god-exempt-major-modes 'eshell-mode)
+    (add-to-list 'god-exempt-major-modes 'oeg-agenda)
 
     (require 'god-mode-isearch)
     (define-key isearch-mode-map (kbd "<escape>") 'god-mode-isearch-activate)
@@ -1632,7 +1631,12 @@ fits in with my theme.
     (setq company-dabbrev-code-ignore-case t)
     (setq company-dabbrev-code-other-buffers 'all)
     (setq company-dabbrev-other-buffers 'all)
-    
+
+    (add-to-list 'load-path "~/.emacs.d/extra")
+    (require 'ry-company-sql)    
+    (add-to-list 'company-backends 'ry/company-sql)
+
+
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "M-n") nil)
       (define-key company-active-map (kbd "M-p") nil)
@@ -1935,9 +1939,21 @@ Xquery _r_egion
       ("r" ry/xquery-with-region nil)
       ("q" nil "cancel" :color red))
 
+    (defhydra hydra-clock (:color blue)
+      "
+Clock _i_n
+Clock _o_ut
+Clock _g_oto
+"
+      ("i" org-clock-in nil)
+      ("o" org-clock-out nil)
+      ("g" org-clock-goto nil))
+
     (global-set-key (kbd "C-c t") 'hydra-toggle/body)
     (global-set-key (kbd "C-c l") 'hydra-launch/body)
-    (global-set-key (kbd "C-c x") 'hydra-xml/body)))
+    (global-set-key (kbd "C-c x") 'hydra-xml/body)
+    (global-set-key (kbd "<f9>") 'hydra-clock/body)))
+
 #+end_src
 
 ** Recentf
@@ -1984,7 +2000,9 @@ or not.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package whole-line-or-region
-  :ensure t)
+  :ensure t
+  :config
+  (whole-line-or-region-mode))
 #+end_src
 
 ** Fold This
