@@ -606,6 +606,15 @@ line.  This was taken from the Prelude configuration.
   (god-local-mode 1))
 #+end_src
 
+* Quit process on exit
+This will quit all processes without prompting me to do so when closing Emacs.
+
+#+begin_src emacs-lisp
+(require 'cl)
+(defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
+           (flet ((process-list ())) ad-do-it))
+  #+end_src
+
 * SQL
 Work uses DB2 and DataStudio.  Opening RAD and DataStudio at the same time is a 
 major drain on resources, especially when WAS is also running.  Instead I will 
@@ -1341,13 +1350,18 @@ org-mode so that they stand out more.
 #+end_src
 
 ** Rainbow Delimiters
-Make delimiters a little easier to match up without having to be on one of them.
+Make delimiters a little easier to match up without having to be on one of them.  
+Also a tip found [[http://timothypratley.blogspot.com/2015/07/seven-specialty-emacs-settings-with-big.html][here]] for making unmatched parentheses easier to see.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package rainbow-delimiters
   :ensure t 
   :config
-  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+  (progn
+    (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+    (set-face-attribute 'rainbow-delimiters-unmatched-face nil
+                        :foreground 'unspecified
+                        :inherit 'error)))
 #+end_src
 
 ** Smartscan
