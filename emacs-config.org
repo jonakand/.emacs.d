@@ -311,6 +311,13 @@ don't treat tabs the same.
 (setq tab-width 4)
 #+end_src
 
+* Fix spaces
+  The following is an alternative to the typical M-SPC key binding that does different things based on how many times you use it.
+
+  #+begin_src emacs-lisp
+(bind-key "M-SPC" 'cycle-spacing)
+  #+end_src
+
 * File refreshing
 Automatically revert the buffer to the contents of the file on the disk if it has 
 changed.
@@ -2020,9 +2027,28 @@ _2_ Punch out           _4_ Clock out
       ("4" org-clock-out nil)
       ("5" org-clock-goto nil))
 
+    (defhydra cqql-multiple-cursors-hydra (:hint nil)
+      "
+     ^Up^            ^Down^        ^Miscellaneous^
+----------------------------------------------
+[_p_]   Next    [_n_]   Next    [_l_] Edit lines
+[_P_]   Skip    [_N_]   Skip    [_a_] Mark all
+[_M-p_] Unmark  [_M-n_] Unmark  [_q_] Quit"
+  ("l" mc/edit-lines :exit t)
+  ("a" mc/mark-all-like-this :exit t)
+  ("n" mc/mark-next-like-this)
+  ("N" mc/skip-to-next-like-this)
+  ("M-n" mc/unmark-next-like-this)
+  ("p" mc/mark-previous-like-this)
+  ("P" mc/skip-to-previous-like-this)
+  ("M-p" mc/unmark-previous-like-this)
+  ("q" nil))
+
+
     (global-set-key (kbd "C-c t") 'hydra-toggle/body)
     (global-set-key (kbd "C-c l") 'hydra-launch/body)
-    (global-set-key (kbd "C-c x") 'hydra-xml/body)))
+    (global-set-key (kbd "C-c x") 'hydra-xml/body)
+    (global-set-key (kbd "C-c m") 'cqql-multiple-cursors-hydra/body)))
     ;;(global-set-key (kbd "<f9>") 'hydra-clock/body)
 
 #+end_src
