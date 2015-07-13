@@ -86,6 +86,16 @@ The mode-line is configured using the code below.  I like to have a simplified
 mode-line so many of the usual things have been removed.
 
 #+begin_src emacs-lisp :tangle yes :exports code
+(defface ry/current-task-face
+  '((t (:background "gold")))
+  "Face for current task in mode-line."
+  :group 'faces)
+
+(defface ry/current-time-face
+  '((t (:background "firebrick")))
+  "Face for current task time in mode-line."
+  :group 'faces)
+
 (setq-default mode-line-format
              '("%e"
                mode-line-front-space
@@ -94,10 +104,14 @@ mode-line so many of the usual things have been removed.
                mode-line-position
                (vc-mode vc-mode)
                "  "
-               mode-line-modes
-               "   "
-               display-time-string
-               "   "
+               mode-line-modes              
+               "                        "
+               "Current task: "
+               (:eval (let ((task org-clock-current-task))                    
+                         (propertize task 'face 'ry/current-task-face)))               
+               " : "
+               (:eval (let ((time (format "%S" (org-clock-get-clocked-time))))
+                        (propertize time 'face 'ry/current-time-face)))
                mode-line-end-spaces))
 #+end_src
 
@@ -242,7 +256,8 @@ does not work as expected.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
 (if (eq system-type 'windows-nt)
-    (setenv "GRAPHVIZ_DOT" "~/emacs/Graphviz/bin/dot.exe"))
+    (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
+(getenv "GRAPHVIZ_DOT")
 #+end_src
 
 * GnuTLS
@@ -262,9 +277,9 @@ This setting is used to truncate lines instead of wrapping them.  I like the
 idea of visual-line-mode but never got used to it.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-;; (set-default 'truncate-lines t)
-(global-visual-line-mode)
-(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+(set-default 'truncate-lines t)
+;;(global-visual-line-mode)
+;;(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 #+end_src
 
 * Large files
@@ -557,8 +572,8 @@ line.  This was taken from the Prelude configuration.
   "Replace the character at point in the same way that the command works in vim"
   (interactive "c")
   (delete-char 1)
-  (insert new-char)
-  (backward-char))
+  (insert new-char))
+  ;;(backward-char))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Helper for copying a rectangle.
@@ -646,9 +661,7 @@ invoked but I do not have enough knowledge of sql.el to find the solution.
                 (read-string "Database: ")
                 (read-string "Username: ")
                 (read-passwd "Password: ")))
-  (switch-to-buffer "*DB_HELPER*")
   (god-local-mode)
-  (insert-file-contents "H:/emacs/Config/DB_INFO.TXT")
   (setq sql-set-product "db2")
   
   (sql-db2 (upcase database))
@@ -665,8 +678,7 @@ invoked but I do not have enough knowledge of sql.el to find the solution.
   (switch-to-buffer (concat "*DB:" (upcase database) "*"))
   (sql-mode)
   (sql-set-product "db2")
-  (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
-  (auto-complete-mode))
+  (setq sql-buffer (concat "*SQL: " (upcase database) "*")))
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes :exports code
@@ -1223,6 +1235,45 @@ programs.  I usually forget they are in here though.
     (error "This command can only be used on Windows.")))
 #+end_src
 
+* Skeletons
+#+begin_src emacs-lisp :tangle yes :export code
+(define-skeleton skel-org-block
+  "Insert an org block, querying for type."
+  "Type: "
+  "#+begin_" str "\n"
+  _ - \n
+  "#+end_" str "\n")
+
+(define-abbrev org-mode-abbrev-table "blk" "" 'skel-org-block)
+
+(define-skeleton skel-org-block-plantuml
+  "Insert a org plantuml block, querying for filename."
+  "File (no extension): "
+  "#+begin_src plantuml :file " str ".png :cache yes\n"
+  _ - \n
+  "#+end_src\n")
+
+(define-abbrev org-mode-abbrev-table "buml" "" 'skel-org-block-plantuml)
+
+(define-skeleton skel-org-block-plantuml-activity
+  "Insert a org plantuml block, querying for filename."
+  "File (no extension): "
+  "#+begin_src plantuml :file " str "-act.png :cache yes :tangle " str "-act.txt\n"
+  "@startuml\n"
+  "skinparam activity {\n"
+  "BackgroundColor<<New>> Cyan\n"
+  "}\n\n"
+  "title " str " - \n"
+  "note left: " str "\n"
+  "(*) --> \"" str "\"\n"
+  "--> (*)\n"
+  _ - \n
+  "@enduml\n"
+  "#+end_src\n")
+
+(define-abbrev org-mode-abbrev-table "auml" "" 'skel-org-block-plantuml-activity)
+#+end_src
+
 * Packages
 ** Paradox
 Being able to use Emacs while packages are updated is a fantastic thing.  Paradox 
@@ -1550,11 +1601,11 @@ but I didn't care for the colors on Solarized when I changed from Monokai.
     (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
     (define-key god-local-mode-map (kbd "DEL") 'delete-backward-char)
     
-    (setq god-exempt-major-modes nil)
+    ;;(setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
     (add-to-list 'god-exempt-major-modes 'org)
     (add-to-list 'god-exempt-major-modes 'eshell-mode)
-    (add-to-list 'god-exempt-major-modes 'oeg-agenda)
+    (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
 
     (require 'god-mode-isearch)
     (define-key isearch-mode-map (kbd "<escape>") 'god-mode-isearch-activate)
@@ -1569,17 +1620,21 @@ but I didn't care for the colors on Solarized when I changed from Monokai.
 
     (setq god-exempt-predicates nil)
     (add-to-list 'god-exempt-predicates 'ry/god-org-capture-p)
-    
-    ;;  Change the color of the cursor to RED if god-mode is enabled.
+
+    ;;  Change the color of the cursor to RED if god-mode is enabled.  If the file is
+    ;;  read-only than change the cursor to a purple box and disallow changing from
+    ;;  god-mode.
     (add-hook 'post-command-hook
               (lambda ()
-                (if (or god-local-mode buffer-read-only)
-                    (progn                   
-                      (set-cursor-color "#b22222")
-                      (setq cursor-type 'box))
-                  (progn
-                    (set-cursor-color "#839496")
-                    (setq cursor-type 'bar)))))))
+                (cond (buffer-read-only
+                       (set-cursor-color "#7b68ee")
+                       (setq cursor-type 'box))
+                      ((bound-and-true-p god-local-mode)
+                       (set-cursor-color "#b22222")
+                       (setq cursor-type 'box))
+                      (t
+                       (set-cursor-color "#839496")
+                       (setq cursor-type 'bar)))))))
 #+end_src
 
 ** Golden Ratio
@@ -1941,18 +1996,20 @@ Xquery _r_egion
 
     (defhydra hydra-clock (:color blue)
       "
-Clock _i_n
-Clock _o_ut
-Clock _g_oto
+_1_ Punch in            _3_ Clock in
+_2_ Punch out           _4_ Clock out
+                      _5_ Clock goto
 "
-      ("i" org-clock-in nil)
-      ("o" org-clock-out nil)
-      ("g" org-clock-goto nil))
+      ("1" bh/punch-in)
+      ("2" bh/punch-out)
+      ("3" org-clock-in nil)
+      ("4" org-clock-out nil)
+      ("5" org-clock-goto nil))
 
     (global-set-key (kbd "C-c t") 'hydra-toggle/body)
     (global-set-key (kbd "C-c l") 'hydra-launch/body)
-    (global-set-key (kbd "C-c x") 'hydra-xml/body)
-    (global-set-key (kbd "<f9>") 'hydra-clock/body)))
+    (global-set-key (kbd "C-c x") 'hydra-xml/body)))
+    ;;(global-set-key (kbd "<f9>") 'hydra-clock/body)
 
 #+end_src
 
@@ -2187,7 +2244,7 @@ I do not write Clojure code but I would like to learn when time permits.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package cider
   :ensure t
-  :bind (("<f10>" . cider-jack-in))
+;;  :bind (("<f10>" . cider-jack-in))
   :config
   (progn
     (add-hook 'cider-mode-hook #'eldoc-mode)
@@ -2212,8 +2269,17 @@ The changes that were made to get it working are not pretty.
   :ensure t
   :config
   (progn
+    (require 'eclim)
     (require 'eclim-problems)
-    
+
+    (setq help-at-pt-display-when-idle t)
+    (setq help-at-pt-timer-delay 0.1)
+    (help-at-pt-set-timer)
+
+    (require 'flymake-eclim)
+
+    (global-eclim-mode)
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Use the company backend that comes with eclim instead.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2279,17 +2345,37 @@ using C:/ as the default directory."
 `eclim/execute-command' instead, as it has argument expansion,
 error checking, and some other niceties.."
       (let ((cmd (eclim--make-command args)))
-        (setq cmd2 (replace-regexp-in-string "\\\\" "" (format "%s" cmd)))
+        (when eclim-print-debug-messages (message "Before replace: %s" cmd))
+        (setq cmd2 (replace-regexp-in-string "\\\\:" ":" (format "%s" cmd)))
         (when eclim-print-debug-messages (message "Executing: %s" cmd2))
-        (eclim--parse-result (ry/shell-command-to-string cmd))))
+        (eclim--parse-result (ry/shell-command-to-string cmd2))))
 
     ;; Clobber this keybinding for eclim use.
     (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
     (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
 #+end_src
 
+** Langtool
+
+When writing documentation it is helpful to know if you are using the English 
+language correctly.  Langtool will analyze the buffer and find grammatical 
+errors.
+
+;;+begin_src emacs-lisp :tangle yes :exports code
+;;(use-package langtool
+;;  :ensure t
+;;  :config
+;;  (setq langtool-language-tool-jar "~/emacs/Langtool/languagetool-commandline.jar"
+;;        langtool-mother-tongue "en"
+;;        langtool-disabled-rules '("WHITESPACE_RULE"
+;;                                  "EN_UNPAIRED_BRACKETS"
+;;                                  "COMMA_PARENTHESIS_WHITESPACE"
+;;                                  "EN_QUOTES")))
+;;+end_src
+
 #+begin_src emacs-lisp :tangle yes :exports code
 (provide 'emacs-config)
 ;;; emacs-config.el ends here
 #+end_src
+
 
