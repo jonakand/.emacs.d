@@ -97,22 +97,22 @@ mode-line so many of the usual things have been removed.
   :group 'faces)
 
 (setq-default mode-line-format
-             '("%e"
-               mode-line-front-space
-               "%b"
-               "   "
-               mode-line-position
-               (vc-mode vc-mode)
-               "  "
-               mode-line-modes              
-               "                        "
-               "Current task: "
-               (:eval (let ((task org-clock-current-task))                    
+              '("%e"
+                mode-line-front-space
+                "%b"
+                "   "
+                mode-line-position
+                (vc-mode vc-mode)
+                "  "
+                mode-line-modes              
+                "                        "
+                "Current task: "
+                (:eval (let ((task org-clock-current-task))                    
                          (propertize task 'face 'ry/current-task-face)))               
-               " : "
-               (:eval (let ((time (format "%S" (org-clock-get-clocked-time))))
-                        (propertize time 'face 'ry/current-time-face)))
-               mode-line-end-spaces))
+                " : "
+                (:eval (let ((time (format "%S" (org-clock-get-clocked-time))))
+                         (propertize time 'face 'ry/current-time-face)))
+                mode-line-end-spaces))
 #+end_src
 
 * Enable functions
@@ -314,9 +314,9 @@ don't treat tabs the same.
 * Fix spaces
   The following is an alternative to the typical M-SPC key binding that does different things based on how many times you use it.
 
-  #+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes :exports code
 (bind-key "M-SPC" 'cycle-spacing)
-  #+end_src
+#+end_src
 
 * File refreshing
 Automatically revert the buffer to the contents of the file on the disk if it has 
@@ -619,7 +619,7 @@ This will quit all processes without prompting me to do so when closing Emacs.
 #+begin_src emacs-lisp
 (require 'cl)
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
-           (flet ((process-list ())) ad-do-it))
+           (cl-flet ((process-list ())) ad-do-it))
   #+end_src
 
 * SQL
@@ -2305,94 +2305,94 @@ Windows one.  I would have to imagine it is a little of both.
 
 The changes that were made to get it working are not pretty.  
 #+begin_src emacs-lisp :tangle yes :exports code
-(use-package emacs-eclim
-  :ensure t
-  :config
-  (progn
-    (require 'eclim)
-    (require 'eclim-problems)
+;; (use-package emacs-eclim
+;;   :ensure t
+;;   :config
+;;   (progn
+;;     (require 'eclim)
+;;     (require 'eclim-problems)
 
-    (setq help-at-pt-display-when-idle t)
-    (setq help-at-pt-timer-delay 0.1)
-    (help-at-pt-set-timer)
+;;     (setq help-at-pt-display-when-idle t)
+;;     (setq help-at-pt-timer-delay 0.1)
+;;     (help-at-pt-set-timer)
 
-    (require 'flymake-eclim)
+;;     (require 'flymake-eclim)
 
-    (global-eclim-mode)
+;;     (global-eclim-mode)
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Use the company backend that comes with eclim instead.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (require 'company-emacs-eclim)
-    (company-emacs-eclim-setup)
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     ;;  Use the company backend that comes with eclim instead.
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     (require 'company-emacs-eclim)
+;;     (company-emacs-eclim-setup)
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Windows setup so that eclim knows where the bat file is.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (custom-set-variables
-     '(eclim-eclipse-dirs '("C:/IBM/SDP"))
-     '(eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")
-     '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat"))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     ;;  Windows setup so that eclim knows where the bat file is.
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     (custom-set-variables
+;;      '(eclim-eclipse-dirs '("C:/IBM/SDP"))
+;;      '(eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")
+;;      '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat"))
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Toggle debugging.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (eclim-toggle-print-debug-messages)
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     ;;  Toggle debugging.
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     (eclim-toggle-print-debug-messages)
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Again, a windows modification so that the eclim bat can be found for my
-    ;;  particular work setup.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (defun eclim-executable-find ()
-      (let (file)
-        (dolist (eclipse-root eclim-eclipse-dirs)
-          (and (file-exists-p
-                (setq file (expand-file-name "plugins" eclipse-root)))
-               (setq file (car (last (directory-files file t "^org.eclim_"))))
-               (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
-               (return (expand-file-name "eclim.bat" eclipse-root))))))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     ;;  Again, a windows modification so that the eclim bat can be found for my
+;;     ;;  particular work setup.
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     (defun eclim-executable-find ()
+;;       (let (file)
+;;         (dolist (eclipse-root eclim-eclipse-dirs)
+;;           (and (file-exists-p
+;;                 (setq file (expand-file-name "plugins" eclipse-root)))
+;;                (setq file (car (last (directory-files file t "^org.eclim_"))))
+;;                (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
+;;                (return (expand-file-name "eclim.bat" eclipse-root))))))
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  Same as above.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (defun company-eclim-executable-find ()
-      (let (file)
-        (cl-dolist (eclipse-root '("c:/IBM/SDP"))
-          (and (file-exists-p (setq file (expand-file-name "plugins" eclipse-root)))
-               (setq file (car (last (directory-files file t "^org.eclim_"))))
-               (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
-               (cl-return (expand-file-name "eclim.bat" eclipse-root))))))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     ;;  Same as above.
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     (defun company-eclim-executable-find ()
+;;       (let (file)
+;;         (cl-dolist (eclipse-root '("c:/IBM/SDP"))
+;;           (and (file-exists-p (setq file (expand-file-name "plugins" eclipse-root)))
+;;                (setq file (car (last (directory-files file t "^org.eclim_"))))
+;;                (file-exists-p (setq file (expand-file-name "bin/eclim" file)))
+;;                (cl-return (expand-file-name "eclim.bat" eclipse-root))))))
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  This is a built in function that I have duplicated for emacs-eclim use.
-    ;;  emacs-eclim will fail on windows when executing the eclim.bat fome the 
-    ;;  current directory on the F:/.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (defun ry/shell-command-to-string (command)
-      "Execute shell command COMMAND and return its output as a string
-using C:/ as the default directory."
-      (setq default-directory "C:/")
-      (with-output-to-string
-        (with-current-buffer
-          standard-output
-          (process-file shell-file-name nil t nil shell-command-switch command))))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     ;;  This is a built in function that I have duplicated for emacs-eclim use.
+;;     ;;  emacs-eclim will fail on windows when executing the eclim.bat fome the 
+;;     ;;  current directory on the F:/.
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     (defun ry/shell-command-to-string (command)
+;;       "Execute shell command COMMAND and return its output as a string
+;; using C:/ as the default directory."
+;;       (setq default-directory "C:/")
+;;       (with-output-to-string
+;;         (with-current-buffer
+;;           standard-output
+;;           (process-file shell-file-name nil t nil shell-command-switch command))))
 
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    ;;  This is the same issue that lead to the above function being created.
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (defun eclim--call-process (&rest args)
-      "Calls eclim with the supplied arguments. Consider using
-`eclim/execute-command' instead, as it has argument expansion,
-error checking, and some other niceties.."
-      (let ((cmd (eclim--make-command args)))
-        (when eclim-print-debug-messages (message "Before replace: %s" cmd))
-        (setq cmd2 (replace-regexp-in-string "\\\\:" ":" (format "%s" cmd)))
-        (when eclim-print-debug-messages (message "Executing: %s" cmd2))
-        (eclim--parse-result (ry/shell-command-to-string cmd2))))
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     ;;  This is the same issue that lead to the above function being created.
+;;     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;     (defun eclim--call-process (&rest args)
+;;       "Calls eclim with the supplied arguments. Consider using
+;; `eclim/execute-command' instead, as it has argument expansion,
+;; error checking, and some other niceties.."
+;;       (let ((cmd (eclim--make-command args)))
+;;         (when eclim-print-debug-messages (message "Before replace: %s" cmd))
+;;         (setq cmd2 (replace-regexp-in-string "\\\\:" ":" (format "%s" cmd)))
+;;         (when eclim-print-debug-messages (message "Executing: %s" cmd2))
+;;         (eclim--parse-result (ry/shell-command-to-string cmd2))))
 
-    ;; Clobber this keybinding for eclim use.
-    (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
-    (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
+;;     ;; Clobber this keybinding for eclim use.
+;;     (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
+;;     (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration)))
 #+end_src
 
 ** Langtool
