@@ -1,12 +1,21 @@
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\)$" . org-mode))
 
+(require 'org-habit)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Setup key bindings.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "C-M-r") 'org-capture)
 (global-set-key (kbd "C-c r") 'org-capture)
-;; (global-set-key (kbd "C-c l") 'org-store-link)
 (global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "<f10>") 'org-capture)
+(global-set-key (kbd "<f9> <f9>") 'bh/show-org-agenda)
+(global-set-key (kbd "<f9> r") 'org-capture)
+(global-set-key (kbd "<f9> i") 'org-clock-in)
+(global-set-key (kbd "<f9> o") 'org-clock-out)
+(global-set-key (kbd "<f9> I") 'bh/punch-in)
+(global-set-key (kbd "<f9> O") 'bh/punch-out)
+(global-set-key (kbd "<f9> g") 'org-clock-goto)
 
 (eval-after-load "org-agenda"
   '(progn
@@ -19,6 +28,74 @@
      (define-key org-mode-map "\C-c[" 'undefined)
      (define-key org-mode-map "\C-c]" 'undefined)
      (define-key org-mode-map "\C-c;" 'undefined)))
+
+(setq org-use-speed-commands t)
+(setq org-speed-commands-user (quote (("0" . ignore)
+                                      ("1" . ignore)
+                                      ("2" . ignore)
+                                      ("3" . ignore)
+                                      ("4" . ignore)
+                                      ("5" . ignore)
+                                      ("6" . ignore)
+                                      ("7" . ignore)
+                                      ("8" . ignore)
+                                      ("9" . ignore)
+
+                                      ("a" . ignore)
+                                      ("d" . ignore)
+                                      ("h" . ignore)
+                                      ("i" . ignore)
+                                      ("k" . ignore)
+                                      ("l" . ignore)
+                                      ("m" . ignore)
+                                      ("q" . ignore)
+                                      ("r" . ignore)
+                                      ("s" . org-save-all-org-buffers)
+                                      ("w" . org-refile)
+                                      ("x" . ignore)
+                                      ("y" . ignore)
+                                      ("z" . org-add-note)
+
+                                      ("A" . ignore)
+                                      ("B" . ignore)
+                                      ("E" . ignore)
+                                      ("F" . ignore)
+                                      ("G" . ignore)
+                                      ("H" . ignore)
+                                      ("J" . org-clock-goto)
+                                      ("K" . ignore)
+                                      ("L" . ignore)
+                                      ("M" . ignore)
+                                      ("N" . ignore)
+                                      ("P" . ignore)
+                                      ("Q" . ignore)                                      
+                                      ("S" . ignore)
+                                      ("T" . ignore)
+                                      ("U" . ignore)
+                                      ("V" . ignore)
+                                      ("W" . ignore)
+                                      ("X" . ignore)
+                                      ("Y" . ignore)
+                                      ("Z" . ignore))))
+
+(defun ry/org-mode-hook ()
+  (local-set-key (kbd "<return>") 'org-return-indent))
+(add-hook 'org-mode-hook 'ry/org-mode-hook)
+
+(defun ry/org-agenda-after-show-hook ()
+  "Show the subtree when viewing it from the agenda."
+  (org-show-subtree)
+  (org-narrow-to-subtree))
+(setq org-agenda-after-show-hook 'ry/org-agenda-after-show-hook)
+
+(setq org-clock-goto-hook 'ry/org-agenda-after-show-hook)
+
+(setq org-agenda-span 2)
+(setq org-agenda-time-grid
+      '((daily today require-timed)
+       "----------------"
+       (800 1000 1200 1400 1600 1800)))
+(setq org-columns-default-format "%50ITEM %12SCHEDULED %TODO %3PRIORITY %Effort{:} %TAGS")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  ORG-MODE hooks.
@@ -34,15 +111,154 @@
 	  '(lambda () (hl-line-mode 1))
 	  'append)
 
+
+(org-clock-persistence-insinuate)
+
+;;
+;; Show lot of clocking history so it's easy to pick items off the C-F11 list
+(setq org-clock-history-length 23)
+
+;; Resume clocking task on clock-in if the clock is open
+(setq org-clock-in-resume t)
+
+;; Change tasks to NEXT when clocking in
+(setq org-clock-in-switch-to-state 'bh/clock-in-to-next)
+
+;; Separate drawers for clocking and logs
+(setq org-drawers (quote ("PROPERTIES" "LOGBOOK")))
+
+;; Save clock data and state changes and notes in the LOGBOOK drawer
+(setq org-clock-into-drawer t)
+
+;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
+(setq org-clock-out-remove-zero-time-clocks t)
+
+;; Clock out when moving task to a done state
+(setq org-clock-out-when-done t)
+
+;; Save the running clock and all clock history when exiting Emacs, load it on startup
+(setq org-clock-persist t)
+
+;; Do not prompt to resume an active clock
+(setq org-clock-persist-query-resume nil)
+
+;; Enable auto clock resolution for finding open clocks
+(setq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
+
+;; Include current clocking task in clock reports
+(setq org-clock-report-include-clocking-task t)
+
+(setq bh/keep-clock-running nil)
+
+;; Check for clocking longer than four hours.
+Emacs Lisp(setq org-agenda-clock-consistency-checks
+      '(:max-duration "4:00"
+        :min-duration 0
+        :max-gap 0
+        :gap-ok-around ("4:00")))
+
+(defun bh/clock-in-to-next (kw)
+  "Switch a task from TODO to NEXT when clocking in.
+Skips capture tasks, projects, and subprojects.
+Switch projects and subprojects from NEXT back to TODO"
+  (when (not (and (boundp 'org-capture-mode) org-capture-mode))
+    (cond
+     ((and (member (org-get-todo-state) (list "TODO"))
+           (bh/is-task-p))
+      "NEXT")
+     ((and (member (org-get-todo-state) (list "NEXT"))
+           (bh/is-project-p))
+      "TODO"))))
+
+(defun bh/find-project-task ()
+  "Move point to the parent (project) task if any"
+  (save-restriction
+    (widen)
+    (let ((parent-task (save-excursion (org-back-to-heading 'invisible-ok) (point))))
+      (while (org-up-heading-safe)
+        (when (member (nth 2 (org-heading-components)) org-todo-keywords-1)
+          (setq parent-task (point))))
+      (goto-char parent-task)
+      parent-task)))
+
+(defun bh/punch-in (arg)
+  "Start continuous clocking and set the default task to the
+selected task.  If no task is selected set the Organization task
+as the default task."
+  (interactive "p")
+  (setq bh/keep-clock-running t)
+  (if (equal major-mode 'org-agenda-mode)
+      ;;
+      ;; We're in the agenda
+      ;;
+      (let* ((marker (org-get-at-bol 'org-hd-marker))
+             (tags (org-with-point-at marker (org-get-tags-at))))
+        (if (and (eq arg 4) tags)
+            (org-agenda-clock-in '(16))
+          (bh/clock-in-organization-task-as-default)))
+    ;;
+    ;; We are not in the agenda
+    ;;
+    (save-restriction
+      (widen)
+      ; Find the tags on the current task
+      (if (and (equal major-mode 'org-mode) (not (org-before-first-heading-p)) (eq arg 4))
+          (org-clock-in '(16))
+        (bh/clock-in-organization-task-as-default)))))
+
+(defun bh/punch-out ()
+  (interactive)
+  (setq bh/keep-clock-running nil)
+  (when (org-clock-is-active)
+    (org-clock-out))
+  (org-agenda-remove-restriction-lock))
+
+(defun bh/clock-in-default-task ()
+  (save-excursion
+    (org-with-point-at org-clock-default-task
+      (org-clock-in))))
+
+(defun bh/clock-in-parent-task ()
+  "Move point to the parent (project) task if any and clock in"
+  (let ((parent-task))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (while (and (not parent-task) (org-up-heading-safe))
+          (when (member (nth 2 (org-heading-components)) org-todo-keywords-1)
+            (setq parent-task (point))))
+        (if parent-task
+            (org-with-point-at parent-task
+              (org-clock-in))
+          (when bh/keep-clock-running
+            (bh/clock-in-default-task)))))))
+
+(defvar bh/organization-task-id "eb155a82-92b2-4f25-a3c6-0304591af2f9")
+
+(defun bh/clock-in-organization-task-as-default ()
+  (interactive)
+  (org-with-point-at (org-id-find bh/organization-task-id 'marker)
+    (org-clock-in '(16))))
+
+(defun bh/clock-out-maybe ()
+  (when (and bh/keep-clock-running
+             (not org-clock-clocking-in)
+             (marker-buffer org-clock-default-task)
+             (not org-clock-resolving-clocks-due-to-idleness))
+    (bh/clock-in-parent-task)))
+
+(add-hook 'org-clock-out-hook 'bh/clock-out-maybe 'append)
+
+(defun bh/show-org-agenda ()
+  (interactive)
+  (if org-agenda-sticky
+      (switch-to-buffer "*Org Agenda( )*")
+    (switch-to-buffer "*Org Agenda*"))
+  (delete-other-windows))
+
 ;;  Set files that should be used as part of the adgenda.
-(setq org-agenda-files (quote ("~/emacs/Org/refile.org"
-			       "~/emacs/Org/rtdn.org"
-			       "~/emacs/Org/meetings.org"
-			       "~/emacs/Org/das.org"
-			       "~/emacs/Org/dmv.org"
-			       "~/emacs/Org/warrants.org"
-			       "~/emacs/Org/email.org"
-			       "~/emacs/Org/bcms.org")))
+(setq org-agenda-files (quote ("~/emacs/Org/refile.org"                             
+			       "~/emacs/Org/das.org")))
 
 (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "NEXT(n)" "MIGRATED(m)" "|" "DONE(d)")
@@ -133,7 +349,7 @@
 		(tags-todo "-CANCELLED/!"
 			   ((org-agenda-overriding-header "Stuck Projects")
 			    (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-		(tags-todo "-WAITING-CANCELLED/!NEXT"
+		(tags-todo "-WAITING-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD/!NEXT"
 			   ((org-agenda-overriding-header "Next Tasks")
 			    (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
 			    (org-agenda-todo-ignore-scheduled t)
@@ -142,7 +358,7 @@
 			    (org-tags-match-list-sublevels t)
 			    (org-agenda-sorting-strategy
 			     '(todo-state-down effort-up category-keep))))
-		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI"
+		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD"
 			   ((org-agenda-overriding-header "Tasks")
 			    (org-agenda-skip-function 'bh/skip-project-tasks-maybe)
 			    (org-agenda-todo-ignore-scheduled t)
@@ -151,7 +367,38 @@
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
 		(tags-todo "KRANTHI/-MIGRATED"
-			   ((org-agenda-overriding-header "Kranthi")
+			   ((org-agenda-overriding-header "Kranthi Gingupalli")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "JOE/-MIGRATED"
+			   ((org-agenda-overriding-header "Joe Duke")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "MANUEL/-MIGRATED"
+			   ((org-agenda-overriding-header "Manuel Yupa")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "PRANTHI/-MIGRATED"
+			   ((org-agenda-overriding-header "Pranthi Yerramareddy")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "TIMOTHY/-MIGRATED"
+			   ((org-agenda-overriding-header "Timothy Bartik")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "MUHAMMAD/-MIGRATED"
+			   ((org-agenda-overriding-header "Muhammad Syed")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "SHANNON/-MIGRATED"
+			   ((org-agenda-overriding-header "Shannon Gray")
+                            (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
 		(todo "MIGRATED"
@@ -241,6 +488,7 @@
 	 (gnuplot . t)
 	 (clojure . t)
 	 (sh . t)
+         (java . t)
 	 (org . t)
 	 (plantuml . t))))
 
@@ -455,6 +703,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Functions related to ORG-MODE.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun bh/org-todo (arg)
+  (interactive "p")
+  (if (equal arg 4)
+      (save-restriction
+        (bh/narrow-to-org-subtree)
+        (org-show-todo-tree nil))
+    (bh/narrow-to-org-subtree)
+    (org-show-todo-tree nil)))
+
+(defun bh/narrow-to-org-subtree ()
+  (widen)
+  (org-narrow-to-subtree))
+
 (defun bh/remove-empty-drawer-on-clock-out ()
   "Remove empty LOGBOOK drawers on clock out."
   (interactive)
@@ -625,8 +886,8 @@ Callers of this function already widen the buffer view."
 	next-headline)
        ((bh/is-project-p)
 	next-headline)
-       ((and (bh/is-task-p) (not (bh/is-project-subtree-p)))
-	next-headline)
+       ;; ((and (bh/is-task-p) (not (bh/is-project-subtree-p)))
+       ;;  next-headline)
        (t
 	nil)))))
 
