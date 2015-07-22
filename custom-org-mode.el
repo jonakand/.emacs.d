@@ -151,7 +151,7 @@
 (setq bh/keep-clock-running nil)
 
 ;; Check for clocking longer than four hours.
-Emacs Lisp(setq org-agenda-clock-consistency-checks
+(setq org-agenda-clock-consistency-checks
       '(:max-duration "4:00"
         :min-duration 0
         :max-gap 0
@@ -349,7 +349,7 @@ as the default task."
 		(tags-todo "-CANCELLED/!"
 			   ((org-agenda-overriding-header "Stuck Projects")
 			    (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-		(tags-todo "-WAITING-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD/!NEXT"
+		(tags-todo "-WAITING-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC/!NEXT"
 			   ((org-agenda-overriding-header "Next Tasks")
 			    (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
 			    (org-agenda-todo-ignore-scheduled t)
@@ -358,7 +358,7 @@ as the default task."
 			    (org-tags-match-list-sublevels t)
 			    (org-agenda-sorting-strategy
 			     '(todo-state-down effort-up category-keep))))
-		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD"
+		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC"
 			   ((org-agenda-overriding-header "Tasks")
 			    (org-agenda-skip-function 'bh/skip-project-tasks-maybe)
 			    (org-agenda-todo-ignore-scheduled t)
@@ -398,6 +398,11 @@ as the default task."
 			     '(category-keep))))
                 (tags-todo "SHANNON/-MIGRATED"
 			   ((org-agenda-overriding-header "Shannon Gray")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "ERIC/-MIGRATED"
+			   ((org-agenda-overriding-header "Eric Xiques")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
