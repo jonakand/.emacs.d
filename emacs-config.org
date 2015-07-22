@@ -129,6 +129,15 @@ Enable editing functions that are disabled by default.
 (put 'erase-buffer 'disabled nil)
 #+end_src
 
+* Environment predicates
+I found this on [[http://doc.rix.si/org/fsem.html][Hardcore Freestyle Emacs]] among other places and finally decided to use it.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(defun windowsp ()
+  "Returns t if the system is a native Emacs for Windows, otherwise nil"
+  (string-equal system-type "windows-nt"))
+#+end_src
+
 * Apropos
 Make apropos a little more helpful.
 
@@ -230,7 +239,7 @@ Disable the annoying blinking cursor.
 Set the default font to Consolas when on a Windows machine.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (eq system-type 'windows-nt)
+(if (windowsp)
     (set-face-attribute 'default nil :font "Consolas-11:antialias=subpixel"))
 #+end_src
 
@@ -239,7 +248,7 @@ Add some paths to the path when on Windows machines.  When at work I do not want
 to update the path so this is a work around.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (eq system-type 'windows-nt)
+(if (windowsp)
     (setq exec-path
           (append exec-path
                   '("~/emacs/Graphviz/bin"
@@ -255,7 +264,7 @@ Set an environment variable for the GraphViz program.  Simply setting the path
 does not work as expected.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (eq system-type 'windows-nt)
+(if (windowsp)
     (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
 (getenv "GRAPHVIZ_DOT")
 #+end_src
@@ -266,7 +275,7 @@ Setting it prior to load does not work properly.  Also setting this path does
 not work unless the full path is provided.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (eq system-type 'windows-nt)
+(if (windowsp)
     (eval-after-load "gnutls" 
       '(progn 
          (setq gnutls-trustfiles '("h:/emacs/cacert.pem")))))
@@ -352,7 +361,7 @@ dictionary is and its path.  This may be done in Linux but is not done properly
 in Windows, so set it up here.
 
 #+begin_src emacs-lisp :tangle yes :exports code  
-(if (eq system-type 'windows-nt)
+(if (windowsp)
     (progn
       (setenv "DICTIONARY" "en_US")
       (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell"))
@@ -524,7 +533,7 @@ insert a newline and also indent the next line.  Good for programming.
 I mainly use Internet Explorer when on Windows machines so browse the current URL using it.
 #+begin_src emacs-lisp :tangle yes :exports code
 (setq browse-url-browser-function 'browse-url-generic
-      browse-url-generic-program (if (eq system-type 'windows-nt)
+      browse-url-generic-program (if (windowsp)
                                      "C:/Program Files/Internet Explorer/iexplore.exe"))
 #+end_src
 
@@ -638,7 +647,7 @@ Windows or not.  The configuration was lifted from a nice document located
 | +m     | Print number of rows affected by statement.              |
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (eq system-type 'windows-nt)
+(if (windowsp)
     (progn  
       (setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe")
       (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m"))))
@@ -1239,14 +1248,14 @@ programs.  I usually forget they are in here though.
 (defun ry/launch-windows-explorer ()
   "Open Windows explorer."
   (interactive)
-  (if (eq system-type 'windows-nt)
+  (if (windowsp)
       (shell-command "explorer.exe")
     (error "This command can only be used on Windows.")))
 
 (defun ry/launch-internet-explorer ()
   "Open Internet Explorer."
   (interactive)
-  (if (eq system-type 'windows-nt)      
+  (if (windowsp)      
       (shell-command "C:/Progra~1/Intern~1/iexplore.exe https://www.bing.com")
     (error "This command can only be used on Windows.")))
 #+end_src
