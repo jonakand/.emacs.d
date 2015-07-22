@@ -7,7 +7,7 @@
       (server-start)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Remove unnecessary gui stuff
+;; Remove unnecessary GUI stuff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
@@ -44,7 +44,7 @@
 (require 'diminish)
 (require 'bind-key)
 
-(setq use-package-verbose t)
+(setq use-package-verbose t)            
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Tangle and byte compile the source ORG document if it is newer than the
@@ -57,3 +57,5 @@
         (require 'ob-tangle)
         (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t))))
     (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
+
+;; (add-hook 'after-init-hook (lambda () (org-babel-tangle-file "~/.emacs.d/emacs-config.org")))
