@@ -96,6 +96,18 @@ mode-line so many of the usual things have been removed.
   "Face for current task time in mode-line."
   :group 'faces)
 
+(defun ry/current-task-time ()
+  "Concat the current clocking item and the time spent into a
+propertized string.  If no item is being clocked return a no
+clocking string"
+  (if (org-clocking-p)
+      (progn
+        (concat 
+         (propertize org-clock-current-task 'face 'ry/current-task-face)
+         " : "
+         (propertize (org-minutes-to-clocksum-string (org-clock-get-clocked-time)) 'face 'ry/current-time-face)))
+    (propertize "Not clocking" 'face 'ry/current-time-face)))
+
 (setq-default mode-line-format
               '("%e"
                 mode-line-front-space
@@ -107,11 +119,7 @@ mode-line so many of the usual things have been removed.
                 mode-line-modes              
                 "                        "
                 "Current task: "
-                (:eval (let ((task org-clock-current-task))                    
-                         (propertize task 'face 'ry/current-task-face)))               
-                " : "
-                (:eval (let ((time (format "%S" (org-clock-get-clocked-time))))
-                         (propertize time 'face 'ry/current-time-face)))
+                (:eval (ry/current-task-time))
                 mode-line-end-spaces))
 #+end_src
 
@@ -625,11 +633,11 @@ line.  This was taken from the Prelude configuration.
 * Quit process on exit
 This will quit all processes without prompting me to do so when closing Emacs.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle yes :exports code
 (require 'cl)
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
            (cl-flet ((process-list ())) ad-do-it))
-  #+end_src
+#+end_src
 
 * SQL
 Work uses DB2 and DataStudio.  Opening RAD and DataStudio at the same time is a 
