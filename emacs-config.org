@@ -2430,9 +2430,16 @@ errors.
 ;;                                  "EN_QUOTES")))
 ;;+end_src
 
+** SICP
+
+Why not have SICP in emacs for easy reading?
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package sicp
+  :ensure t)
+#+end_src emacs-lisp :tangle yes :exports code
+
 #+begin_src emacs-lisp :tangle yes :exports code
 (provide 'emacs-config)
 ;;; emacs-config.el ends here
 #+end_src
-
-
