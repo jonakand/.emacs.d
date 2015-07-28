@@ -286,7 +286,8 @@ not work unless the full path is provided.
 (if (windowsp)
     (eval-after-load "gnutls" 
       '(progn 
-         (setq gnutls-trustfiles '("h:/emacs/cacert.pem")))))
+         (setq gnutls-trustfiles '("h:/emacs/cacert.pem"))
+         (setq gnutls-log-level 1))))
 #+end_src
 
 * Working with long lines
@@ -1471,52 +1472,57 @@ similar way as bash.  Also I like to force Helm to always split the current
 window vertically.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-  (use-package helm
-    :ensure t
-    :diminish helm-mode
-    :bind (("C-M-s" . helm-occur)
-           ("C-x C-f" . helm-find-files)
-           ("M-x" . helm-M-x)
-           ("C-x b" . ry/switch-buffer)
-           ("C-x C-b" . helm-buffers-list)
-           ("C-x r l" . helm-bookmarks)
-           ("C-h f" . helm-apropos)
-           ("C-h r" . helm-info-emacs)
-           ("C-h C-l" . helm-locate-library)
-           ("M-y" . helm-show-kill-ring)
-           ("C-x C-b" . ry/switch-buffer)
-           ("<f7>" . helm-bookmarks)
-           ("<f8>" . bookmark-set))
-    :config
-    (progn
-      (require 'helm-config)
+(use-package helm
+  :ensure t
+  :diminish helm-mode
+  :bind (("C-M-s" . helm-occur)
+         ("C-x C-f" . helm-find-files)
+         ("M-x" . helm-M-x)
+         ("C-x b" . ry/switch-buffer)
+         ("C-x C-b" . helm-buffers-list)
+         ("C-x r l" . helm-bookmarks)
+         ("C-h f" . helm-apropos)
+         ("C-h r" . helm-info-emacs)
+         ("C-h C-l" . helm-locate-library)
+         ("M-y" . helm-show-kill-ring)
+         ("C-x C-b" . ry/switch-buffer)
+         ("<f7>" . helm-bookmarks)
+         ("<f8>" . bookmark-set))
+  :config
+  (progn
+    (require 'helm-config)
 
-      (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
-      (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-      (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+    (use-package helm-descbinds
+      :ensure t
+      :config
+      (helm-descbinds-mode))
 
-      (setq helm-quick-update                     t
-            helm-split-window-in-side-p           t
-            helm-buffers-fuzzy-matching           t
-            helm-ff-search-library-in-sexp        t
-            helm-scroll-amount                    8
-            helm-ff-file-name-history-use-recentf t
-            helm-mini-default-sources '(helm-source-buffers-list
-                                        helm-source-recentf
-                                        helm-source-bookmarks
-                                        helm-source-buffer-not-found))
-      
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;;  Make helm always create a new window and always split the current window
-      ;;  vertically.
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      (setq helm-display-function
-            (lambda (buf)
-              (split-window-vertically)
-              (other-window 1)
-              (switch-to-buffer buf)))
+    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
+    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+    (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
-      (helm-mode)))
+    (setq helm-quick-update                     t
+          helm-split-window-in-side-p           t
+          helm-buffers-fuzzy-matching           t
+          helm-ff-search-library-in-sexp        t
+          helm-scroll-amount                    8
+          helm-ff-file-name-history-use-recentf t
+          helm-mini-default-sources '(helm-source-buffers-list
+                                      helm-source-recentf
+                                      helm-source-bookmarks
+                                      helm-source-buffer-not-found))
+    
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Make helm always create a new window and always split the current window
+    ;;  vertically.
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (setq helm-display-function
+          (lambda (buf)
+            (split-window-vertically)
+            (other-window 1)
+            (switch-to-buffer buf)))
+
+    (helm-mode)))
 #+end_src
 
 ** Multiple Cursors
@@ -2334,6 +2340,10 @@ The changes that were made to get it working are not pretty.
 ;;     (help-at-pt-set-timer)
 
 ;;     (require 'flymake-eclim)
+;; (use-package flycheck-tip
+;;   :ensure t
+;;   :config
+;;   (flycheck-tip-use-timer 'verbose))
 
 ;;     (global-eclim-mode)
 
@@ -2438,6 +2448,13 @@ Why not have SICP in emacs for easy reading?
 (use-package sicp
   :ensure t)
 #+end_src emacs-lisp :tangle yes :exports code
+
+** Jabber
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package jabber
+  :ensure t)
+#+end_src emacs-lisp :tangle yes :exports code
+   
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (provide 'emacs-config)
