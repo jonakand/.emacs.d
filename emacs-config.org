@@ -2450,13 +2450,30 @@ Why not have SICP in emacs for easy reading?
 #+end_src emacs-lisp :tangle yes :exports code
 
 ** Jabber
+
+This is a placeholder for the Jabber configuration.  I need to determine what values to use for the work server.
+   
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package jabber
   :ensure t)
 #+end_src emacs-lisp :tangle yes :exports code
-   
 
+** Log4j
+
+I previously had this in my configuration to make looking at log files easier.  I cannot remember why it was removed.  It's being added back to determine if it is helpful or not.
+
+#+begin_src emacs-lisp :tangle yes :exports yes
+(use-package log4j-mode
+  :mode 
+  (("\\.log\\(\\.[0-9]+\\)?\\(\\.txt\\)?\\'" . log4j-mode))
+  :ensure t)
+#+end_src
+
+* Provide
+  
 #+begin_src emacs-lisp :tangle yes :exports code
 (provide 'emacs-config)
 ;;; emacs-config.el ends here
 #+end_src
+
+  
