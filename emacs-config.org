@@ -744,15 +744,17 @@ only opened by ry/sql-open-database."
       (if (buffer-live-p db-buffer)
         (with-current-buffer db-buffer 
           (cond ((and (get-buffer-process db-buffer) database-conn-p)
-                 (message "Old connection to %s found." database-name)
+                 (message "Time: %S  -  Old connection to %s found." (org-insert-time-stamp nil t t) database-name)
                  (sql-send-string (concat "DISCONNECT " database-name ";"))
                  (setq database-conn-p nil))
                 ((not database-conn-p)
-                 (message "Skipping %s as it is not connected." database-name))
+                 (message "Time: %S  -  Skipping %s as it is not connected." (org-insert-time-stamp nil t t) database-name))
                (t (message "Default condition met!"))))
         (progn
           (message "Buffer no longer exists, removing %s." db-buffer)
           (setq db-buffers-list (delete db-buffer db-buffers-list)))))))
+
+
 #+end_src
 
 Custom function for connecting to a database.  This is no longer in use as I will
@@ -2462,12 +2464,26 @@ This is a placeholder for the Jabber configuration.  I need to determine what va
 
 I previously had this in my configuration to make looking at log files easier.  I cannot remember why it was removed.  It's being added back to determine if it is helpful or not.
 
-#+begin_src emacs-lisp :tangle yes :exports yes
+#+begin_src emacs-lisp :tangle yes :exports code
 (use-package log4j-mode
   :mode 
   (("\\.log\\(\\.[0-9]+\\)?\\(\\.txt\\)?\\'" . log4j-mode))
   :ensure t)
 #+end_src
+
+** Web-beautify
+   
+   This package will be added in the future.  It has the ability to beautify JS, CSS, and HTML
+
+** Apropospriate theme
+
+I'm currently running Solarized dark but my move to this in the future.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package apropospriate-theme
+  :ensure t
+  :disabled t)
+#+END_SRC
 
 * Provide
   
