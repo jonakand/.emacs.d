@@ -352,7 +352,7 @@ as the default task."
 		(tags-todo "-CANCELLED/!"
 			   ((org-agenda-overriding-header "Stuck Projects")
 			    (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-		(tags-todo "-WAITING-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC/!NEXT"
+		(tags-todo "-WAITING-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC-RITA/!NEXT"
 			   ((org-agenda-overriding-header "Next Tasks")
 			    (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
 			    (org-agenda-todo-ignore-scheduled t)
@@ -361,7 +361,7 @@ as the default task."
 			    (org-tags-match-list-sublevels t)
 			    (org-agenda-sorting-strategy
 			     '(todo-state-down effort-up category-keep))))
-		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC"
+		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC-RITA/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC-RITA"
 			   ((org-agenda-overriding-header "Tasks")
 			    (org-agenda-skip-function 'bh/skip-project-tasks-maybe)
 			    (org-agenda-todo-ignore-scheduled t)
@@ -370,42 +370,47 @@ as the default task."
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
 		(tags-todo "KRANTHI/-MIGRATED"
-			   ((org-agenda-overriding-header "Kranthi Gingupalli")
+			   ((org-agenda-overriding-header "Kranthi G.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
                 (tags-todo "JOE/-MIGRATED"
-			   ((org-agenda-overriding-header "Joe Duke")
+			   ((org-agenda-overriding-header "Joe D.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
                 (tags-todo "MANUEL/-MIGRATED"
-			   ((org-agenda-overriding-header "Manuel Yupa")
+			   ((org-agenda-overriding-header "Manuel Y.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
                 (tags-todo "PRANTHI/-MIGRATED"
-			   ((org-agenda-overriding-header "Pranthi Yerramareddy")
+			   ((org-agenda-overriding-header "Pranthi Y.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
                 (tags-todo "TIMOTHY/-MIGRATED"
-			   ((org-agenda-overriding-header "Timothy Bartik")
+			   ((org-agenda-overriding-header "Timothy B.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
                 (tags-todo "MUHAMMAD/-MIGRATED"
-			   ((org-agenda-overriding-header "Muhammad Syed")
+			   ((org-agenda-overriding-header "Muhammad S.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
                 (tags-todo "SHANNON/-MIGRATED"
-			   ((org-agenda-overriding-header "Shannon Gray")
+			   ((org-agenda-overriding-header "Shannon G.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
                 (tags-todo "ERIC/-MIGRATED"
-			   ((org-agenda-overriding-header "Eric Xiques")
+			   ((org-agenda-overriding-header "Eric X.")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "RITA/-MIGRATED"
+			   ((org-agenda-overriding-header "Rita J.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
