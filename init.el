@@ -4,7 +4,7 @@
 (if (eq system-type 'windows-nt)
     (progn
       (require 'server) 
-      (server-start)))
+      (unless (server-running-p) (server-start))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remove unnecessary GUI stuff
