@@ -1389,7 +1389,8 @@ org-mode so that they stand out more.
 
 ** Rainbow Delimiters
 Make delimiters a little easier to match up without having to be on one of them.  
-Also a tip found [[http://timothypratley.blogspot.com/2015/07/seven-specialty-emacs-settings-with-big.html][here]] for making unmatched parentheses easier to see.
+Also a tip found [[http://timothypratley.blogspot.com/2015/07/seven-specialty-emacs-settings-with-big.html][here]] for making unmatched parentheses easier to see.  Also This
+uses some pastel colors that I found [[http://web.ics.purdue.edu/~dogbe/static/emacs_config_file.html][here]].
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package rainbow-delimiters
@@ -1397,6 +1398,26 @@ Also a tip found [[http://timothypratley.blogspot.com/2015/07/seven-specialty-em
   :config
   (progn
     (add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+
+    (set-face-attribute 'rainbow-delimiters-depth-1-face nil
+                        :foreground "#78c5d6")
+    (set-face-attribute 'rainbow-delimiters-depth-2-face nil
+                        :foreground "#bf62a6")
+    (set-face-attribute 'rainbow-delimiters-depth-3-face nil
+                        :foreground "#459ba8")
+    (set-face-attribute 'rainbow-delimiters-depth-4-face nil
+                        :foreground "#e868a2")
+    (set-face-attribute 'rainbow-delimiters-depth-5-face nil
+                        :foreground "#79c267")
+    (set-face-attribute 'rainbow-delimiters-depth-6-face nil
+                        :foreground "#f28c33")
+    (set-face-attribute 'rainbow-delimiters-depth-7-face nil
+                        :foreground "#c5d647")
+    (set-face-attribute 'rainbow-delimiters-depth-8-face nil
+                        :foreground "#f5d63d")
+    (set-face-attribute 'rainbow-delimiters-depth-9-face nil
+                        :foreground "#78c5d6")
+    
     (set-face-attribute 'rainbow-delimiters-unmatched-face nil
                         :foreground 'unspecified
                         :inherit 'error)))
