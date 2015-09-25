@@ -236,6 +236,14 @@ Use 'Y' and 'N' instead of yes and no for prompts.
 (fset 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
+* Disable warning message
+
+The following disables the warning message that appears when a huge change is made to a buffer.  When working with SQL results sometimes the buffer gets large and I remove a large portion of the buffer contents.  Normally a warning message would show but I don't want it to.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(add-to-list 'warning-suppress-types '(undo discard-info))
+#+END_SRC
+
 * Transient mark mode
 
 Enable transient mark mode so that highlighting regions activates special behaviors.
@@ -1046,43 +1054,46 @@ public class XMLFormatter {
 }
 #+end_src
 
-Pretty-print the selected region using the Java utility defined above.
+Pretty-print the selected region, or buffer if no active region, using the Java utility defined above.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/xml-format (beg end)
-  "Call an external Java program to format the current region
-as an XML document.  Region needs to contain a valid XML document."
-  (interactive "*r")
+  "Call an external Java program to pretty print the
+current region or the current buffer if no region is
+active."
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))
   (save-excursion
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar --pretty" (current-buffer) t)))
 #+end_src
 
-Compact the XML document in the active region using the Java utility defined above.
+Compact the XML document in the active region, or buffer if no active region, using the Java utility defined above.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/xml-linearlize (beg end)
   "Call an external Java program to linearlize the current region.  
 Region needs to contain a valid XML document."
-  (interactive "*r")
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))  
   (save-excursion
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar " (current-buffer) t)))
 #+end_src
 
-I work with a lot of XML documents.  Most of the time I can just look at the document and see what I need.  Occasional it can be helpful to write an Xquery to explore the document.  The code below is a modified version of the functions provided on http://donnieknows.com/blog/hacking-xquery-emacs-berkeley-db-xml.  While the article uses Berkley DB XML I opted to use Saxon.  Saxon is easy to obtain and the installation is simply unzipping a file and placing a JAR where I want.  This works well on work machines.
+I work with a lot of XML documents.  Most of the time I can just look at the document and see what I need.  Occasionally it can be helpful to write an Xquery to explore the document.  The code below is a modified version of the functions provided on http://donnieknows.com/blog/hacking-xquery-emacs-berkeley-db-xml.  While the article uses Berkley DB XML I opted to use Saxon.  Saxon is easy to obtain and the installation is simply unzipping a file and placing a JAR where I want.  This works well on work machines.
 
-An additional function was also created for performing an Xquery using the entire buffer instead of an active region.  I find it annoying to have to select things when I typically write the Xquery as if the buffer was the whole document.
+As with the other two XML related functions above this will work on a region or the whole document if no region is selected.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-(defun ry/xquery ()
-  "Perform Xquery using Saxon with the current buffer."
-  (interactive "")
-  (let ((beg (point-min))
-        (end (point-max)))
-    (ry/xquery-with-region beg end)))
-
-(defun ry/xquery-with-region (beg end)
+(defun ry/xquery (beg end)
   "Perform Xquery using Saxon with the current region."
-  (interactive "*r")
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))  
   (let ((newbuffer nil)
         (buffer (get-buffer "xquery-result"))
         (xquery (buffer-substring beg end)))
@@ -1113,11 +1124,6 @@ An additional function was also created for performing an Xquery using the entir
 This function is a modified version of the function found at http://www.emacswiki.org/emacs/NxmlMode#toc11.  In addition to displaying the current xpath in the echo area it will be copied to the clipboard.  This has proven to be useful many times when someone asks me for the xpaths for all tags in a document.  It can be added to a macro to generate the list automatically.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  The function below is a modified version of a function found at:
-;;  http://www.emacswiki.org/emacs/NxmlMode#toc11.  In additional to displaying
-;;  the current XPATH in the echo area it will be copied to the clipboard.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ry/xml-where ()
   "Display the hierarchy of XML elements the point is on as a path."
   (interactive)
@@ -2050,14 +2056,12 @@ _f_ormat
 _l_inearlize
 _w_here
 _x_query buffer
-Xquery _r_egion
 
 "
       ("f" ry/xml-format nil)
       ("l" ry/xml-linearlize nil)
       ("w" ry/xml-where nil)
       ("x" ry/xquery nil)
-      ("r" ry/xquery-with-region nil)
       ("q" nil "cancel" :color red))
 
     (defhydra hydra-clock (:color blue)
