@@ -283,7 +283,7 @@ Set the default font to Consolas when on a Windows machine.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
 (if (windowsp)
-    (set-face-attribute 'default nil :font "Consolas-11:antialias=subpixel"))
+    (set-face-attribute 'default nil :font "Consolas-12:antialias=subpixel"))
 #+end_src
 
 * Path
@@ -544,21 +544,24 @@ This changes the way the return key behaves.  When return is pressed it will ins
 (global-set-key (kbd "S-C-<up>") 'enlarge-window)
 #+end_src
 
+** Rectangle command
+
+Commands for dealing with rectangular regions.  Found on the emacs wiki.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Key bindingd for custom functions.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "C-x r M-w") 'my-copy-rectangle)
 (global-set-key (kbd "C-x r C-y") 'yank-replace-rectangle)
-(global-set-key (kbd "<f12>") 'ry/open-temp-buffer)
 #+end_src
 
+Open a numbered temp buffer using f12.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(global-set-key (kbd "<f12>") 'ry/open-temp-buffer)
+#+END_SRC
+
+I don't use tags so I have taken the M-. binding for find-funtion-at-point.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  I dont use tags so this was poached from those keys.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (global-set-key (kbd "M-.") 'find-function-at-point)
 #+end_src
 
@@ -592,15 +595,35 @@ I only kill the current buffer most of the time.  The binding below is used so t
 I program most of the time.  Moving to the beginning of the means moving to the first non-whitepace character instead of moving to the true beginning on the line.  This was taken from the Prelude configuration.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-(global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
+(defun prelude-move-beginning-of-line (arg)
+  "Move point back to indentation of beginning of line.
 
+Move point to the first non-whitespace character on this line.
+If point is already there, move to the beginning of the line.
+Effectively toggle between the first non-whitespace character and
+the beginning of the line.
+
+If ARG is not nil or 1, move forward ARG - 1 lines first. If
+point reaches the beginning or end of the buffer, stop there."
+  (interactive "^p")
+  (setq arg (or arg 1))
+
+  ;; Move lines first
+  (when (/= arg 1)
+    (let ((line-move-visual nil))
+      (forward-line (1- arg))))
+
+  (let ((orig-point (point)))
+    (back-to-indentation)
+    (when (= orig-point (point))
+      (move-beginning-of-line 1))))
+
+(global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
 #+end_src
 
+Kill buffers for dired mode and package menu mode instead of burying them.  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
+
 #+begin_src emacs-lisp :tangle yes :exports code
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Kill buffers for dired mode and package menu mode instead of burying them.
-;;  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (eval-after-load "dired"
   (progn
     '(bind-keys :map dired-mode-map
@@ -608,60 +631,65 @@ I program most of the time.  Moving to the beginning of the means moving to the 
 
 (bind-keys :map package-menu-mode-map
            ("q" . kill-this-buffer))
+#+END_SRC
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Omit the . and .. from dired listings.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Make dired not display the . and .. for the current directory and parent directory.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (setq-default dired-omit-mode t)
 (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
+#+END_SRC
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Small function to remove all ^M characters from a file.  Taken from:
-;;  http://www.archivum.info/comp.emacs/2007-06/00348/Re-Ignore-%5EM-in-mixed-%28LF-and-CR+LF%29-line-ended-textfiles.html
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Small function to remove all ^M characters from a file.  Taken from http://www.archivum.info/comp.emacs/2007-06/00348/Re-Ignore-%5EM-in-mixed-%28LF-and-CR+LF%29-line-ended-textfiles.html
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun hide-dos-eol ()
   "Do not show ^M in files containing mixed UNIX and DOS line endings."
   (interactive)
   (setq buffer-display-table (make-display-table))
   (aset buffer-display-table ?\^M []))
+#+END_SRC
 
+Small function to replace the current character with another character.  This is bound in god mode so it doesn't need to be disabled.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/replace-character-at-point (new-char)
   "Replace the character at point in the same way that the command works in vim"
   (interactive "c")
   (delete-char 1)
   (insert new-char))
-  ;;(backward-char))
+#+END_SRC
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Helper for copying a rectangle.
-;;  Taken from http://www.emacswiki.org/emacs/RectangleCommands
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Helper for copying a rectangle.  Taken from http://www.emacswiki.org/emacs/RectangleCommands
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun my-copy-rectangle (start end)
   "Copy the region-rectangle instead of `kill-rectangle'."
   (interactive "r")
   (setq killed-rectangle (extract-rectangle start end)))
+#+END_SRC
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Helper for replacing/yanking one rectangle with another.
-;;  Taken from http://www.emacswiki.org/emacs/RectangleCommands
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Helper for replacing/yanking one rectangle with another.  Taken from http://www.emacswiki.org/emacs/RectangleCommands  
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun yank-replace-rectangle (start end)
   "Similar like yank-rectangle, but deletes selected rectangle first."
   (interactive "r")
   (delete-rectangle start end)
   (pop-to-mark-command)
   (yank-rectangle))
+#+END_SRC
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Function to open a *TEMP#* buffer based on the numeric argument passed.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Helper to open a numbered temp buffer using a number and the f12 key.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/open-temp-buffer (&optional num)
   "Open a numbered *TEMP#* buffer based on argument."
   (interactive "p")
   (switch-to-buffer
    (format "*TEMP%d*" num))
   (god-local-mode 1))
-#+end_src
+#+END_SRC
 
 * Quit process on exit
 
@@ -864,36 +892,6 @@ send the paragraph to the SQL process."
     (goto-char (line-end-position))
     (yank-rectangle)
     (god-local-mode 1)))
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes :exports code
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Taken from Prelude.  Make the point move to the beginning of the line in the
-;;  same way Eclipse does.  Really move back-and-forth between the hard
-;;  beginning of the line and the first non-space character.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun prelude-move-beginning-of-line (arg)
-  "Move point back to indentation of beginning of line.
-
-Move point to the first non-whitespace character on this line.
-If point is already there, move to the beginning of the line.
-Effectively toggle between the first non-whitespace character and
-the beginning of the line.
-
-If ARG is not nil or 1, move forward ARG - 1 lines first. If
-point reaches the beginning or end of the buffer, stop there."
-  (interactive "^p")
-  (setq arg (or arg 1))
-
-  ;; Move lines first
-  (when (/= arg 1)
-    (let ((line-move-visual nil))
-      (forward-line (1- arg))))
-
-  (let ((orig-point (point)))
-    (back-to-indentation)
-    (when (= orig-point (point))
-      (move-beginning-of-line 1))))
 #+end_src
 
 * XML
