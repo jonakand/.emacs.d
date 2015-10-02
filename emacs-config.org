@@ -1,3 +1,4 @@
+
 #+TITLE: Emacs Configuration
 #+LANGUAGE:  en
 #+AUTHOR: Ryan Yanson
@@ -241,7 +242,7 @@ Use 'Y' and 'N' instead of yes and no for prompts.
 The following disables the warning message that appears when a huge change is made to a buffer.  When working with SQL results sometimes the buffer gets large and I remove a large portion of the buffer contents.  Normally a warning message would show but I don't want it to.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(add-to-list 'warning-suppress-types '(undo discard-info))
+;(add-to-list 'warning-suppress-types '(undo discard-info)) 
 #+END_SRC
 
 * Transient mark mode
@@ -734,12 +735,11 @@ This list will be used to hold the SQL buffers that have the DB2 process.  I hav
 
 The key bindings below revolve around the F5 key.  This was done to be similar to the main key used in DataStudio.
 
-#+begin_src emacs-lisp :tangle yes :exports code
-(global-set-key (kbd "<f5>") 'ry/sql-send-paragraph)
-(global-set-key (kbd "<S-f5>") 'ry/sql-open-database)
-(global-set-key (kbd "<C-f5>") 'ry/sql-send-export-paragraph)
-(global-set-key (kbd "<M-f5>") 'ry/sql-connect)
-#+end_src
+| Chord       | Command              | 
+|-------------+----------------------|
+| C-c C-d C-s | ry/sql-send-dwim     |
+| C-c C-d C-e | ry/sql-export-dwim   |
+| C-c C-d C-o | ry/sql-open-database |
 
 ** Functions
 
@@ -797,14 +797,14 @@ only opened by ry/sql-open-database."
   (let ((tmp-list db-buffers-list))
     (dolist (db-buffer tmp-list)
       (if (buffer-live-p db-buffer)
-        (with-current-buffer db-buffer 
-          (cond ((and (get-buffer-process db-buffer) database-conn-p)
-                 (message "Time: %S  -  Old connection to %s found." (org-insert-time-stamp nil t t) database-name)
-                 (sql-send-string (concat "DISCONNECT " database-name ";"))
-                 (setq database-conn-p nil))
-                ((not database-conn-p)
-                 (message "Time: %S  -  Skipping %s as it is not connected." (org-insert-time-stamp nil t t) database-name))
-               (t (message "Default condition met!"))))
+          (with-current-buffer db-buffer 
+            (cond ((and (get-buffer-process db-buffer) database-conn-p)
+                   (message "Disconnecting %s."  database-name)
+                   (sql-send-string (concat "DISCONNECT " database-name ";"))
+                   (setq database-conn-p nil))
+                  ((not database-conn-p)
+                   (message "Skipping %s as it is not connected." database-name))
+                  (t nil)))
         (progn
           (message "Buffer no longer exists, removing %s." db-buffer)
           (setq db-buffers-list (delete db-buffer db-buffers-list)))))))
@@ -812,19 +812,39 @@ only opened by ry/sql-open-database."
 
 #+end_src
 
-Custom function for connecting to a database.  This is no longer in use as I will use the function above instead.  
-
-#+begin_src emacs-lisp :tangle yes :exports code
-(defun ry/sql-connect (database username password)
-  "Custom SQL connect"
-  (interactive (list
-                (read-string "Database: ")
-                (read-string "Username: ")
-                (read-passwd "Password: ")))
-  (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";")))
-#+end_src
-
 The method below was created because I have a tendency to forget to put a restriction on the number of rows returned by my queries.  It needs some serious TLC to get it working correctly.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/sql-send-dwim (beg end)
+  "Send a statement to the DB2 process.
+This function is a DWIM function.  If no region is active
+it will select the current \"paragraph\" and send it.  If a
+region is active it will send it.  Also, it will add
+\"FETCH FIRST 50 ROWS ONLY WITH UR\" to the statement prior
+to sending."
+  (interactive 
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (let ((beg (save-excursion
+                  (backward-paragraph)
+                  (point)))
+           (end (save-excursion
+                  (forward-paragraph)
+                  (point))))
+       (list beg end))))
+  (save-restriction
+    (narrow-to-region beg end)
+    (goto-char (point-min))
+    (cond
+     ((search-forward-regexp "select" nil t)       
+      (if (search-forward-regexp "fetch" nil t)         
+          (sql-send-string (buffer-substring-no-properties beg end))
+        (progn
+          (replace-regexp ";" " FETCH FIRST 50 ROWS ONLY WITH UR;")
+          (sql-send-string (buffer-substring-no-properties beg (point-max))))))
+     (t
+      (sql-send-string (buffer-substring-no-properties beg end))))))
+#+END_SRC
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/sql-send-paragraph ()
@@ -833,34 +853,42 @@ The method below was created because I have a tendency to forget to put a restri
   (let ((start (save-excursion
                  (backward-paragraph)
                  (point)))
-        (end (save-excursion
+        (end (save-excursion               
                (forward-paragraph)
                (point))))
     (save-restriction
       (narrow-to-region start end)
-      (if (not (search-forward-regexp "select" nil t))
-          (if (not (search-forward-regexp "fetch" nil t))
-              (sql-send-string (buffer-substring-no-properties start end))
-            (sql-send-string (concat (buffer-substring-no-properties start (1- end)) " FETCH FIRST 50 ROWS ONLY WITH UR;")))
-        (sql-send-string (buffer-substring-no-properties start end))))))
+      (goto-char (point-min))
+      (cond
+       ((search-forward-regexp "select" nil t)       
+        (if (search-forward-regexp "fetch" nil t)         
+            (sql-send-string (buffer-substring-no-properties start end))
+          (progn
+            (replace-regexp ";" " FETCH FIRST 50 ROWS ONLY WITH UR;")
+            (sql-send-string (buffer-substring-no-properties start (point-max))))))
+       (t
+        (sql-send-string (buffer-substring-no-properties start end)))))))
 #+end_src
 
 The function below is used quite often.  It is not the prettiest but it gets the job done.  It will wrap the current SQL statement in an EXPORT prior to sending.  This is helpful when I want to see a large XML document or I want to retrieve a row that exceeds the maximum number of characters that the DB2 CLP will return.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-(defun ry/sql-send-export-paragraph ()
-  "Prefix the current paragraph with an EXPORT command and 
-send the paragraph to the SQL process."
-  (interactive)
-  (let ((start (save-excursion
-                 (backward-paragraph)
-                 (point)))
-        (end (save-excursion
-               (forward-paragraph)
-               (point)))
-        (temp-file
-         (make-temp-file "DB2-EXPORT-" nil)))
-    (sql-send-string (concat "EXPORT TO " temp-file " OF DEL MODIFIED BY COLDEL0x09 " (buffer-substring-no-properties start end)))
+(defun ry/sql-export-dwim (beg end)
+  "Prefix the current paragraph or region if selected
+with an EXPORT command and send the paragraph to the
+SQL process."
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (let ((beg (save-excursion
+                  (backward-paragraph)
+                  (point)))
+           (end (save-excursion
+                  (forward-paragraph)
+                  (point))))
+       (list beg end))))
+  (let ((temp-file (make-temp-file "DB2-EXPORT-" nil)))
+    (sql-send-string (concat "EXPORT TO " temp-file " OF DEL MODIFIED BY COLDEL0x09 " (buffer-substring-no-properties beg end)))
     (switch-to-buffer "*EXPORT*")
     (sleep-for 1)
     (insert-file-contents-literally (concat temp-file ".001.xml"))
@@ -874,12 +902,12 @@ send the paragraph to the SQL process."
       (goto-char (point-min))
       (setq more-lines t)
       (while more-lines
-     	(setq cur-length (- (line-end-position) (line-beginning-position)))
-     	(if (< cur-length max-length)
-     	    (progn 
-     	      (goto-char (line-end-position))
-     	      (insert-char 32 (- max-length cur-length))))
-     	(setq more-lines (= 0 (forward-line 1)))))
+        (setq cur-length (- (line-end-position) (line-beginning-position)))
+        (if (< cur-length max-length)
+            (progn 
+              (goto-char (line-end-position))
+              (insert-char 32 (- max-length cur-length))))
+        (setq more-lines (= 0 (forward-line 1)))))
     (kill-rectangle (point-min) (point-max))
     (erase-buffer)
     (insert-file-contents-literally temp-file)
@@ -1656,7 +1684,13 @@ In addition to adding keybindings to help work with this mode I have added a hoo
          ("C-x C-g" . magit-status)
          ("C-c C-g" . magit-status)
          ("C-c C-t" . hydra-toggle/body)
-         ("C-c C-l" . hydra-launch/body))
+         ("C-c C-l" . hydra-launch/body)
+         ("C-c C-x C-f" . ry/xml-format)
+         ("C-c C-x C-l" . ry/xml-linearlize)
+         ("C-c C-x C-w" . ry/xml-where)
+         ("C-c C-d C-s" . ry/sql-send-dwim)
+         ("C-c C-d C-e" . ry/sql-export-dwim)
+         ("C-c C-d C-o" . ry/sql-open-database))
   :init
   (progn
     (god-mode-all)
@@ -2462,11 +2496,17 @@ When writing documentation it is helpful to know if you are using the English la
 I am playing with the idea of keeping a languagetool HTTP server running in the background.
 
 #+BEGIN_SRC emacs-lisp :tangle no
-;; (let ((url-request-method        "POST")
-;;       (url-request-extra-headers `(("Content-Type" . "application/x-www-form-urlencoded")))
-;;       (url-request-data          "language=en-us&text=Ifdsjfh."))
-;;   (with-current-buffer (url-retrieve-synchronously "http://localhost:8081")
-;;     (buffer-string)))
+(use-package http-post-simple
+  :ensure t
+  :config
+  (progn
+
+    (defun check-word)
+    (let ((url-request-method        "POST")
+          (url-request-extra-headers `(("Content-Type" . "application/x-www-form-urlencoded")))
+          (url-request-data          "language=en-us&text=Ifdsjfh."))
+      (with-current-buffer (url-retrieve-synchronously "http://localhost:8081")
+        (buffer-string)))))
 #+END_SRC
 
 ** SICP
@@ -2512,6 +2552,16 @@ I'm currently running Solarized dark but my move to this in the future.
   :disabled t)
 #+END_SRC
 
+** Origami
+
+A nicer way to fold.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package origami
+  :ensure t
+  :config
+  (global-origami-mode))
+#+END_SRC
 * Provide
   
 #+begin_src emacs-lisp :tangle yes :exports code
