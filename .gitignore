@@ -21,3 +21,6 @@ helm-adaptive-history
 sunrise-x-w32-addons.vbs
 emacs-config.el
 company-sql.el
+/init.el~
+/%backup%~
+/#h!!temp!emacs-eclim!eclim.el#

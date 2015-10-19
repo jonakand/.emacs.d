@@ -131,6 +131,14 @@ clocking string"
                 mode-line-end-spaces))
 #+end_src
 
+* Remove warnings
+
+Not sure if this is a good thing or a bad thing but I for tired of having to see the messages from the advise system telling me that a couple definitions got changed.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq ad-redefinition-action 'accept)
+#+END_SRC
+
 * Enable functions
 
 Enable editing functions that are disabled by default.
@@ -533,7 +541,7 @@ misspelled words backwards."
 This changes the way the return key behaves.  When return is pressed it will insert a newline and also indent the next line.  Good for programming.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(define-key global-map (kbd "RET") 'newline-and-indent)
+;(define-key global-map (kbd "RET") 'newline-and-indent)
 #+end_src
 
 ** Change window size
@@ -733,13 +741,14 @@ This list will be used to hold the SQL buffers that have the DB2 process.  I hav
 
 ** Key bindings
 
-The key bindings below revolve around the F5 key.  This was done to be similar to the main key used in DataStudio.
+The key bindings for SQL related commands are below.  The reasoning for using C-d is because I use DB2 at work and it is eady to remember.  Previously it was bound to the F5 key as work also uses DataStudio.  All key bindings are defined in the god-mode section of this document.
 
-| Chord       | Command              | 
-|-------------+----------------------|
-| C-c C-d C-s | ry/sql-send-dwim     |
-| C-c C-d C-e | ry/sql-export-dwim   |
-| C-c C-d C-o | ry/sql-open-database |
+| Chord       | Command                |
+|-------------+------------------------|
+| C-c C-d C-s | ry/sql-send-dwim       |
+| C-c C-d C-e | ry/sql-export-dwim     |
+| C-c C-d C-o | ry/sql-open-database   |
+| C-c C-d C-r | ry/sql-reopen-database |
 
 ** Functions
 
@@ -774,7 +783,10 @@ Custom function for opening DB2 database connections.  This may not be the best 
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/sql-reopen-database (username password)
-  "Reconnect to the database that the current buffer was connected to."
+  "Reconnect to the database that the current buffer was
+connected to using the ry/sql-open-database command.  This
+command relies on the database-name created by the other
+function."
   (interactive (list       
                 (read-string "Username: ")
                 (read-passwd "Password: ")))
@@ -833,17 +845,18 @@ to sending."
                   (point))))
        (list beg end))))
   (save-restriction
-    (narrow-to-region beg end)
-    (goto-char (point-min))
-    (cond
-     ((search-forward-regexp "select" nil t)       
-      (if (search-forward-regexp "fetch" nil t)         
-          (sql-send-string (buffer-substring-no-properties beg end))
-        (progn
-          (replace-regexp ";" " FETCH FIRST 50 ROWS ONLY WITH UR;")
-          (sql-send-string (buffer-substring-no-properties beg (point-max))))))
-     (t
-      (sql-send-string (buffer-substring-no-properties beg end))))))
+    (save-excursion
+      (narrow-to-region beg end)
+      (goto-char (point-min))
+      (cond
+       ((search-forward-regexp "select" nil t)       
+        (if (search-forward-regexp "fetch" nil t)         
+            (sql-send-string (buffer-substring-no-properties beg end))
+          (progn
+            (replace-regexp ";" " FETCH FIRST 50 ROWS ONLY WITH UR;")
+            (sql-send-string (buffer-substring-no-properties beg (point-max))))))
+       (t
+        (sql-send-string (buffer-substring-no-properties beg end)))))))
 #+END_SRC
 
 #+begin_src emacs-lisp :tangle yes :exports code
@@ -1690,7 +1703,8 @@ In addition to adding keybindings to help work with this mode I have added a hoo
          ("C-c C-x C-w" . ry/xml-where)
          ("C-c C-d C-s" . ry/sql-send-dwim)
          ("C-c C-d C-e" . ry/sql-export-dwim)
-         ("C-c C-d C-o" . ry/sql-open-database))
+         ("C-c C-d C-o" . ry/sql-open-database)
+         ("C-c C-d C-r" . ry/sql-reopen-database))
   :init
   (progn
     (god-mode-all)
@@ -2562,6 +2576,39 @@ A nicer way to fold.
   :config
   (global-origami-mode))
 #+END_SRC
+
+** Haskell mode
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package haskell-mode
+  :ensure t
+  :init
+  (require 'haskell-interactive-mode)
+  (require 'haskell-process)
+
+  (use-package flycheck-haskell
+    :ensure t
+    :init
+    (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup))
+
+  (add-hook 'haskell-mode-hook 'haskell-indent-mode)
+  (add-hook 'haskell-mode-hook 'haskell-interactive-mode)
+  
+  (custom-set-variables
+   '(haskell-process-suggest-remove-import-lines t)
+   '(haskell-process-auto-import-loaded-modules t)
+   '(haskell-process-log t)))
+#+END_SRC
+
+** Beacon
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package beacon
+  :ensure t
+  :init
+  (beacon-mode))
+#+END_SRC
+
 * Provide
   
 #+begin_src emacs-lisp :tangle yes :exports code
