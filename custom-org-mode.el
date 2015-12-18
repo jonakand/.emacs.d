@@ -78,9 +78,9 @@
                                       ("Y" . ignore)
                                       ("Z" . ignore))))
 
-(defun ry/org-mode-hook ()
-  (local-set-key (kbd "<return>") 'org-return-indent))
-(add-hook 'org-mode-hook 'ry/org-mode-hook)
+;; (defun ry/org-mode-hook ()
+;;   (local-set-key (kbd "<return>") 'org-return-indent))
+;; (add-hook 'org-mode-hook 'ry/org-mode-hook)
 
 (defun ry/org-agenda-after-show-hook ()
   "Show the subtree when viewing it from the agenda."
@@ -101,6 +101,11 @@
 (setq org-agenda-show-log t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  Load the Outlook protocol.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(load "~/.emacs.d/org-outlook-capture.el")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  ORG-MODE hooks.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Enable abbrev-mode
@@ -114,10 +119,8 @@
 	  '(lambda () (hl-line-mode 1))
 	  'append)
 
-
 (org-clock-persistence-insinuate)
 
-;;
 ;; Show lot of clocking history so it's easy to pick items off the C-F11 list
 (setq org-clock-history-length 23)
 
@@ -184,30 +187,38 @@ Switch projects and subprojects from NEXT back to TODO"
       (goto-char parent-task)
       parent-task)))
 
+ (defun bh/punch-in (arg)
+   "Start continuous clocking and set the default task to the
+ selected task.  If no task is selected set the Organization task
+ as the default task."
+   (interactive "p")
+   (setq bh/keep-clock-running t)
+   (if (equal major-mode 'org-agenda-mode)
+      
+      ;; We're in the agenda
+      
+       (let* ((marker (org-get-at-bol 'org-hd-marker))
+              (tags (org-with-point-at marker (org-get-tags-at))))
+         (if (and (eq arg 4) tags)
+             (org-agenda-clock-in '(16))
+           (bh/clock-in-organization-task-as-default)))
+    
+    ;; We are not in the agenda
+    
+     (save-restriction
+       (widen)
+       ; Find the tags on the current task
+       (if (and (equal major-mode 'org-mode) (not (org-before-first-heading-p)) (eq arg 4))
+           (org-clock-in '(16))
+         (bh/clock-in-organization-task-as-default))))      
+   )
+
 (defun bh/punch-in (arg)
-  "Start continuous clocking and set the default task to the
-selected task.  If no task is selected set the Organization task
+  "Start continuous clocking and set the Organization task
 as the default task."
   (interactive "p")
   (setq bh/keep-clock-running t)
-  (if (equal major-mode 'org-agenda-mode)
-      ;;
-      ;; We're in the agenda
-      ;;
-      (let* ((marker (org-get-at-bol 'org-hd-marker))
-             (tags (org-with-point-at marker (org-get-tags-at))))
-        (if (and (eq arg 4) tags)
-            (org-agenda-clock-in '(16))
-          (bh/clock-in-organization-task-as-default)))
-    ;;
-    ;; We are not in the agenda
-    ;;
-    (save-restriction
-      (widen)
-      ; Find the tags on the current task
-      (if (and (equal major-mode 'org-mode) (not (org-before-first-heading-p)) (eq arg 4))
-          (org-clock-in '(16))
-        (bh/clock-in-organization-task-as-default)))))
+  (bh/clock-in-organization-task-as-default))
 
 (defun bh/punch-out ()
   (interactive)
@@ -238,6 +249,12 @@ as the default task."
 
 (defvar bh/organization-task-id "eb155a82-92b2-4f25-a3c6-0304591af2f9")
 
+;; (org-id-find-id-file "8d2cd2aa-b608-4466-837f-c537cbaa14df")
+;; (org-id-find-id-in-file "8d2cd2aa-b608-4466-837f-c537cbaa14df" "~/emacs/org/refile.org" 'marker)
+
+;; (setq org-clock-default-task (org-id-find-id-in-file "eb155a82-92b2-4f25-a3c6-0304591af2f9" "~/emacs/org/das.org" 'markerp))
+;; (setq org-clock-default-task (org-id-find-id-in-file "8d2cd2aa-b608-4466-837f-c537cbaa14df" "~/emacs/org/refile.org" 'markerp))
+
 (defun bh/clock-in-organization-task-as-default ()
   (interactive)
   (org-with-point-at (org-id-find bh/organization-task-id 'marker)
@@ -264,7 +281,7 @@ as the default task."
 			       "~/emacs/Org/das.org")))
 
 (setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "MIGRATED(m)" "|" "DONE(d)")
+      (quote ((sequence "TODO(t)" "NEXT(n)" "MIGRATED(m)" "|" "DONE(d)" "RESCHEDULED(r)")
 	      (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
 
 (setq org-todo-keyword-faces
@@ -294,20 +311,21 @@ as the default task."
 
 ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates
-      (quote (("t" "todo" entry (file "~/emacs/Org/refile.org")
+      (quote (("t" "todo" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* TODO %?\n  %U\n" :clock-in t :clock-resume t)
-	      ("r" "respond" entry (file "~/emacs/Org/refile.org")
+	      ("r" "respond" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
-	      ("n" "note" entry (file "~/emacs/Org/refile.org")
+	      ("n" "note" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* %? :NOTE:\n  %U\n%a\n" :clock-in t :clock-resume t)
-	      ("w" "org-protocol" entry (file "~/emacs/Org/refile.org")
+	      ("w" "org-protocol" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* TODO Review %c\n%U\n" :immediate-finish t)
-	      ("h" "Habit" entry (file "~/emacs/Org/refile.org")
+	      ("h" "Habit" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"<%Y-%m-%d %a .+1d/3d>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n")
-	      ("m" "Meeting" entry (file "~/emacs/Org/refile.org")
+	      ("m" "Meeting" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* TODO %?\nSCHEDULED: %t\n%U\n- Room :: \n- Time :: \n- Attendees ::\n  - [ ] \n- Background :: \n  -\n- Meeting notes :: \n  -"))))
 
-(add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
+;;  Remove this on 09/04/2015 as it was causing problems with a new version of org-mode.
+;;(add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 
 ; Targets include this file and any file contributing to the agenda - up to 9 levels deep
 (setq org-refile-targets (quote ((nil :maxlevel . 9)
@@ -341,7 +359,7 @@ as the default task."
 		 '(todo-state-down effort-up category-keep))))
 	      (" " "Agenda"
 	       ((agenda "" nil)
-		(tags "REFILE"
+		(tags-todo "REFILE"
 		      ((org-agenda-overriding-header "Tasks to Refile")
 		       (org-tags-match-list-sublevels nil)))
 		(tags-todo "-HOLD-CANCELLED/!"
@@ -349,10 +367,10 @@ as the default task."
 			    (org-agenda-skip-function 'bh/skip-non-projects)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
-		(tags-todo "-CANCELLED/!"
+		(tags-todo "-HOLD-CANCELLED/!"
 			   ((org-agenda-overriding-header "Stuck Projects")
 			    (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-		(tags-todo "-WAITING-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC-RITA/!NEXT"
+		(tags-todo "-WAITING-CANCELLED-KRANTHI-RITA-ESWARA-TIFFANY-NICK/!NEXT"
 			   ((org-agenda-overriding-header "Next Tasks")
 			    (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
 			    (org-agenda-todo-ignore-scheduled t)
@@ -361,59 +379,39 @@ as the default task."
 			    (org-tags-match-list-sublevels t)
 			    (org-agenda-sorting-strategy
 			     '(todo-state-down effort-up category-keep))))
-		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC-RITA/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI-JOE-MANUEL-SHANNON-PRANTHI-TIMOTHY-MUHAMMAD-ERIC-RITA"
+		(tags-todo "-WAITING-REFILE-CANCELLED-KRANTHI-RITA-ESWARA-TIFFANY-NICK/!-HOLD-WAITING-NEXT-MIGRATED-KRANTHI-RITA-ESWARA-TIFFANY-NICK"
 			   ((org-agenda-overriding-header "Tasks")
 			    (org-agenda-skip-function 'bh/skip-project-tasks-maybe)
 			    (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-todo-ignore-deadlines t)
 			    (org-agenda-todo-ignore-with-date t)
 			    (org-agenda-sorting-strategy
-			     '(category-keep))))
-		(tags-todo "KRANTHI/-MIGRATED"
-			   ((org-agenda-overriding-header "Kranthi G.")
+			     '(category-keep))))		
+                (tags-todo "TIFFANY/-MIGRATED"
+			   ((org-agenda-overriding-header "Tiffany H.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
-                (tags-todo "JOE/-MIGRATED"
-			   ((org-agenda-overriding-header "Joe D.")
+                (tags-todo "NICK/-MIGRATED"
+			   ((org-agenda-overriding-header "Nick H.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
-			     '(category-keep))))
-                (tags-todo "MANUEL/-MIGRATED"
-			   ((org-agenda-overriding-header "Manuel Y.")
-                            (org-agenda-todo-ignore-scheduled t)
-			    (org-agenda-sorting-strategy
-			     '(category-keep))))
-                (tags-todo "PRANTHI/-MIGRATED"
-			   ((org-agenda-overriding-header "Pranthi Y.")
-                            (org-agenda-todo-ignore-scheduled t)
-			    (org-agenda-sorting-strategy
-			     '(category-keep))))
-                (tags-todo "TIMOTHY/-MIGRATED"
-			   ((org-agenda-overriding-header "Timothy B.")
-                            (org-agenda-todo-ignore-scheduled t)
-			    (org-agenda-sorting-strategy
-			     '(category-keep))))
-                (tags-todo "MUHAMMAD/-MIGRATED"
-			   ((org-agenda-overriding-header "Muhammad S.")
-                            (org-agenda-todo-ignore-scheduled t)
-			    (org-agenda-sorting-strategy
-			     '(category-keep))))
-                (tags-todo "SHANNON/-MIGRATED"
-			   ((org-agenda-overriding-header "Shannon G.")
-                            (org-agenda-todo-ignore-scheduled t)
-			    (org-agenda-sorting-strategy
-			     '(category-keep))))
-                (tags-todo "ERIC/-MIGRATED"
-			   ((org-agenda-overriding-header "Eric X.")
-                            (org-agenda-todo-ignore-scheduled t)
-			    (org-agenda-sorting-strategy
-			     '(category-keep))))
+			     '(category-keep))))                                
                 (tags-todo "RITA/-MIGRATED"
 			   ((org-agenda-overriding-header "Rita J.")
                             (org-agenda-todo-ignore-scheduled t)
 			    (org-agenda-sorting-strategy
 			     '(category-keep))))
+                (tags-todo "KRANTHI/-MIGRATED"
+			   ((org-agenda-overriding-header "Kranthi G.")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))
+                (tags-todo "Eswara/-MIGRATED"
+			   ((org-agenda-overriding-header "Eswara M.")
+                            (org-agenda-todo-ignore-scheduled t)
+			    (org-agenda-sorting-strategy
+			     '(category-keep))))                              
 		(todo "MIGRATED"
 			   ((org-agenda-overriding-header "Migrated")
 			    (org-agenda-sorting-strategy
@@ -585,7 +583,8 @@ as the default task."
 				   (0900 1100 1300 1500 1700))))
 
 ;; Display tags farther right
-(setq org-agenda-tags-column -130)
+;; (setq org-agenda-tags-column -130)
+(setq org-agenda-tags-column -80)
 
 (setq org-agenda-cmp-user-defined 'bh/agenda-sort)
 

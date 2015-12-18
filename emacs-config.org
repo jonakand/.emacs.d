@@ -1,4 +1,3 @@
-
 #+TITLE: Emacs Configuration
 #+LANGUAGE:  en
 #+AUTHOR: Ryan Yanson
@@ -7,10 +6,18 @@
 #+OPTIONS:   author:t creator:t timestamp:t
 #+DESCRIPTION: My custom emacs configuration
 #+KEYWORDS:  My custom emacs configuration
-#+INFOJS_OPT: view:nil toc:t ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: 
-#+HTML_HEAD: <style type="text/css">body{font-family:"lucida grande",tahoma,verdana,arial,sans-serif;font-size:11px;color:#333}.fbbody a{color:#3b5998;outline-style:none;text-decoration:none;font-size:11px;font-weight:bold;width:100%;height:100%}.fbbody a:hover{text-decoration:underline}table,.fbgreybox{margin:5px;background-color:#f7f7f7;border:1px solid #ccc;color:#333;padding:10px;font-size:13px;font-weight:bold}.fbbluebox,.org-src-container{background-color:#eceff6;border:1px solid #d4dae8;color:#333;padding:10px;font-size:13px;font-weight:bold;word-wrap:break-word;}.fbinfobox{background-color:#fff9d7;border:1px solid #e2c822;color:#333;padding:10px;font-size:13px;font-weight:bold}.tag{background-color:#fff9d7;border:1px solid #e2c822;color:#333;padding:10px;font-size:13px;font-weight:bold}.fberrorbox{background-color:#ffebe8;border:1px solid #dd3c10;color:#333;padding:10px;font-size:13px;font-weight:bold}hr,.fbcontentdivider{margin-top:15px;margin-bottom:15px;width:520px;height:1px;background-color:#d8dfea}.fbtab{padding:8px;background-color:#d8dfea;color:#3b5998;font-weight:bold;float:left;margin-right:4px;text-decoration:none}.fbtab:hover{background-color:#3b5998;color:#fff;cursor:hand}.timestamp{font-weight:bold}ul.org-ul{list-style-type:none;padding:0;margin:0;border:1px solid #d4dae8;font-weight:normal}.timestamp{font-weight:bold;float:right}ul.org-ul li{margin-top:0;margin-bottom:5px}.org-ul li:nth-child(odd){background-color:#d4dae8}.org-ul li:last-child{margin-bottom:0}</style>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="H:/emacs/Org/styles/bigblow/css/htmlize.css"/>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="H:/emacs/Org/styles/bigblow/css/bigblow.css"/>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="H:/emacs/Org/styles/bigblow/css/hideshow.css"/>
+#+HTML_HEAD: <script type="text/javascript" src="H:/emacs/Org/styles/bigblow/js/jquery-1.11.0.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="H:/emacs/Org/styles/bigblow/js/jquery-ui-1.10.2.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="H:/emacs/Org/styles/bigblow/js/jquery.localscroll-min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="H:/emacs/Org/styles/bigblow/js/jquery.scrollTo-1.4.3.1-min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="H:/emacs/Org/styles/bigblow/js/jquery.zclip.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="H:/emacs/Org/styles/bigblow/js/bigblow.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="H:/emacs/Org/styles/bigblow/js/hideshow.js"></script>
 ------
 * Introduction
 * Usage
@@ -108,7 +115,7 @@ The mode-line is configured using the code below.  I like to have a simplified m
   "Concat the current clocking item and the time spent into a
 propertized string.  If no item is being clocked return a no
 clocking string"
-  (if (org-clocking-p)
+  (if org-clock-current-task
       (progn
         (concat 
          (propertize org-clock-current-task 'face 'ry/current-task-face)
@@ -120,12 +127,12 @@ clocking string"
               '("%e"
                 mode-line-front-space
                 "%b"
-                "   "
+                "  "
                 mode-line-position
                 (vc-mode vc-mode)
                 "  "
                 mode-line-modes              
-                "                        "
+                "  "
                 "Current task: "
                 (:eval (ry/current-task-time))
                 mode-line-end-spaces))
@@ -351,16 +358,28 @@ I work with log files quite often and sometimes they are very large.  The settin
 (set-default 'large-file-warning-threshold 1000000000)
 #+end_src
 
-* Backup files
+* De-clutter directories
 
 Set values so that backup files are not littering my directories.  The BACKUP folder will be ignored by git.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+begin_src emacs-lisp :tangle no :exports code 
 (setq backup-directory-alist
       `((".*" . "~/.emacs.d/BACKUP")))
 (setq auto-save-file-name-transforms
       `((".*" , "~/.emacs.d/BACKUP" t)))
 #+end_src
+
+I have come to the conclusion that I do not use the backup files.  To keep things even cleaner I have decided to remove their creation altogether.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq make-backup-files nil)
+#+END_SRC
+
+Disable the creation of lock files.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq create-lockfiles nil)
+#+END_SRC
 
 * Tabs
 
@@ -745,10 +764,11 @@ The key bindings for SQL related commands are below.  The reasoning for using C-
 
 | Chord       | Command                |
 |-------------+------------------------|
-| C-c C-d C-s | ry/sql-send-dwim       |
+| C-c C-d C-d | ry/sql-disconnect      |
 | C-c C-d C-e | ry/sql-export-dwim     |
 | C-c C-d C-o | ry/sql-open-database   |
 | C-c C-d C-r | ry/sql-reopen-database |
+| C-c C-d C-s | ry/sql-send-dwim       |
 
 ** Functions
 
@@ -778,8 +798,34 @@ Custom function for opening DB2 database connections.  This may not be the best 
   (switch-to-buffer (concat "*DB:" (upcase database) "*"))
   (sql-mode)
   (sql-set-product "db2")
-  (setq sql-buffer (concat "*SQL: " (upcase database) "*")))
+  (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
+
+  ;; This will be used by disconnect and quit.
+  (set (make-local-variable 'database-name) (upcase database)))
 #+end_src
+
+Simple method to disconnect from the database currently connected to.  This assumes that the current connection matches the buffer local variable that holds the database name.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/sql-disconnect ()
+  "Disconnect the current DB connection."
+  (interactive)
+  (let ((db-buffer (current-buffer)))
+    (when (and (get-buffer-process db-buffer) database-conn-p)
+      (sql-send-string (concat "DISCONNECT " database-name ";")))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/sql-quit ()
+  "Quit the current DB2 CLP process."
+  (interactive)
+  (let ((db-buffer (current-buffer)))
+    (cond ((and (get-buffer-process db-buffer) database-conn-p)
+           (ry/sql-disconnect)
+           (sql-send-string "QUIT;"))
+          ((get-buffer-process db-buffer)
+           (sql-send-string "QUIT;")))))
+#+END_SRC
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (defun ry/sql-reopen-database (username password)
@@ -1245,51 +1291,66 @@ When I am working it is rare that I will kill a buffer other then the currently 
    
 * Narrow and widen
 
-This function narrows and widens intelligently.  It was found at https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org.
+This function narrows and widens intelligently.  This amazingly handy bit of code was found here: [[http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html]].
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun narrow-or-widen-dwim (p)
-  "If the buffer is narrowed, it widens. Otherwise, it narrows
-intelligently.  Intelligently means: region, org-src-block,
-org-subtree, or defun, whichever applies first.  Narrowing to
-org-src-block actually calls `org-edit-src-code'.
+  "Widen if buffer is narrowed, narrow-dwim otherwise.
+Dwim means: region, org-src-block, org-subtree, or defun,
+whichever applies first. Narrowing to org-src-block actually
+calls `org-edit-src-code'.
 
-With prefix P, don't widen, just narrow even if buffer is already
-narrowed."
+With prefix P, don't widen, just narrow even if buffer is
+already narrowed."
   (interactive "P")
   (declare (interactive-only))
   (cond ((and (buffer-narrowed-p) (not p)) (widen))
-        ((and (boundp 'org-src-mode) org-src-mode (not p))
-         (org-edit-src-exit))
         ((region-active-p)
          (narrow-to-region (region-beginning) (region-end)))
         ((derived-mode-p 'org-mode)
+         ;; `org-edit-src-code' is not a real narrowing
+         ;; command. Remove this first conditional if you
+         ;; don't want it.
          (cond ((ignore-errors (org-edit-src-code))
                 (delete-other-windows))
-               ((org-at-block-p)
-                (org-narrow-to-block))
+               ((ignore-errors (org-narrow-to-block) t))
                (t (org-narrow-to-subtree))))
-        ((derived-mode-p 'prog-mode) (narrow-to-defun))
-        (t (error "Please select a region to narrow to"))))
-#+end_src
+        ((derived-mode-p 'latex-mode)
+         (LaTeX-narrow-to-environment))
+        (t (narrow-to-defun))))
+
+;; (define-key endless/toggle-map "n" #'narrow-or-widen-dwim)
+
+;; This line actually replaces Emacs' entire narrowing
+;; keymap, that's how much I like this command. Only copy it
+;; if that's what you want.
+(define-key ctl-x-map "n" #'narrow-or-widen-dwim)
+
+(add-hook 'LaTeX-mode-hook
+          (lambda () (define-key LaTeX-mode-map "\C-xn" nil)))
+
+(eval-after-load 'org-src
+  '(define-key org-src-mode-map
+     "\C-x\C-s" #'org-edit-src-exit))
+#+END_SRC          
 
 * Current file path
 
-This little function has proven to be very helpful.  It's not used often but when I need the current path it makes it easy to get it.  It was originally found in Xah Lee's site.
+This little function has proven to be very helpful.  It's not used often but when I need the current path it makes it easy to get it.  It was originally found in Xah Lee's site and modified slightly to get the full path and file named from a dired buffer.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-(defun xah/copy-file-path (&optional φdir-path-only-p)
+(defun ry/copy-file-path (&optional dir-path-only-p)
   "Copy the current buffer's file path or dired path to `kill-ring'.
-If `universal-argument' is called, copy only the dir path.
-Version 2015-01-14
+If `universal-argument' is called, copy only the dir path.  This is 
+a modified version of the one created by Xah.
 URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
   (interactive "P")
   (let ((fPath
          (if (equal major-mode 'dired-mode)
-             default-directory
+             (dired-get-filename)
            (buffer-file-name))))
     (kill-new
-     (if (equal φdir-path-only-p nil)
+     (if (equal dir-path-only-p nil)
          fPath
        (file-name-directory fPath)))
     (message "File path copied: 「%s」" fPath)))
@@ -1357,6 +1418,172 @@ I have added these but I find myself using <s from org-mode more often.  Not sur
 (define-abbrev org-mode-abbrev-table "auml" "" 'skel-org-block-plantuml-activity)
 #+end_src
 
+* Dates
+
+Working with dates is a pain.  This group consists of a few helper functions.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :export code 
+(defun ry/convert-us-date (beg end)
+  "Convert a US date to ISO format."
+  (interactive "r")
+  (let* ((old-date (buffer-substring-no-properties beg end))
+         (new-date))
+    (string-match "\\([0-9]\\{2\\}\\)/\\([0-9]\\{2\\}\\)/\\([0-9]\\{4\\}\\)" old-date)
+    (setq new-date (concat (match-string 3 old-date) "-" (match-string 1 old-date) "-" (match-string 2 old-date)))
+    (delete-region beg end)
+    (insert new-date)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :export code 
+(defun ry/convert-iso-date (beg end)
+  "Convert an ISO date to US format."
+  (interactive "r")
+  (let* ((old-date (buffer-substring-no-properties beg end))
+         (new-date))
+    (string-match "\\([0-9]\\{4\\}\\)-\\([0-9]\\{2\\}\\)-\\([0-9]\\{2\\}\\)" old-date)
+    (setq new-date (concat (match-string 2 old-date) "/" (match-string 3 old-date) "/" (match-string 1 old-date)))
+    (delete-region beg end)
+    (insert new-date)))
+#+END_SRC
+
+* GNUS
+
+** Setup
+
+  1. Download GNUTls from [[http://sourceforge.net/projects/ezwinports/]].
+    - Unpack the files and place them on the PATH.  Put the dlls in the bin folder alongside the emacs executables.
+  2. Automatically generated CA certificates converted from Mozilla.org can be gotten from [[http://curl.haxx.se/docs/caextract.html][curl.haxx.se]].
+    - Download the CRT file from [[https://raw.githubusercontent.com/bagder/ca-bundle/master/ca-bundle.crt]].
+    - Download the PEM file from [[http://curl.haxx.se/ca/cacert.pem]].
+  3. Place the dlownloaded files in [[~/.emacs.d/certificates]].
+  4. Add the following code to get GNUTls to work.
+  
+Place the following contents in [[~/.emacs.d/.authinfo]]
+  
+  #+BEGIN_SRC sh :exports code
+  machine imap.gmail.com login XXXXX@gmail.com password <PASSWORD>
+  machine imap.gmail.com login XXXXX@gmail.com password <PASSWORD> port 993
+  machine smtp.gmail.com login XXXXX@gmail.com password <PASSWORD> port 587 
+  machine imap-mail.outlook.com login XXXXX@outlook.com password <PASSWORD> port 993
+  machine smtp-mail.outlook.com login XXXXX@outlook.com passowrd <PASSWORD> port 587
+  #+END_SRC
+  
+** Configuration
+
+Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-one-year-guide/blob/master/gnus-guide-en.org]].
+  
+  #+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (eval-after-load "gnutls"
+    '(progn
+       (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
+
+  (require 'gnus)
+
+  (setq gnus-select-method '(nntp "news.gmane.org")) ;; if you read news groups 
+  #+END_SRC
+
+Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
+
+  #+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (add-to-list 'gnus-secondary-select-methods
+               '(nnimap "gmail"
+                        (nnimap-address "imap.gmail.com")
+                        (nnimap-server-port 993)
+                        (nnimap-stream ssl)
+                        (nnir-search-engine imap)
+                        ;; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html
+                        ;; press 'E' to expire email
+                        (nnmail-expiry-target "nnimap+gmail:[Gmail]/Trash")
+                        (nnmail-expiry-wait 90)))
+  (add-to-list 'gnus-secondary-select-methods
+               '(nnimap "outlook"
+                        (nnimap-address "imap-mail.outlook.com")
+                        (nnimap-server-port 993)
+                        (nnimap-stream ssl)
+                        (nnir-search-engine imap)))
+
+  (setq gnus-thread-sort-functions
+        '((not gnus-thread-sort-by-date)
+          (not gnus-thread-sort-by-number)))
+  #+END_SRC
+
+Use caching to the max.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (setq gnus-use-cache t)
+#+END_SRC
+
+Use tree view for groups.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
+#+END_SRC
+
+Enable threading with full display of subtrees.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject)
+#+END_SRC
+
+Personal information.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (setq user-full-name "Ryan Yanson"
+        user-mail-address "ryanson@outlook.com")
+#+END_SRC
+
+The next setting was found on [[http://www.gnu.org/software/emacs/manual/html_node/gnus/FAQ-9_002d2.html]].  Seeing as I don't care about CJK characters it's set.
+ 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (setq gnus-use-correct-string-widths nil)
+#+END_SRC
+
+Setup faces for the summary buffer.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (copy-face 'ry/current-time-face 'gnus-face-6)
+  (setq gnus-face-6 'gnus-face-6)
+#+END_SRC
+
+Customize the formatting found in the summary buffer.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (setq-default
+   gnus-summary-line-format "%U%R%z │ %(%&user-date; │ %B%6{%s%}%)\n"
+   gnus-user-date-format-alist '((t . "%Y-%m-%d %H:%M"))
+   gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references
+   gnus-thread-sort-functions '(gnus-thread-sort-by-date)
+   gnus-sum-thread-tree-false-root ""
+   gnus-sum-thread-tree-indent " "
+   gnus-sum-thread-tree-leaf-with-other "├► "
+   gnus-sum-thread-tree-root ""
+   gnus-sum-thread-tree-single-leaf "╰► "
+   gnus-sum-thread-tree-vertical "│")
+
+#+END_SRC
+
+Customize the formatting in the group buffer.  I don't like to see the ugly names for the groups so they are mapped to shorter names.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq-default gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
+
+(defun gnus-user-format-function-G (arg)
+  "Formatting function for formatting group names nicely."
+  (let ((mapped-name (assoc gnus-tmp-group group-name-map)))
+    (if (null mapped-name)
+        gnus-tmp-group
+      (cdr mapped-name))))
+
+(setq group-name-map '(("nnimap+gmail:INBOX" . "Gmail/Inbox")
+                       ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
+                       ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
+                       ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
+                       ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
+                       ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
+                       ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
+                       ("nnimap+outlook:Inbox" . "Outlook/Inbox")))
+#+END_SRC
+
 * Packages
 ** Paradox
 
@@ -1421,6 +1648,15 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
       ;;(set-face-attribute 'org-block-background nil
         ;;                  :background "#073642"))))
 #+end_src
+
+** Htmlize
+
+Pretty print of exported documents.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package htmlize
+  :ensure t)
+#+END_SRC
 
 ** Rainbow Delimiters
 
@@ -1704,7 +1940,9 @@ In addition to adding keybindings to help work with this mode I have added a hoo
          ("C-c C-d C-s" . ry/sql-send-dwim)
          ("C-c C-d C-e" . ry/sql-export-dwim)
          ("C-c C-d C-o" . ry/sql-open-database)
-         ("C-c C-d C-r" . ry/sql-reopen-database))
+         ("C-c C-d C-r" . ry/sql-reopen-database)
+         ("C-c C-d C-d" . ry/sql-disconnect)
+         ("C-c C-d C-q" . ry/sql-quit))
   :init
   (progn
     (god-mode-all)

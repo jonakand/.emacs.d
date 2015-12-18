@@ -21,19 +21,21 @@
   (require 'diminish)
   (require 'bind-key)
 
-  (setq use-package-verbose t)            
+  (setq use-package-verbose t)   
+
+(add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;  Tangle and byte compile the source ORG document if it is newer than the
   ;;  previously tangled and compiled file.
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  (let ((src "~/.emacs.d/emacs-config.org")
-        (dst "~/.emacs.d/emacs-config.elc"))
-    (if (file-newer-than-file-p src dst)
-        (progn
-          (require 'ob-tangle)
-          (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t))))
-      (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
-
+  ;;(let ((src "~/.emacs.d/emacs-config.org")
+  ;;      (dst "~/.emacs.d/emacs-config.elc"))
+  ;;  (if (file-newer-than-file-p src dst)
+  ;;      (progn
+  ;;        (require 'ob-tangle)
+  ;;        (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t))))
+  ;;    (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
+  ;;
   ;; (add-hook 'after-init-hook (lambda () (org-babel-tangle-file "~/.emacs.d/emacs-config.org")))
 ;)
