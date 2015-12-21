@@ -1446,7 +1446,7 @@ Working with dates is a pain.  This group consists of a few helper functions.
     (insert new-date)))
 #+END_SRC
 
-* GNUS
+* Gnus
 
 ** Setup
 
@@ -1473,38 +1473,50 @@ Place the following contents in [[~/.emacs.d/.authinfo]]
 Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-one-year-guide/blob/master/gnus-guide-en.org]].
   
   #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (eval-after-load "gnutls"
-    '(progn
-       (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
+    (eval-after-load "gnutls"
+      '(progn
+         (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
 
-  (require 'gnus)
+    (require 'gnus)
 
-  (setq gnus-select-method '(nntp "news.gmane.org")) ;; if you read news groups 
+    (setq gnus-select-method '(nntp "news.gmane.org")) ;; if you read news groups 
   #+END_SRC
 
 Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
 
   #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (add-to-list 'gnus-secondary-select-methods
-               '(nnimap "gmail"
-                        (nnimap-address "imap.gmail.com")
-                        (nnimap-server-port 993)
-                        (nnimap-stream ssl)
-                        (nnir-search-engine imap)
-                        ;; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html
-                        ;; press 'E' to expire email
-                        (nnmail-expiry-target "nnimap+gmail:[Gmail]/Trash")
-                        (nnmail-expiry-wait 90)))
-  (add-to-list 'gnus-secondary-select-methods
-               '(nnimap "outlook"
-                        (nnimap-address "imap-mail.outlook.com")
-                        (nnimap-server-port 993)
-                        (nnimap-stream ssl)
-                        (nnir-search-engine imap)))
+    (add-to-list 'gnus-secondary-select-methods
+                 '(nnimap "gmail"
+                          (nnimap-address "imap.gmail.com")
+                          (nnimap-server-port 993)
+                          (nnimap-stream ssl)
+                          (nnir-search-engine imap)
+                          ;; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html
+                          ;; press 'E' to expire email
+                          (nnmail-expiry-target "nnimap+gmail:[Gmail]/Trash")
+                          (nnmail-expiry-wait 'immediate)))
+    (add-to-list 'gnus-secondary-select-methods
+                 '(nnimap "outlook"
+                          (nnimap-address "imap-mail.outlook.com")
+                          (nnimap-server-port 993)
+                          (nnimap-stream ssl)
+                          (nnir-search-engine imap)
+                          (nnmail-expiry-target 'ry/gnus-fancy-expire)))
 
-  (setq gnus-thread-sort-functions
-        '((not gnus-thread-sort-by-date)
-          (not gnus-thread-sort-by-number)))
+    (setq nnmail-expiry-target 'ry/gnus-fancy-expire)
+
+    (setq nnmail-expiry-wait 'immediate)
+
+    (setq gnus-thread-sort-functions
+          '((not gnus-thread-sort-by-date)
+            (not gnus-thread-sort-by-number)))
+
+    (defun ry/gnus-fancy-expire (group-name)
+      "Determine which expiry target should use for a given message."
+      (interactive)  
+      (if (s-contains-p "INBOX" group-name)      
+          (format "nnimap+gmail:[Gmail]/Trash")    
+        (format "nnimap+outlook:Deleted")))
   #+END_SRC
 
 Use caching to the max.
@@ -1541,47 +1553,59 @@ The next setting was found on [[http://www.gnu.org/software/emacs/manual/html_no
 Setup faces for the summary buffer.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (copy-face 'ry/current-time-face 'gnus-face-6)
+  (copy-face 'font-lock-negation-char-face 'gnus-face-5)
+  (setq gnus-face-5 'gnus-face-5)
+
+  (copy-face 'font-lock-comment-face 'gnus-face-6)
   (setq gnus-face-6 'gnus-face-6)
+
+  (copy-face 'font-lock-builtin-face 'gnus-face-7)
+  (setq gnus-face-7 'gnus-face-7)
+
+  (copy-face 'font-lock-warning-face 'gnus-face-8)
+  (setq gnus-face-8 'gnus-face-8)
+
 #+END_SRC
 
 Customize the formatting found in the summary buffer.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
   (setq-default
-   gnus-summary-line-format "%U%R%z │ %(%&user-date; │ %B%6{%s%}%)\n"
+   gnus-summary-line-format "%U%R%z %7{│%} %5{%&user-date;%} %7{│%} %8{%-30,30f%} %7{│%} %B%6{%-80,80s%}\n"
    gnus-user-date-format-alist '((t . "%Y-%m-%d %H:%M"))
    gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references
-   gnus-thread-sort-functions '(gnus-thread-sort-by-date)
+   gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-number)
+   gnus-article-sort-functions '(gnus-article-sort-by-most-recent-number)
    gnus-sum-thread-tree-false-root ""
    gnus-sum-thread-tree-indent " "
    gnus-sum-thread-tree-leaf-with-other "├► "
    gnus-sum-thread-tree-root ""
    gnus-sum-thread-tree-single-leaf "╰► "
-   gnus-sum-thread-tree-vertical "│")
-
+   gnus-sum-thread-tree-vertical "│"
+   gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
 #+END_SRC
 
 Customize the formatting in the group buffer.  I don't like to see the ugly names for the groups so they are mapped to shorter names.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq-default gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
+  (setq-default gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
 
-(defun gnus-user-format-function-G (arg)
-  "Formatting function for formatting group names nicely."
-  (let ((mapped-name (assoc gnus-tmp-group group-name-map)))
-    (if (null mapped-name)
-        gnus-tmp-group
-      (cdr mapped-name))))
+  (defun gnus-user-format-function-G (arg)
+    "Formatting function for formatting group names nicely."
+    (let ((mapped-name (assoc gnus-tmp-group group-name-map)))
+      (if (null mapped-name)
+          gnus-tmp-group
+        (cdr mapped-name))))
 
-(setq group-name-map '(("nnimap+gmail:INBOX" . "Gmail/Inbox")
-                       ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
-                       ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
-                       ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
-                       ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
-                       ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
-                       ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
-                       ("nnimap+outlook:Inbox" . "Outlook/Inbox")))
+  (setq group-name-map '(("nnimap+gmail:INBOX" . "Gmail/Inbox")
+                         ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
+                         ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
+                         ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
+                         ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
+                         ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
+                         ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
+                         ("nnimap+outlook:Inbox" . "Outlook/Inbox")
+                         ("nnimap+outlook:Deleted" . "Outlook/Deleted")))
 #+END_SRC
 
 * Packages
