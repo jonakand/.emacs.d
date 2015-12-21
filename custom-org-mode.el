@@ -82,6 +82,9 @@
 ;;   (local-set-key (kbd "<return>") 'org-return-indent))
 ;; (add-hook 'org-mode-hook 'ry/org-mode-hook)
 
+;;  Set the org ellipsis to something nicer.
+(setq org-ellipsis " ▾")
+
 (defun ry/org-agenda-after-show-hook ()
   "Show the subtree when viewing it from the agenda."
   (org-show-subtree)
