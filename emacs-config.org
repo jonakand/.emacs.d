@@ -1463,7 +1463,6 @@ Place the following contents in [[~/.emacs.d/.authinfo]]
   #+BEGIN_SRC sh :exports code
   machine imap.gmail.com login XXXXX@gmail.com password <PASSWORD>
   machine imap.gmail.com login XXXXX@gmail.com password <PASSWORD> port 993
-  machine smtp.gmail.com login XXXXX@gmail.com password <PASSWORD> port 587 
   machine imap-mail.outlook.com login XXXXX@outlook.com password <PASSWORD> port 993
   machine smtp-mail.outlook.com login XXXXX@outlook.com passowrd <PASSWORD> port 587
   #+END_SRC
@@ -1479,7 +1478,7 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
 
     (require 'gnus)
 
-    (setq gnus-select-method '(nntp "news.gmane.org")) ;; if you read news groups 
+    (setq gnus-select-method '(nntp "news.gmane.org"))
   #+END_SRC
 
 Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
@@ -1490,26 +1489,25 @@ Add the secondary select methods for email accounts.  In this case Gmail and Out
                           (nnimap-address "imap.gmail.com")
                           (nnimap-server-port 993)
                           (nnimap-stream ssl)
-                          (nnir-search-engine imap)
-                          ;; @see http://www.gnu.org/software/emacs/manual/html_node/gnus/Expiring-Mail.html
-                          ;; press 'E' to expire email
-                          (nnmail-expiry-target "nnimap+gmail:[Gmail]/Trash")
-                          (nnmail-expiry-wait 'immediate)))
+                          (nnir-search-engine imap)))
+
     (add-to-list 'gnus-secondary-select-methods
                  '(nnimap "outlook"
                           (nnimap-address "imap-mail.outlook.com")
                           (nnimap-server-port 993)
                           (nnimap-stream ssl)
-                          (nnir-search-engine imap)
-                          (nnmail-expiry-target 'ry/gnus-fancy-expire)))
-
-    (setq nnmail-expiry-target 'ry/gnus-fancy-expire)
-
-    (setq nnmail-expiry-wait 'immediate)
+                          (nnir-search-engine imap)))
 
     (setq gnus-thread-sort-functions
           '((not gnus-thread-sort-by-date)
             (not gnus-thread-sort-by-number)))
+  #+END_SRC
+
+When I expire a message I want it to immediately move to the Trash/Deleted folder.
+
+  #+BEGIN_SRC emacs-lisp :tangle yes :exports code
+    (setq nnmail-expiry-target 'ry/gnus-fancy-expire)
+    (setq nnmail-expiry-wait 'immediate)
 
     (defun ry/gnus-fancy-expire (group-name)
       "Determine which expiry target should use for a given message."
@@ -1606,6 +1604,15 @@ Customize the formatting in the group buffer.  I don't like to see the ugly name
                          ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
                          ("nnimap+outlook:Inbox" . "Outlook/Inbox")
                          ("nnimap+outlook:Deleted" . "Outlook/Deleted")))
+#+END_SRC
+
+Configure outgoing email.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq message-send-mail-function 'smtpmail-send-it
+      smtpmail-default-smtp-server "smtp-mail.outlook.com"
+      smtpmail-smtp-service 587
+      smtpmail-local-domain "brookwood.com")
 #+END_SRC
 
 * Packages
@@ -1905,11 +1912,8 @@ What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My or
   (progn
     (eval-after-load "org-mode"
       (load "~/.emacs.d/custom-org-mode.el"))
-    ;; (use-package org-beautify-theme
-    ;;   :ensure t
-    ;;   ;; :config                   ;
-    ;;   ;; (load-theme 'org-beautify-theme))))
-    ;;   )
+    (use-package org-plus-contrib
+      :ensure t)
     (use-package org-bullets
       :ensure t
       :config
