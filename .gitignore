@@ -10,6 +10,10 @@ themes/
 url/
 vendor/
 BACKUP/
+extra/emacs-color-theme-solarized-master/
+.sx/
+extra/flymake-eclim.el
+extra/ry-company-sql.el
 *.elc
 .mc-lists.el
 .org-id-locations
@@ -18,9 +22,7 @@ ac-comphist.dat
 bookmarks
 depreciated.el
 helm-adaptive-history
-sunrise-x-w32-addons.vbs
 emacs-config.el
 company-sql.el
-/init.el~
-/%backup%~
-/#h!!temp!emacs-eclim!eclim.el#
+*~
+*#
