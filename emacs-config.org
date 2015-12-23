@@ -1446,6 +1446,29 @@ Working with dates is a pain.  This group consists of a few helper functions.
     (insert new-date)))
 #+END_SRC
 
+* BBDB
+
+Add BBDB configuration primarily for use with Gnus.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package bbdb
+  :ensure t
+  :config
+  (progn
+    (bbdb-initialize 'gnus 'message)
+    (bbdb-insinuate-message)
+    (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
+    (setq bbdb-file "~/.emacs.d/bbdb"
+          bbdb-send-mail-style 'gnus
+          bbdb-complete-name-full-completion t
+          bbdb-completion-type 'primary-or-name
+          bbdb-complete-name-allow-cycling t
+          bbdb-offer-save 1
+          bbdb-use-pop-up t
+          bbdb-electric-p t
+          bbdb-popup-target-lines 1)))
+#+END_SRC
+
 * Gnus
 
 ** Setup
