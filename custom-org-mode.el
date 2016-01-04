@@ -287,7 +287,7 @@ keywords from the headlines in the table."
 	  (setq entries (nth 2 tbl))
 	  (while (setq entry (pop entries))
 	    (setq level (car entry)
-		  headline (s-replace-all '(("TODO ". "") ("NEXT " . "")) (nth 1 entry))
+		  headline (s-replace-all '(("TODO ". "") ("NEXT " . "") ("DONE " . "")) (nth 1 entry))
 		  hlc (if emph (or (cdr (assoc level hlchars)) "") ""))
 	    (when narrow-cut-p
 	      (if (and (string-match (concat "\\`" org-bracket-link-regexp
