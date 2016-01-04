@@ -1834,7 +1834,7 @@ Smartscan mode allows for finding the next/previous occurrence of the symbol und
 (use-package smartscan
   :ensure t
   :commands (smartscan-symbol-go-forward smartscan-symbol-go-backward)
-  :bind (("M-n" . smartscan-symbol-go-backward)
+  :bind (("M-n" . smartscan-symbol-go-forward)
          ("M-p" . smartscan-symbol-go-backward))
   :config
   (add-hook 'prog-mode-hook 'smartscan-mode))
