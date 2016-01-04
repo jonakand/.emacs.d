@@ -112,13 +112,25 @@
 ;;  Use the updated function insead.
 (setq org-clock-clocktable-formatter 'ry/org-clocktable-write)
 
-(defun ry/org-clocktable-indent-string (level)
+(defun ry/org-clocktable-indent-string-new (level next-is-lower-p next-is-higher-p last-p)
   "Return indentation string according to LEVEL.
-LEVEL is an integer.  Indent by two spaces per level above 1.
+LEVEL is an integer.  Indent by two dashes per level above 1.
 This is a copy of `ry/org-clocktable-indent-string' with the
 only change being the usage of UTF-8 characters as arrows."
-  (if (= level 1) "┌■ "
-    (concat "├" (make-string (* 2 (1- level)) 9472) "► ")))
+  (cond
+   ((= level 1) "■ ")
+   ((eq next-is-lower-p) (concat (make-string (* 2 (1- level)) " ") "┬► "))
+   ((eq nil next-is-higher-p) (eq nil next-is-lower-p) (concat (make-string (* 2 (1- level))) " " "├► "))
+   ((eq next-is-higher-p) (concat (make-string (*2 (-1 level)) " ") "└──► "))))
+
+(defun ry/org-clocktable-indent-string (level last-p)
+  "Return indentation string according to LEVEL.
+LEVEL is an integer.  Indent by two dashes per level above 1.
+This is a copy of `ry/org-clocktable-indent-string' with the
+only change being the usage of UTF-8 characters as arrows."
+  (if (= level 1) "■ " ;; ┌
+    (if (eq t last-p) (concat "└" (make-string (* 2 (1- level)) 9472) "► ")
+      (concat "├" (make-string (* 2 (1- level)) 9472) "► "))))
 
 (defun ry/org-clocktable-write (ipos tables params)
   "Write out a clock table at position IPOS in the current buffer.
@@ -298,7 +310,15 @@ keywords from the headlines in the table."
 		  (mapconcat
 		   (lambda (p) (or (cdr (assoc p (nth 4 entry))) ""))
 		   properties "|") "|") "")  ;properties columns, maybe
-	     (if indent (ry/org-clocktable-indent-string level) "") ; indentation
+	     (if indent
+                 (progn
+                   (setq next-entry (car entries))
+                   (setq next-level (car next-entry))
+                   (ry/org-clocktable-indent-string-new-2 level next-level nil))
+                 ;; (if (= (length entries) 0)
+                 ;;     (ry/org-clocktable-indent-string level t)
+                 ;;   (ry/org-clocktable-indent-string level nil))
+               "") ; indentation
 	     hlc headline hlc "|"                                ; headline
 	     (make-string (min (1- ntcol) (or (- level 1))) ?|)
 					; empty fields for higher levels
