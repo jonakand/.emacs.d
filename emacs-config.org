@@ -2951,6 +2951,7 @@ A nicer way to fold.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package origami
   :ensure t
+  :disabled t
   :config
   (global-origami-mode))
 #+END_SRC
