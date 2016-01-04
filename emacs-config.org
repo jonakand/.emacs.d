@@ -1446,27 +1446,73 @@ Working with dates is a pain.  This group consists of a few helper functions.
     (insert new-date)))
 #+END_SRC
 
+* Eshell
+
+I use eshell to have a decent shell when on Windows machines at work.  Not much work is done in it, so most of the settings come from: https://www.masteringemacs.org/article/complete-guide-mastering-eshell.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (use-package eshell
+    :commands (eshell)
+    :config
+    (use-package em-smart)
+    (setq eshell-where-to-jump 'end)
+    (setq eshell-review-quick-commands nil)
+    (setq eshell-smart-space-goes-to-end t)  
+    (add-hook 'eshell-mode-hook 'eshell-smart-initialize))
+#+END_SRC
+
 * BBDB
 
 Add BBDB configuration primarily for use with Gnus.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package bbdb
-  :ensure t
-  :config
-  (progn
-    (bbdb-initialize 'gnus 'message)
-    (bbdb-insinuate-message)
-    (add-hook 'gnus-startup-hook 'bbdb-insinuate-gnus)
-    (setq bbdb-file "~/.emacs.d/bbdb"
-          bbdb-send-mail-style 'gnus
-          bbdb-complete-name-full-completion t
-          bbdb-completion-type 'primary-or-name
-          bbdb-complete-name-allow-cycling t
-          bbdb-offer-save 1
-          bbdb-use-pop-up t
-          bbdb-electric-p t
-          bbdb-popup-target-lines 1)))
+  (use-package bbdb
+    :ensure t
+    :config
+    (progn
+      (bbdb-initialize 'gnus 'message)
+      (bbdb-mua-auto-update-init 'gnus 'message)
+
+      ;; Look at all emails not just the first one.
+      (setq bbdb-message-all-addresses t)    
+
+      ;; use ; on a message to invoke bbdb interactively
+      (setq bbdb-mua-update-interactive-p '(query . create))
+      
+      (add-hook
+       'gnus-summary-mode-hook
+       (lambda ()
+         (define-key gnus-summary-mode-map (kbd ";") 'bbdb-mua-edit-field)
+         ))
+
+      (setq bbdb-file "~/.emacs.d/bbdb"
+            bbdb-mail-user-agent 'gnus-user-agent  ;;  Tell BBDB which agent is being used.
+            ;;bbdb-complete-name-full-completion t
+            bbdb-completion-list 'primary-or-name  ;;
+            bbdb-complete-mail-allow-cycling t     ;;
+            bbdb-mua-pop-up nil                    ;;  Don't show popup when adding addresses.
+            bbdb-pop-up-window-size 6
+            bbdb-mua-pop-up-window-size 6
+            ;; bbdb-offer-save 1
+            ;; bbdb-use-pop-up t
+            ;; bbdb-electric-p t
+            ;; bbdb-popup-target-lines 1
+            ;; bbdb/mail-auto-create-p t
+            bbdb-update-records-p 'create          ;;  Automaticcaly create new entries.
+            bbdb-ignore-message-alist '(("From" . "@postmaster.twitter.com")
+                                      ("From" . "plus.google.com")
+                                      ("From" . "nothome.com")
+                                      ("From" . "newsletters")
+                                      ("From" . "Mail Delivery System")
+                                      ("From" . "mailer-daemon")
+                                      ("From" . "facebookmail.com")
+                                      ("From" . "noreply")
+                                      ("From" . "no-reply")
+                                      ("From" . "donotreply")
+                                      ("From" . "emacs-orgmode")
+                                      ("From" . "emacs-devel")
+                                      ("Subject" . "SPAM")
+                                      ("X-Spam-Level" . "*")))))
 #+END_SRC
 
 * Gnus
@@ -1506,25 +1552,25 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
 
 Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
 
-  #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-    (add-to-list 'gnus-secondary-select-methods
-                 '(nnimap "gmail"
-                          (nnimap-address "imap.gmail.com")
-                          (nnimap-server-port 993)
-                          (nnimap-stream ssl)
-                          (nnir-search-engine imap)))
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  ;; (add-to-list 'gnus-secondary-select-methods
+  ;;              '(nnimap "gmail"
+  ;;                       (nnimap-address "imap.gmail.com")
+  ;;                       (nnimap-server-port 993)
+  ;;                       (nnimap-stream ssl)
+  ;;                       (nnir-search-engine imap)))
 
-    (add-to-list 'gnus-secondary-select-methods
-                 '(nnimap "outlook"
-                          (nnimap-address "imap-mail.outlook.com")
-                          (nnimap-server-port 993)
-                          (nnimap-stream ssl)
-                          (nnir-search-engine imap)))
+  (add-to-list 'gnus-secondary-select-methods
+               '(nnimap "outlook"
+                        (nnimap-address "imap-mail.outlook.com")
+                        (nnimap-server-port 993)
+                        (nnimap-stream ssl)
+                        (nnir-search-engine imap)))
 
-    (setq gnus-thread-sort-functions
-          '((not gnus-thread-sort-by-date)
-            (not gnus-thread-sort-by-number)))
-  #+END_SRC
+  (setq gnus-thread-sort-functions
+        '((not gnus-thread-sort-by-date)
+          (not gnus-thread-sort-by-number)))
+#+END_SRC
 
 When I expire a message I want it to immediately move to the Trash/Deleted folder.
 
@@ -1597,10 +1643,10 @@ Customize the formatting found in the summary buffer.
    gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references
    gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-number)
    gnus-article-sort-functions '(gnus-article-sort-by-most-recent-number)
-   gnus-sum-thread-tree-false-root ""
+   gnus-sum-thread-tree-false-root "○ "
    gnus-sum-thread-tree-indent " "
    gnus-sum-thread-tree-leaf-with-other "├► "
-   gnus-sum-thread-tree-root ""
+   gnus-sum-thread-tree-root "● "
    gnus-sum-thread-tree-single-leaf "╰► "
    gnus-sum-thread-tree-vertical "│"
    gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
@@ -1618,15 +1664,27 @@ Customize the formatting in the group buffer.  I don't like to see the ugly name
           gnus-tmp-group
         (cdr mapped-name))))
 
-  (setq group-name-map '(("nnimap+gmail:INBOX" . "Gmail/Inbox")
-                         ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
-                         ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
-                         ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
-                         ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
-                         ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
+  (setq group-name-map '(;;("nnimap+gmail:INBOX" . "Gmail/Inbox")
+                         ;; ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
+                         ;; ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
+                         ;; ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
+                         ;; ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
+                         ;; ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
                          ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
                          ("nnimap+outlook:Inbox" . "Outlook/Inbox")
-                         ("nnimap+outlook:Deleted" . "Outlook/Deleted")))
+                         ("nnimap+outlook:Deleted" . "Outlook/Deleted")
+                         ("nnimap+outlook:Macys" . "Outlook/Macys")
+                         ("nnimap+outlook:Amazon" . "Outlook/Amazon")
+                         ("nnimap+outlook:Bills" . "Outlook/Bills")
+                         ("nnimap+outlook:Sent" . "Outlook/Sent")))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (setq mm-text-html-renderer 'shr)
+  (setq gnus-inhibit-images nil)
+
+  (setq mm-attachment-override-types '("image/.*"))
+  (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
 #+END_SRC
 
 Configure outgoing email.
@@ -1636,6 +1694,27 @@ Configure outgoing email.
       smtpmail-default-smtp-server "smtp-mail.outlook.com"
       smtpmail-smtp-service 587
       smtpmail-local-domain "brookwood.com")
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq gnus-always-read-dribble-file t)
+#+END_SRC
+
+Check for new mail every five minutes.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (gnus-demon-add-handler 'gnus-demon-scan-news 5 t)
+#+END_SRC
+
+Kill the message buffer after sending an email instead of burying it.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (setq message-kill-buffer-on-exit t)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq  mail-user-agent 'gnus-user-agent)
+(setq read-mail-command 'gnus-user-agent)
 #+END_SRC
 
 * Packages
