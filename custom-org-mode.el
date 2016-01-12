@@ -2,6 +2,8 @@
 
 (require 'org-habit)
 
+(setq org-clock-continuously t)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Setup key bindings.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -112,25 +114,19 @@
 ;;  Use the updated function insead.
 (setq org-clock-clocktable-formatter 'ry/org-clocktable-write)
 
-(defun ry/org-clocktable-indent-string-new (level next-is-lower-p next-is-higher-p last-p)
+(defun ry/org-clocktable-indent-string (level next-level last-p)
   "Return indentation string according to LEVEL.
 LEVEL is an integer.  Indent by two dashes per level above 1.
 This is a copy of `ry/org-clocktable-indent-string' with the
 only change being the usage of UTF-8 characters as arrows."
-  (cond
-   ((= level 1) "■ ")
-   ((eq next-is-lower-p) (concat (make-string (* 2 (1- level)) " ") "┬► "))
-   ((eq nil next-is-higher-p) (eq nil next-is-lower-p) (concat (make-string (* 2 (1- level))) " " "├► "))
-   ((eq next-is-higher-p) (concat (make-string (*2 (-1 level)) " ") "└──► "))))
-
-(defun ry/org-clocktable-indent-string (level last-p)
-  "Return indentation string according to LEVEL.
-LEVEL is an integer.  Indent by two dashes per level above 1.
-This is a copy of `ry/org-clocktable-indent-string' with the
-only change being the usage of UTF-8 characters as arrows."
-  (if (= level 1) "■ " ;; ┌
-    (if (eq t last-p) (concat "└" (make-string (* 2 (1- level)) 9472) "► ")
-      (concat "├" (make-string (* 2 (1- level)) 9472) "► "))))
+  (cond ((= level 1) " ■ ")
+        ((and (= level 2) (eq nil next-level)) " └──► ")
+        ((eq nil next-level) (concat (make-string (1- level) 32) "└" "► "))        
+        ((> level next-level) (concat  " │" (make-string (1- level) 32) "└─► "))
+        ((and (= level 2) (< level next-level)) (concat  " ├──┬► "))
+        ((and (not(= level 2))(< level next-level)) (concat  " │" (make-string (1- level) 32) "└┬► "))
+        ((< level next-level) (concat  " │" (make-string (1- level) 32) "┬► "))
+        (t (eq nil next-level) (concat " │" (make-string (1- level) 32) "├─► "))))
 
 (defun ry/org-clocktable-write (ipos tables params)
   "Write out a clock table at position IPOS in the current buffer.
@@ -314,7 +310,7 @@ keywords from the headlines in the table."
                  (progn
                    (setq next-entry (car entries))
                    (setq next-level (car next-entry))
-                   (ry/org-clocktable-indent-string-new-2 level next-level nil))
+                   (ry/org-clocktable-indent-string level next-level nil))
                  ;; (if (= (length entries) 0)
                  ;;     (ry/org-clocktable-indent-string level t)
                  ;;   (ry/org-clocktable-indent-string level nil))
@@ -499,12 +495,12 @@ Switch projects and subprojects from NEXT back to TODO"
          (bh/clock-in-organization-task-as-default))))      
    )
 
-(defun bh/punch-in (arg)
-  "Start continuous clocking and set the Organization task
-as the default task."
-  (interactive "p")
-  (setq bh/keep-clock-running t)
-  (bh/clock-in-organization-task-as-default))
+;; (defun bh/punch-in (arg)
+;;   "Start continuous clocking and set the Organization task
+;; as the default task."
+;;   (interactive "p")
+;;   (setq bh/keep-clock-running t)
+;;   (bh/clock-in-organization-task-as-default))
 
 (defun bh/punch-out ()
   (interactive)
@@ -538,7 +534,7 @@ as the default task."
 ;; (org-id-find-id-file "8d2cd2aa-b608-4466-837f-c537cbaa14df")
 ;; (org-id-find-id-in-file "8d2cd2aa-b608-4466-837f-c537cbaa14df" "~/emacs/org/refile.org" 'marker)
 
-;; (setq org-clock-default-task (org-id-find-id-in-file "eb155a82-92b2-4f25-a3c6-0304591af2f9" "~/emacs/org/das.org" 'markerp))
+;; (setq org-clock-default-task (org-id-find bh/organization-task-id 'marker))
 ;; (setq org-clock-default-task (org-id-find-id-in-file "8d2cd2aa-b608-4466-837f-c537cbaa14df" "~/emacs/org/refile.org" 'markerp))
 
 (defun bh/clock-in-organization-task-as-default ()
@@ -602,7 +598,7 @@ as the default task."
 	      ("r" "respond" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
 	      ("n" "note" entry (file+headline "~/emacs/Org/refile.org" "Refile")
-	       "* %?\n  %U\n%a\n" :clock-in t :clock-resume t)
+	       "* %?\n  %U\n" :clock-in t :clock-resume t)
 	      ("w" "org-protocol" entry (file+headline "~/emacs/Org/refile.org" "Refile")
 	       "* TODO Review %c\n%U\n" :immediate-finish t)
 	      ("h" "Habit" entry (file+headline "~/emacs/Org/refile.org" "Refile")
@@ -656,7 +652,7 @@ as the default task."
 		(tags-todo "-HOLD-CANCELLED/!"
 			   ((org-agenda-overriding-header "Stuck Projects")
 			    (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-		(tags-todo "-WAITING-CANCELLED-KRANTHI-RITA-ESWARA-TIFFANY-NICK/!NEXT"
+		(tags-todo "-WAITING-CANCELLED-KRANTHI-RITA-ESWARA-TIFFANY-NICK-REFILE/!NEXT"
 			   ((org-agenda-overriding-header "Next Tasks")
 			    (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
 			    (org-agenda-todo-ignore-scheduled t)
