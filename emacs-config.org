@@ -2191,10 +2191,11 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
     (setq company-dabbrev-code-other-buffers 'all)
     (setq company-dabbrev-other-buffers 'all)
 
-    (add-to-list 'load-path "~/.emacs.d/extra")
-    (require 'ry-company-sql)    
-    (add-to-list 'company-backends 'ry/company-sql)
-
+    ;;  Only load the work related company backend if I am at work.
+    (when (s-contains? "RAD" (system-name))
+      (add-to-list 'load-path "~/.emacs.d/extra")
+      (require 'ry-company-sql)    
+      (add-to-list 'company-backends 'ry/company-sql))
 
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "M-n") nil)

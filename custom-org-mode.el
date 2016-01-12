@@ -383,9 +383,10 @@ keywords from the headlines in the table."
     total-time))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  Load the Outlook protocol.
+;;  Only load the work related outlook capture handler if I am at work.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(load "~/.emacs.d/org-outlook-capture.el")
+(when (s-contains? "RAD" (system-name))
+  (load "~/.emacs.d/org-outlook-capture.el"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  ORG-MODE hooks.
