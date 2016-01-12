@@ -1931,6 +1931,22 @@ The configuration is pretty basic with the exception being mapping the tab key t
   (progn
     (require 'helm-config)
 
+    (use-package helm-swoop
+      :ensure t
+      :config
+      (progn
+        (global-set-key (kbd "M-i") 'helm-swoop)
+        (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
+        (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
+        (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
+
+        ;;  When doing isearch, hand the word over to helm-swoop.
+        (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+        (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+
+        ;;  Split the current window.
+        (setq helm-swoop-split-with-multiple-windows t)))
+
     (use-package helm-descbinds
       :ensure t
       :config
@@ -2015,17 +2031,15 @@ Enable Eldoc for Lisp modes.
 
 ** Org-Mode
 
-What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My org-mode configuration is contained in another file but will eventually be merged into this one and documented.
+What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My org-mode configuration is contained in another file but will eventually be merged into this one and documented.  The only thing worth mentioning is that org-plus-contrib is being used.  This is so that I can use org-mime.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package org
-  :ensure t 
+  :ensure t ;org-plus-contrib
   :config
   (progn
     (eval-after-load "org-mode"
       (load "~/.emacs.d/custom-org-mode.el"))
-    (use-package org-plus-contrib
-      :ensure t)
     (use-package org-bullets
       :ensure t
       :config
