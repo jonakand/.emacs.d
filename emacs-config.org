@@ -1962,6 +1962,9 @@ The configuration is pretty basic with the exception being mapping the tab key t
           helm-ff-search-library-in-sexp        t
           helm-scroll-amount                    8
           helm-ff-file-name-history-use-recentf t
+          helm-skip-boring-buffers              t
+          helm-skip-boring-files                t
+          helm-boring-buffer-regexp-list '("\\` " "\\*helm" "\\*helm-mode" "\\*Echo Area" "\\*Minibuf" "\\*Calendar")
           helm-mini-default-sources '(helm-source-buffers-list
                                       helm-source-recentf
                                       helm-source-bookmarks
@@ -2220,11 +2223,11 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
 
 ** Smartparens
    
-This Smartparens configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org and http://pages.sachachua.com/.emacs.d/Sacha.html.  I am still trying to incorporate the package into my workflow.  It seems that it will be a very powerful addition to my work.  Strict mode was removed as I am not at a point where I am able to work with it as well as I would like.
+This Smartparens configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org and http://pages.sachachua.com/.emacs.d/Sacha.html, https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el, and [[https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el]].  I am still trying to incorporate the package into my workflow.  It seems that it will be a very powerful addition to my work.
 
 #+begin_src emacs-lisp :tangle yes :exports code
-(use-package smartparens
-  :ensure t
+(use-package smartparens-config
+  :ensure smartparens
   :diminish smartparens-mode
   :bind
   (("C-M-f" . sp-forward-sexp)
@@ -2266,17 +2269,68 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
    ("H-s s" . sp-split-sexp)
    ("M-9" . sp-backward-sexp)
    ("M-0" . sp-forward-sexp))
-  :init
+  :config
   (progn
-    (smartparens-global-mode t)
-    ;; (smartparens-strict-mode t)
-    (show-smartparens-global-mode t)
-    (use-package smartparens-config)
+    (require 'smartparens-config)
 
-    (sp-local-pair 'web-mode "<" nil :when '(sacha/sp-web-mode-is-code-context))
-  
-    (sp-with-modes '(html-mode sgml-mode web-mode)
-                   (sp-local-pair "<" ">"))))
+    (add-hook 'minibuffer-setup-hook 'turn-on-smartparens-strict-mode)
+
+    (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)    
+
+    ;;  org-mode config.
+    (sp-with-modes 'org-mode
+      (sp-local-pair "*" "*" :actions '(insert wrap) :unless '(sp-point-after-word-p sp-point-at-bol-p) :wrap "C-*" :skip-match 'sp--org-skip-asterisk)
+      (sp-local-pair "_" "_" :unless '(sp-point-after-word-p) :wrap "C-_")
+      (sp-local-pair "/" "/" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+      (sp-local-pair "~" "~" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+      (sp-local-pair "=" "=" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+      (sp-local-pair "«" "»"))
+
+    (defun sp--org-skip-asterisk (ms mb me)
+      (or (and (= (line-beginning-position) mb)
+               (eq 32 (char-after (1+ mb))))
+          (and (= (1+ (line-beginning-position)) me)
+               (eq 32 (char-after me)))))
+
+    ;;  lisp-modes config
+    (sp-with-modes sp-lisp-modes
+      (sp-local-pair "(" nil
+                     :wrap "C-("
+                     :pre-handlers '(my-add-space-before-sexp-insertion)
+                     :post-handlers '(my-add-space-after-sexp-insertion)))
+   
+    (defun my-add-space-after-sexp-insertion (id action _context)
+      (when (eq action 'insert)
+        (save-excursion
+          (forward-char (sp-get-pair id :cl-l))
+          (when (or (eq (char-syntax (following-char)) ?w)
+                    (looking-at (sp--get-opening-regexp)))
+            (insert " ")))))
+
+    (defun my-add-space-before-sexp-insertion (id action _context)
+      (when (eq action 'insert)
+        (save-excursion
+          (backward-char (length id))
+          (when (or (eq (char-syntax (preceding-char)) ?w)
+                    (and (looking-back (sp--get-closing-regexp))
+                         (not (eq (char-syntax (preceding-char)) ?'))))
+            (insert " ")))))
+    
+    ;;  java-mode config.
+    (sp-with-modes 'java-mode
+      (sp-local-pair "{" nil :post-handlers '(("||\n[i]" "RET")))
+      (sp-local-pair 'java-mode "/*" "*/" :post-handlers '((" | " "SPC")
+                                                           ("* ||\n[i]" "RET"))))
+
+    ;;  nxml-mode config.
+    (sp-with-modes 'nxml-mode     
+      (sp-local-pair "<!--" "-->"))
+
+    ;;  web-mode config.
+    (sp-with-modes 'web-mode
+      (sp-local-pair "<!--" "-->")
+      (sp-local-pair "<%--" "--%>"))))
+
 #+end_src
 
 ** Dired+
