@@ -2034,7 +2034,9 @@ Enable Eldoc for Lisp modes.
 
 ** Org-Mode
 
-What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My org-mode configuration is contained in another file but will eventually be merged into this one and documented.  The only thing worth mentioning is that org-plus-contrib is being used.  This is so that I can use org-mime.
+What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My org-mode configuration is contained in another file but will eventually be merged into this one and documented.  Org-plus-contib was added to the config and then had to be removed.  It caused issues with continuous clocking, locating headlines by their ID property would not work when it was enabled.  This is only an issue when trying to send HTML emails using org-mime.
+
+Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure if I like this more or less than bigblow.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package org
@@ -2046,7 +2048,9 @@ What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My or
     (use-package org-bullets
       :ensure t
       :config
-      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))))
+      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+    (use-package ox-twbs
+      :ensure t)))
 #+end_src
 
 ** Undo Tree
