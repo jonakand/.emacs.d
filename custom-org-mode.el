@@ -18,6 +18,8 @@
 (global-set-key (kbd "<f9> I") 'bh/punch-in)
 (global-set-key (kbd "<f9> O") 'bh/punch-out)
 (global-set-key (kbd "<f9> g") 'org-clock-goto)
+(global-set-key (kbd "C-c C-x C-b") 'ry/clock-in-email)
+(global-set-key (kbd "C-c C-x C-t") 'ry/clock-in-lats)
 
 (eval-after-load "org-agenda"
   '(progn
@@ -531,6 +533,8 @@ Switch projects and subprojects from NEXT back to TODO"
             (bh/clock-in-default-task)))))))
 
 (defvar bh/organization-task-id "eb155a82-92b2-4f25-a3c6-0304591af2f9")
+(defvar ry/email-task-id "b86a72cd-99f1-435f-969c-dacd4a54b6b7")
+(defvar ry/lats-task-id "81a916f6-59b6-4b5d-a381-211ec3388b14")
 
 ;; (org-id-find-id-file "8d2cd2aa-b608-4466-837f-c537cbaa14df")
 ;; (org-id-find-id-in-file "8d2cd2aa-b608-4466-837f-c537cbaa14df" "~/emacs/org/refile.org" 'marker)
@@ -549,6 +553,18 @@ Switch projects and subprojects from NEXT back to TODO"
              (marker-buffer org-clock-default-task)
              (not org-clock-resolving-clocks-due-to-idleness))
     (bh/clock-in-parent-task)))
+
+(defun ry/clock-in-email ()
+  "Clock in the email task."
+  (interactive)
+  (org-with-point-at (org-id-find ry/email-task-id 'marker)
+    (org-clock-in '(16))))
+
+(defun ry/clock-in-lats ()
+  "Clock in the email task."
+  (interactive)
+  (org-with-point-at (org-id-find ry/lats-task-id 'marker)
+    (org-clock-in '(16))))
 
 (add-hook 'org-clock-out-hook 'bh/clock-out-maybe 'append)
 
