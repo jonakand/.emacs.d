@@ -2440,7 +2440,8 @@ Commenting should be DWIM.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package comment-dwim-2
   :ensure t
-  :bind (("M-;" . comment-dwim-2)))
+  :config 
+  (global-set-key (kbd "M-;") 'comment-dwim-2))
 #+end_src
 
 ** Mediawiki
@@ -2789,7 +2790,11 @@ On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it
   :ensure t
   :disabled t
   :config
-  (add-hook 'after-init-hook #'global-flycheck-mode))
+  (progn
+    (use-package flycheck-tip
+      :ensure t
+      :config
+      (add-hook 'after-init-hook #'global-flycheck-mode))))
 #+end_src
 
 ** Lisp Mode
@@ -3065,6 +3070,18 @@ A nicer way to fold.
    '(haskell-process-log t)))
 #+END_SRC
 
+** Unkillable scratch
+   
+   Prevent me from accidentally killing the **scratch** buffer.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package unkillable-scratch
+  :ensure t
+  :config
+  (progn
+    (unkillable-scratch)))
+#+END_SRC
+
 ** Beacon
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -3073,6 +3090,7 @@ A nicer way to fold.
   :init
   (beacon-mode))
 #+END_SRC
+
 
 * Provide
   
