@@ -2233,49 +2233,57 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
 (use-package smartparens-config
   :ensure smartparens
   :diminish smartparens-mode
-  :bind
-  (("C-M-f" . sp-forward-sexp)
-   ("C-M-b" . sp-backward-sexp)
-   ("C-M-d" . sp-down-sexp)
-   ("C-M-a" . sp-backward-down-sexp)
-   ("C-S-a" . sp-beginning-of-sexp)
-   ("C-S-d" . sp-end-of-sexp)
-   ("C-M-e" . sp-up-sexp)
-   ("C-M-u" . sp-backward-up-sexp)
-   ("C-M-t" . sp-transpose-sexp)
-   ("C-M-n" . sp-next-sexp)
-   ("C-M-p" . sp-previous-sexp)
-   ("C-M-k" . sp-kill-sexp)
-   ("C-M-w" . sp-copy-sexp)
-   ("M-<delete>" . sp-unwrap-sexp)
-   ("M-S-<backspace>" . sp-backward-unwrap-sexp)
-   ("C-<right>" . sp-forward-slurp-sexp)
-   ("C-<left>" . sp-forward-barf-sexp)
-   ("C-M-<left>" . sp-backward-slurp-sexp)
-   ("C-M-<right>" . sp-backward-barf-sexp)
-   ("M-D" . sp-splice-sexp)
-   ("C-M-<delete>" . sp-splice-sexp-killing-forward)
-   ("C-M-<backspace>" . sp-splice-sexp-killing-backward)
-   ("C-M-S-<backspace>" . sp-splice-sexp-killing-around)
-   ("C-]" . sp-select-next-thing-exchange)
-   ("C-<left_bracket>" . sp-select-previous-thing)
-   ("C-M-]" . sp-select-next-thing)
-   ("M-F" . sp-forward-symbol)
-   ("M-B" . sp-backward-symbol)
-   ("H-t" . sp-prefix-tag-object)
-   ("H-p" . sp-prefix-pair-object)
-   ("H-s c" . sp-convolute-sexp)
-   ("H-s a" . sp-absorb-sexp)
-   ("H-s e" . sp-emit-sexp)
-   ("H-s p" . sp-add-to-previous-sexp)
-   ("H-s n" . sp-add-to-next-sexp)
-   ("H-s j" . sp-join-sexp)
-   ("H-s s" . sp-split-sexp)
-   ("M-9" . sp-backward-sexp)
-   ("M-0" . sp-forward-sexp))
   :config
   (progn
     (require 'smartparens-config)
+
+    (bind-keys
+     :map smartparens-mode-map
+     ("C-M-a" . sp-beginning-of-sexp)
+     ("C-M-e" . sp-end-of-sexp)
+
+     ("C-<down>" . sp-down-sexp)
+     ("C-<up>"   . sp-up-sexp)
+     ("M-<down>" . sp-backward-down-sexp)
+     ("M-<up>"   . sp-backward-up-sexp)
+
+     ("C-M-f" . sp-forward-sexp)
+     ("C-M-b" . sp-backward-sexp)
+
+     ("C-M-n" . sp-next-sexp)
+     ("C-M-p" . sp-previous-sexp)
+
+     ("C-S-f" . sp-forward-symbol)
+     ("C-S-b" . sp-backward-symbol)
+
+     ("C-<right>" . sp-forward-slurp-sexp)
+     ("M-<right>" . sp-forward-barf-sexp)
+     ("C-<left>"  . sp-backward-slurp-sexp)
+     ("M-<left>"  . sp-backward-barf-sexp)
+
+     ("C-M-t" . sp-transpose-sexp)
+     ("C-M-k" . sp-kill-sexp)
+     ("C-k"   . sp-kill-hybrid-sexp)
+     ("M-k"   . sp-backward-kill-sexp)
+     ("C-M-w" . sp-copy-sexp)
+
+     ("C-M-d" . delete-sexp)
+
+     ("M-<backspace>" . backward-kill-word)
+     ("C-<backspace>" . sp-backward-kill-word)  ([remap sp-backward-kill-word] . backward-kill-word)
+
+     ("M-[" . sp-backward-unwrap-sexp)
+     ("M-]" . sp-unwrap-sexp)
+
+     ("C-x C-t" . sp-transpose-hybrid-sexp)
+
+     ("C-c ("  . wrap-with-parens)
+     ("C-c ["  . wrap-with-brackets)
+     ("C-c {"  . wrap-with-braces)
+     ("C-c '"  . wrap-with-single-quotes)
+     ("C-c \"" . wrap-with-double-quotes)
+     ("C-c _"  . wrap-with-underscores)
+     ("C-c `"  . wrap-with-back-quotes))
 
     (smartparens-global-mode t)
 
@@ -2877,6 +2885,9 @@ The changes that were made to get it working are not pretty.
     (setq help-at-pt-timer-delay 0.1)
     (help-at-pt-set-timer)
 
+    ;;  Show positions in problems buffer.
+    (setq eclim-problems-show-pos t)
+
     (require 'flymake-eclim)
     (use-package flycheck-tip
       :ensure t
@@ -2891,6 +2902,9 @@ The changes that were made to get it working are not pretty.
     (require 'company-emacs-eclim)
     (company-emacs-eclim-setup)
 
+    ;;  Ignore case when getting completion options.
+    (setq company-emacs-eclim-ignore-case t)
+
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Windows setup so that eclim knows where the bat file is.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2903,6 +2917,25 @@ The changes that were made to get it working are not pretty.
     ;;  Toggle debugging.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (eclim-toggle-print-debug-messages)
+
+    (use-package imenu-list
+      :ensure t
+      :config
+      (progn
+        (setq imenu-list-position 'right)
+        (setq imenu-list-auto-resize nil)))
+
+    (use-package workgroups2
+      :ensure t
+      :config
+      (progn
+        (setq wg-prefix-key (kbd "C-c z"))
+        (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
+        (global-set-key (kbd "<pause>")     'wg-reload-session)
+        (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
+        (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
+        (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
+        (workgroups-mode 1)))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Again, a windows modification so that the eclim bat can be found for my
@@ -3091,6 +3124,35 @@ A nicer way to fold.
   (beacon-mode))
 #+END_SRC
 
+** Neotree
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package neotree
+  :ensure t
+  :bind (("<f11>" . neotree-toggle))
+  :config
+  (progn
+    (setq neo-smart-open t)
+
+    (when neo-persist-show
+    (add-hook 'popwin:before-popup-hook
+              (lambda () (setq neo-persist-show nil)))
+    (add-hook 'popwin:after-popup-hook
+              (lambda () (setq neo-persist-show t))))))
+#+END_SRC
+
+** Spaceline
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package spaceline-config
+  :ensure spaceline
+  :disabled t
+  :config
+  (progn
+    (spaceline-spacemacs-theme)
+    (spaceline-helm-mode)
+    (setq powerline-default-separator 'wave)))
+#+END_SRC
 
 * Provide
   
