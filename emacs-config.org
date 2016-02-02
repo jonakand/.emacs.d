@@ -63,15 +63,24 @@ My init.el file contains the lines below.  It is just enough to bootstrap use-pa
     (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
 #+end_src
 
+* Start debuggin
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq debug-on-error t)
+(setq debug-on-quit t)
+#+END_SRC
+
 * Start the server
 
 Start the server so that when editing I can connect and work quicker.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(if (eq system-type 'windows-nt)
-    (progn
-      (require 'server) 
-      (server-start)))
+(require 'server nil t)
+(use-package server
+  :if window-system
+  :init
+  (when (not (server-running-p server-name))
+    (server-start)))
 #+END_SRC
 
 * GUI configuration
@@ -193,6 +202,10 @@ Change garbage collection to only happen every 20 MB.  Originally found on https
 
 #+begin_src emacs-lisp :tangle yes :exports code 
 (setq gc-cons-threshold 100000000)
+(setq jit-lock-stealth-time 1
+      ;; jit-lock-stealth-load 200
+      jit-lock-chunk-size 1000
+      jit-lock-defer-time 0.05)
 #+end_src
 
 * Scrolling
@@ -2076,6 +2089,8 @@ I am not a huge fan of VIM but I can admit that the modal editing is better for 
 
 In addition to adding keybindings to help work with this mode I have added a hook to the post-command-hook to change the cursor.  The cursor will be a red box when god-mode is enabled and a regular pipe otherwise.  This done to help me remember which mode I am in.  At one time I had the mode-line change color but I didn't care for the colors on Solarized when I changed from Monokai.
 
+A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-mode/issues/77]].
+
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package god-mode
   :ensure t
@@ -2113,6 +2128,7 @@ In addition to adding keybindings to help work with this mode I have added a hoo
     (define-key god-local-mode-map (kbd "v") 'scroll-up-command)
     (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
     (define-key god-local-mode-map (kbd "DEL") 'delete-backward-char)
+    (define-key god-local-mode-map (kbd "I") 'mortal-mode)
     
     ;;(setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
@@ -2133,6 +2149,20 @@ In addition to adding keybindings to help work with this mode I have added a hoo
 
     (setq god-exempt-predicates nil)
     (add-to-list 'god-exempt-predicates 'ry/god-org-capture-p)
+
+    ; This mortal mode is designed to allow temporary departures from god mode
+    ; The idea is that within god-mode, you can hit shift-i, type in a few characters
+    ; and then hit enter to return to god-mode. To avoid clobbering the previous bindings,
+    ; we wrap up this behavior in a minor-mode.
+    (define-minor-mode mortal-mode
+      "Allow temporary departures from god-mode."
+      :lighter " mortal"
+      :keymap '(([return] . (lambda ()
+                              "Exit mortal-mode and resume god mode." (interactive)
+                              (god-local-mode-resume)
+                              (mortal-mode 0))))
+      (when mortal-mode
+        (god-local-mode-pause)))
 
     ;;  Change the color of the cursor to RED if god-mode is enabled.  If the file is
     ;;  read-only than change the cursor to a purple box and disallow changing from
@@ -2434,6 +2464,7 @@ I don't typically have need to show line numbers but when I do it is helpful to 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package linum-relative
   :ensure t
+  :disabled t
   :commands linum-mode
   :config
   (progn
@@ -2459,6 +2490,7 @@ For editing the MediaWiki at work.  An old version of Mediawiki is being used wh
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package mediawiki
   :ensure t
+  :disabled t
   :commands mediawiki-mode
   :config
   (eval-after-load 'mediawiki
@@ -2679,6 +2711,7 @@ A folding package based on the active region.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package fold-this
   :ensure t
+  :disabled t
   :bind (("C-c C-f" . fold-this-all)
          ("C-c C-F" . fold-this)
          ("C-c M-f" . fold-this-unfold-all)))
@@ -2799,11 +2832,19 @@ On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it
   :disabled t
   :config
   (progn
+    (add-hook 'after-init-hook #'global-flycheck-mode)))
+#+end_src
+
+** Flycheck-tip
+
+Used for displaying errors in a popup.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
     (use-package flycheck-tip
       :ensure t
       :config
-      (add-hook 'after-init-hook #'global-flycheck-mode))))
-#+end_src
+      (flycheck-tip-use-timer 'verbose))
+#+END_SRC
 
 ** Lisp Mode
 
@@ -2857,6 +2898,7 @@ I do not write Clojure code but I would like to learn when time permits.
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package cider
   :ensure t
+  :disabled t
 ;;  :bind (("<f10>" . cider-jack-in))
   :config
   (progn
@@ -2866,7 +2908,39 @@ I do not write Clojure code but I would like to learn when time permits.
     (add-hook 'cider-repl-mode-hook #'subword-mode)))
 #+end_src
 
+** Imenu-list
+
+This package is used to display the various members while working in eclim.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+    (use-package imenu-list
+      :ensure t
+      :config
+      (progn
+        (setq imenu-list-position 'right)
+        (setq imenu-list-auto-resize nil)))
+#+end_src
+
+** Workgroups2
+
+Used to create a workspace when working in eclim.
+
+#+begin_src emacs-lisp :tangle yes :exports code
+(use-package workgroups2
+  :ensure t
+  :config
+  (progn
+    (setq wg-prefix-key (kbd "C-c w"))
+    (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
+    ;; (global-set-key (kbd "<pause>")     'wg-reload-session)
+    ;; (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
+    ;; (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
+    ;; (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
+    (workgroups-mode 1)))
+#+end_src
+
 ** Eclim
+
 And then there is emacs-eclim.  This took a lot of experimentation to get working.  Even though it is working the way that it is working is not the best.  There are a number of comments in the code that detail why things were done the way there were.  
 
 I wonder if the issue for the problems is that I am running an old version of Eclipse or the fact that the machine that I do my Java work is a Windows one.  I would have to imagine it is a little of both.
@@ -2874,13 +2948,14 @@ I wonder if the issue for the problems is that I am running an old version of Ec
 The changes that were made to get it working are not pretty.  
 
 #+begin_src emacs-lisp :tangle yes :exports code
-(use-package emacs-eclim
-  :ensure t
+(use-package eclim
+  :ensure emacs-eclim
+  :init
+  (progn
+    (setq-default eclim--problems-filter "e")
+    (global-eclim-mode))
   :config
   (progn
-    (require 'eclim)
-    (require 'eclim-problems)
-
     (setq help-at-pt-display-when-idle t)
     (setq help-at-pt-timer-delay 0.1)
     (help-at-pt-set-timer)
@@ -2888,18 +2963,12 @@ The changes that were made to get it working are not pretty.
     ;;  Show positions in problems buffer.
     (setq eclim-problems-show-pos t)
 
-    (require 'flymake-eclim)
-    (use-package flycheck-tip
-      :ensure t
-      :config
-      (flycheck-tip-use-timer 'verbose))
-
-    (global-eclim-mode)
+    ;;(require 'flymake-eclim)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Use the company backend that comes with eclim instead.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (require 'company-emacs-eclim)
+    ;; (require 'company-emacs-eclim)
     (company-emacs-eclim-setup)
 
     ;;  Ignore case when getting completion options.
@@ -2917,25 +2986,6 @@ The changes that were made to get it working are not pretty.
     ;;  Toggle debugging.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (eclim-toggle-print-debug-messages)
-
-    (use-package imenu-list
-      :ensure t
-      :config
-      (progn
-        (setq imenu-list-position 'right)
-        (setq imenu-list-auto-resize nil)))
-
-    (use-package workgroups2
-      :ensure t
-      :config
-      (progn
-        (setq wg-prefix-key (kbd "C-c z"))
-        (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
-        (global-set-key (kbd "<pause>")     'wg-reload-session)
-        (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
-        (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
-        (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
-        (workgroups-mode 1)))
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Again, a windows modification so that the eclim bat can be found for my
@@ -3000,6 +3050,7 @@ When writing documentation it is helpful to know if you are using the English la
 #+begin_src emacs-lisp :tangle yes :exports code
   (use-package langtool
     :ensure t
+    :disabled t
     :config
     (setq langtool-language-tool-jar "~/emacs/Langtool/languagetool-commandline.jar"
           langtool-mother-tongue "en-us"
@@ -3040,7 +3091,8 @@ This is a placeholder for the Jabber configuration.  I need to determine what va
    
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package jabber
-  :ensure t)
+  :ensure t
+  :disabled t)
 #+end_src 
 
 ** Log4j
@@ -3195,13 +3247,18 @@ Plain old yasnippet configuration.  The second part is to enable selection based
 #+END_SRC
 
 
+* Disable debugging
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq debug-on-error nil)
+(setq debug-on-quit nil)
+#+END_SRC
+
 * Provide
   
 #+begin_src emacs-lisp :tangle yes :exports code
 (provide 'emacs-config)
 ;;; emacs-config.el ends here
 #+end_src
-
-  
 
 
