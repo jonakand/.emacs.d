@@ -606,6 +606,32 @@ I don't use tags so I have taken the M-. binding for find-funtion-at-point.
 (global-set-key (kbd "M-.") 'find-function-at-point)
 #+end_src
 
+Found this handy function here:  [[http://writequit.org/org/]]
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun number-rectangle (start end format-string from)
+  "Delete (don't save) text in the region-rectangle, then number it."
+  (interactive
+   (list (region-beginning) (region-end)
+         (read-string "Number rectangle: "
+                      (if (looking-back "^ *") "%d. " "%d"))
+         (read-number "From: " 1)))
+  (save-excursion
+    (goto-char start)
+    (setq start (point-marker))
+    (goto-char end)
+    (setq end (point-marker))
+    (delete-rectangle start end)
+    (goto-char start)
+    (loop with column = (current-column)
+          while (and (<= (point) end) (not (eobp)))
+          for i from from   do
+          (move-to-column column t)
+          (insert (format format-string i))
+          (forward-line 1)))
+  (goto-char start))
+#+END_SRC
+
 * Browsing
 ** Configuration
 
@@ -1977,7 +2003,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
           helm-ff-file-name-history-use-recentf t
           helm-skip-boring-buffers              t
           helm-skip-boring-files                t
-          helm-boring-buffer-regexp-list '("\\` " "\\*helm" "\\*helm-mode" "\\*Echo Area" "\\*Minibuf" "\\*Calendar")
+          helm-boring-buffer-regexp-list '("\\` " "\\*helm" "\\*helm-mode" "\\*Echo Area" "\\*Minibuf" "\\*Calendar" "\\*magit-diff" "\\*magit-process")
           helm-mini-default-sources '(helm-source-buffers-list
                                       helm-source-recentf
                                       helm-source-bookmarks
@@ -2985,7 +3011,7 @@ The changes that were made to get it working are not pretty.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Toggle debugging.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (eclim-toggle-print-debug-messages)
+    ;; (eclim-toggle-print-debug-messages)
 
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Again, a windows modification so that the eclim bat can be found for my
