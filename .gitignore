@@ -26,3 +26,4 @@ emacs-config.el
 company-sql.el
 *~
 *#
+/.emacs_workgroups
