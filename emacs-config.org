@@ -1420,48 +1420,6 @@ The following functions were created as an easy way to launch a couple Windows p
     (error "This command can only be used on Windows.")))
 #+end_src
 
-* Skeletons
-
-I have added these but I find myself using <s from org-mode more often.  Not sure if these will stay around for too long.
-
-#+begin_src emacs-lisp :tangle yes :export code
-(define-skeleton skel-org-block
-  "Insert an org block, querying for type."
-  "Type: "
-  "#+begin_" str "\n"
-  _ - \n
-  "#+end_" str "\n")
-
-(define-abbrev org-mode-abbrev-table "blk" "" 'skel-org-block)
-
-(define-skeleton skel-org-block-plantuml
-  "Insert a org plantuml block, querying for filename."
-  "File (no extension): "
-  "#+begin_src plantuml :file " str ".png :cache yes\n"
-  _ - \n
-  "#+end_src\n")
-
-(define-abbrev org-mode-abbrev-table "buml" "" 'skel-org-block-plantuml)
-
-(define-skeleton skel-org-block-plantuml-activity
-  "Insert a org plantuml block, querying for filename."
-  "File (no extension): "
-  "#+begin_src plantuml :file " str "-act.png :cache yes :tangle " str "-act.txt\n"
-  "@startuml\n"
-  "skinparam activity {\n"
-  "BackgroundColor<<New>> Cyan\n"
-  "}\n\n"
-  "title " str " - \n"
-  "note left: " str "\n"
-  "(*) --> \"" str "\"\n"
-  "--> (*)\n"
-  _ - \n
-  "@enduml\n"
-  "#+end_src\n")
-
-(define-abbrev org-mode-abbrev-table "auml" "" 'skel-org-block-plantuml-activity)
-#+end_src
-
 * Dates
 
 Working with dates is a pain.  This group consists of a few helper functions.
@@ -3556,6 +3514,10 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (add-to-list 'god-exempt-major-modes 'org)
     (add-to-list 'god-exempt-major-modes 'eshell-mode)
     (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
+    (add-to-list 'god-exempt-major-modes 'magit-popup-mode)
+    (add-to-list 'god-exempt-major-modes 'magit-popup-help-mode)
+    (add-to-list 'god-exempt-major-modes 'magit-status-mode)
+    (add-to-list 'god-exempt-major-modes 'magit-mode)
 
     (require 'god-mode-isearch)
     (define-key isearch-mode-map (kbd "<escape>") 'god-mode-isearch-activate)
