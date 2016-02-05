@@ -1,7 +1,12 @@
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\)$" . org-mode))
 
 (require 'org-habit)
+(require 's)
 
+;;  Use yasnippets for templates instead.
+(setq org-structure-template-alist nil)
+
+;;  Clock continuously.
 (setq org-clock-continuously t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -111,7 +116,7 @@
 ;;  Clock table formatting.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Used for removing unwanted strings from headline strings.
-(require 's)
+
 
 ;;  Use the updated function insead.
 (setq org-clock-clocktable-formatter 'ry/org-clocktable-write)
