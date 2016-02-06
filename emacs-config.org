@@ -1720,6 +1720,15 @@ Kill the message buffer after sending an email instead of burying it.
 #+END_SRC
 
 * Packages
+** S
+
+This package is needed for some of the stuff later on so it needs to be brought in early.
+
+   #+BEGIN_SRC emacs-lisp :tangle yes :exports code
+   (use-package s
+     :ensure t)
+   #+END_SRC
+
 ** Paradox
 
 Being able to use Emacs while packages are updated is a fantastic thing.  Paradox makes this happen.  The async package should be brought in automatically but for some reason it is here anyway.
@@ -3481,6 +3490,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
          ("C-x C-k" . kill-this-buffer)
          ("C-x C-S-k" . kill-other-buffers)
          ("C-x C-o" . other-window)
+         ("C-x C-n" . narrow-or-widen-dwim)
          ("C-c C-r" . org-capture)
          ("C-C C-a" . org-agenda)
          ("C-x C-h" . mark-whole-buffer)
@@ -3509,7 +3519,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (define-key god-local-mode-map (kbd "DEL") 'delete-backward-char)
     (define-key god-local-mode-map (kbd "I") 'mortal-mode)
     
-    ;;(setq god-exempt-major-modes nil)
+    (setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
     (add-to-list 'god-exempt-major-modes 'org)
     (add-to-list 'god-exempt-major-modes 'eshell-mode)
@@ -3522,16 +3532,6 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (require 'god-mode-isearch)
     (define-key isearch-mode-map (kbd "<escape>") 'god-mode-isearch-activate)
     (define-key god-mode-isearch-map (kbd "<escape>") 'god-mode-isearch-disable)
-
-    ;;  When capturing notes I want to start with god mode disabled.  Adding org-mode
-    ;;  to the god-exempt-major-modes list did not work for some reason.  Looking at
-    ;;  the buffer name does.
-    (defun ry/god-org-capture-p ()
-      "Return non-nil if buffer is an org capture buffer."
-      (string-equal (buffer-name) "CAPTURE-refile.org"))
-
-    (setq god-exempt-predicates nil)
-    (add-to-list 'god-exempt-predicates 'ry/god-org-capture-p)
 
     ; This mortal mode is designed to allow temporary departures from god mode
     ; The idea is that within god-mode, you can hit shift-i, type in a few characters

@@ -27,3 +27,4 @@ company-sql.el
 *~
 *#
 /.emacs_workgroups
+/org-clock-save.el
