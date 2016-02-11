@@ -2035,6 +2035,8 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
     (define-key god-local-mode-map (kbd "DEL") 'delete-backward-char)
     (define-key god-local-mode-map (kbd "I") 'mortal-mode)
+
+    ;;  Binds so that I can move in god mode.
     (define-key god-local-mode-map (kbd "C-n") 'next-line)
     (define-key god-local-mode-map (kbd "C-p") 'previous-line)
     (define-key god-local-mode-map (kbd "C-f") 'forward-char)
@@ -2045,6 +2047,16 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     ;;  Unbind the usual movement keys so that I am forced to use god mode.
     (dolist (key '("\C-n" "\C-p" "\C-b" "\C-f" "\C-a" "\C-e"))
       (global-unset-key key))
+    
+    ;;  Binds for eclim.
+    (define-key god-local-mode-map (kbd "C-c C-e C-p") 'eclim-problems)
+    (define-key god-local-mode-map (kbd "C-c C-e C-c") 'eclim-problems-correct)
+    (define-key god-local-mode-map (kbd "C-c C-e C-f") 'eclim-java-format)
+    (define-key god-local-mode-map (kbd "C-c C-e C-o") 'eclim-java-import-organize)
+    (define-key god-local-mode-map (kbd "C-c C-e C-g") 'eclim-java-generate-getter-and-setter)
+    (define-key god-local-mode-map (kbd "C-c C-e C-r") 'eclim-java-refactor-rename-symbol-at-point)
+    (define-key god-local-mode-map (kbd "C-c C-e C-i") 'eclim-java-implement)
+    (define-key god-local-mode-map (kbd "C-c C-e C-.") 'eclim-java-find-declaration)
     
     (setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
