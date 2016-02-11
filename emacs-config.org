@@ -88,7 +88,7 @@ Start the server so that when editing I can connect and work quicker.
 (use-package server
   :if window-system
   :init
-  (when (not (server-running-p server-name))
+  (when (not (server-running-p))
     (server-start)))
 #+END_SRC
 
@@ -126,12 +126,6 @@ Remove scroll bars and the menu bar.
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
-#+END_SRC
-
-Remove the line between frames.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(set-face-attribute 'vertical-border nil :foreground (face-attribute 'fringe :background))
 #+END_SRC
 
 Remove the splash screen.
@@ -204,6 +198,10 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
                         :box nil
                         :foreground "#657b83"
                         :background "#073642")
+
+    ;;  Remove the lines between buffers.
+    (set-face-attribute 'vertical-border nil :foreground (face-attribute 'fringe :background))
+
     (with-eval-after-load 'org
       (set-face-attribute 'org-block-begin-line nil
                           :underline t
@@ -219,10 +217,11 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
 Set the default font to Consolas when on a Windows machine.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(when (windows-p)
-    (set-face-attribute 'default nil :font "Consolas-12")
-    ;;(set-face-attribute 'default nil :font "Inconsolata-12")
-  )
+;; (when (windows-p)
+    ;; (set-face-attribute 'default nil :font "Consolas-12")
+(set-face-attribute 'default nil :font "Inconsolata-12")
+;;(set-face-attribute 'org-level-1 nil :font "Oswald")
+  ;; )
 #+end_src
 
 Disable the file dialog.
@@ -281,8 +280,7 @@ Add some work related paths to PATH.
 (if (at-work-p)
     (setq exec-path
           (append exec-path
-                  "C:/IBM/SDP"
-                  "C:/IBM/SDP/jdk/bin")))
+                  '("C:/IBM/SDP/jdk/bin"))))
 #+END_SRC
 
 Set an environment variable for the GraphViz program.  Simply setting the path does not work as expected.
@@ -304,7 +302,7 @@ Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.
 
 Set values so that backup files are not littering my directories.  The BACKUP folder will be ignored by git.
 
-#+begin_src emacs-lisp :tangle no :exports code 
+#+begin_src emacs-lisp :tangle yes :exports code 
 (setq backup-directory-alist
       `((".*" . "~/.emacs.d/BACKUP")))
 (setq auto-save-file-name-transforms
@@ -381,8 +379,8 @@ The following disables the warning message that appears when a huge change is ma
 Enable subtle highlighting of matching parentheses.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-;; (show-paren-mode +1)
-;; (setq show-paren-style 'parenthesis)
+(show-paren-mode 1)
+(setq show-paren-style 'parenthesis)
 #+end_src
 
 I work with log files quite often and sometimes they are very large.  The setting below will allow files to be opened without warnings until they are over 100MB in size.
@@ -404,6 +402,12 @@ This will quit all processes without prompting me to do so when closing Emacs.
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
            (cl-flet ((process-list ())) ad-do-it))
 #+end_src
+
+Change the map of other window to something a little easier to hit.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(global-set-key (kbd "M-o") #'other-window)
+#+END_SRC
 
 * Editing
 
@@ -658,6 +662,7 @@ This package makes commands work differently based on if a region is selected or
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package whole-line-or-region
   :ensure t
+  :diminish whole-line-or-region-mode
   :config
   (whole-line-or-region-mode))
 #+end_src
@@ -1014,8 +1019,8 @@ Simple method to disconnect from the database currently connected to.  This assu
 (defun ry/sql-disconnect ()
   "Disconnect the current DB connection."
   (interactive)
-  (let ((db-buffer (current-buffer)))
-    (when (and (get-buffer-process db-buffer) database-conn-p)
+  (let ((db-buffer (sql-find-sqli-buffer)))
+    (when db-buffer     
       (sql-send-string (concat "DISCONNECT " database-name ";")))))
 #+END_SRC
 
@@ -1023,12 +1028,10 @@ Simple method to disconnect from the database currently connected to.  This assu
 (defun ry/sql-quit ()
   "Quit the current DB2 CLP process."
   (interactive)
-  (let ((db-buffer (current-buffer)))
-    (cond ((and (get-buffer-process db-buffer) database-conn-p)
-           (ry/sql-disconnect)
-           (sql-send-string "QUIT;"))
-          ((get-buffer-process db-buffer)
-           (sql-send-string "QUIT;")))))
+  (let ((db-buffer (sql-find-sqli-buffer)))
+    (when db-buffer
+      (ry/sql-disconnect)
+      (sql-send-string "QUIT;"))))
 #+END_SRC
 
 #+begin_src emacs-lisp :tangle yes :exports code
@@ -1103,7 +1106,7 @@ to sending."
         (if (search-forward-regexp "fetch" nil t)         
             (sql-send-string (buffer-substring-no-properties beg end))
           (progn
-            (replace-regexp ";" " FETCH FIRST 50 ROWS ONLY WITH UR;")
+            (replace-regexp ";" "\n FETCH FIRST 50 ROWS ONLY WITH UR;")
             (sql-send-string (buffer-substring-no-properties beg (point-max))))))
        (t
         (sql-send-string (buffer-substring-no-properties beg end)))))))
@@ -1445,8 +1448,7 @@ Use the fantastic NXML mode for XML editing.  Folding of a document based on the
     (setq nxml-auto-insert-xml-declaration-flag nil)
     (setq nxml-slash-auto-complete-flag t)
     
-    (require 'sgml-mode)
-    (require 'nxml-mode)
+    (use-package sgml-mode)
 
     (use-package hideshow
       :ensure t
@@ -1715,7 +1717,7 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
       '(progn
          (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
 
-    (require 'gnus)
+    (use-package gnus)
 
     (setq gnus-select-method '(nntp "news.gmane.org"))
   #+END_SRC
@@ -1966,6 +1968,11 @@ The configuration is pretty basic with the exception being mapping the tab key t
     (helm-mode)))
 #+end_src
 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package abbrev
+  :diminish abbrev-mode)
+#+END_SRC
+
 Save the recent file history.  This is used by Helm.
 
 #+begin_src emacs-lisp :tangle yes :exports code
@@ -2016,7 +2023,8 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
          ("C-c C-d C-o" . ry/sql-open-database)
          ("C-c C-d C-r" . ry/sql-reopen-database)
          ("C-c C-d C-d" . ry/sql-disconnect)
-         ("C-c C-d C-q" . ry/sql-quit))
+         ("C-c C-d C-q" . ry/sql-quit)
+         ("C-c C-e C-c" . eclim-problems-correct))
   :init
   (progn
     (god-mode-all)
@@ -2027,6 +2035,16 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
     (define-key god-local-mode-map (kbd "DEL") 'delete-backward-char)
     (define-key god-local-mode-map (kbd "I") 'mortal-mode)
+    (define-key god-local-mode-map (kbd "C-n") 'next-line)
+    (define-key god-local-mode-map (kbd "C-p") 'previous-line)
+    (define-key god-local-mode-map (kbd "C-f") 'forward-char)
+    (define-key god-local-mode-map (kbd "C-b") 'backward-char)
+    (define-key god-local-mode-map (kbd "C-a") 'beginning-of-line)
+    (define-key god-local-mode-map (kbd "C-e") 'end-of-line)
+
+    ;;  Unbind the usual movement keys so that I am forced to use god mode.
+    (dolist (key '("\C-n" "\C-p" "\C-b" "\C-f" "\C-a" "\C-e"))
+      (global-unset-key key))
     
     (setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
@@ -3697,6 +3715,7 @@ Plain old yasnippet configuration.  The second part is to enable selection based
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package yasnippet
   :ensure t
+  :diminish yas-minor-mode
   :config
   (progn    
     (yas-global-mode 1)
@@ -3796,20 +3815,17 @@ Add Git diff information to the gutter so that I can easily track changes.
 
 * Programming
 ** Environment
-
+   
 Used to create a workspace when working in eclim.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package workgroups2
   :ensure t
+  :diminish workgroups-mode
   :config
   (progn
     (setq wg-prefix-key (kbd "C-c w"))
     (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
-    ;; (global-set-key (kbd "<pause>")     'wg-reload-session)
-    ;; (global-set-key (kbd "C-S-<pause>") 'wg-save-session)
-    ;; (global-set-key (kbd "s-z")         'wg-switch-to-workgroup)
-    ;; (global-set-key (kbd "s-/")         'wg-switch-to-previous-workgroup)
     (workgroups-mode 1)))
 #+end_src
 
@@ -3904,6 +3920,7 @@ Not sure if this package will stay around either.  It is used for highlighting t
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package highlight-symbol
   :ensure t
+  :disabled highlight-symbol-mode
   :config
   (progn
     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
