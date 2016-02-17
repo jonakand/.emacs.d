@@ -734,11 +734,11 @@ Enable spelling for comments in programming modes too.
 
 #+begin_src emacs-lisp :tangle yes :exports code  
 (add-hook 'java-mode-hook
-          (lambda ()
+          #'(lambda ()
             (flyspell-prog-mode)))
             
 (add-hook 'emacs-lisp-mode-hook
-          (lambda ()
+          #'(lambda ()
             (flyspell-prog-mode)))
 #+end_src
 
@@ -1506,7 +1506,7 @@ already narrowed."
 (define-key ctl-x-map "n" #'narrow-or-widen-dwim)
 
 (add-hook 'LaTeX-mode-hook
-          (lambda () (define-key LaTeX-mode-map "\C-xn" nil)))
+          #'(lambda () (define-key LaTeX-mode-map "\C-xn" nil)))
 
 (eval-after-load 'org-src
   '(define-key org-src-mode-map
@@ -1609,10 +1609,10 @@ I like to see line highlighting for every other row when looking at directory li
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package dired+
   :ensure t
-  :commands dired
+  :commands (dired)
   :config
-  (progn
-    (toggle-diredp-find-file-reuse-dir 1)
+  (progn   
+    (diredp-toggle-find-file-reuse-dir 1)
     (add-to-list 'load-path "~/.emacs.d/extra")
     (require 'dired-sort-menu)
     (setq dired-hide-details-mode nil)))
@@ -1652,53 +1652,51 @@ I use eshell to have a decent shell when on Windows machines at work.  Not much 
 Add BBDB configuration primarily for use with Gnus.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (use-package bbdb
-    :ensure t
-    :config
-    (progn
-      (bbdb-initialize 'gnus 'message)
-      (bbdb-mua-auto-update-init 'gnus 'message)
+(use-package bbdb
+  :ensure t
+  :config
+  (progn
+    (bbdb-initialize 'gnus 'message)
+    (bbdb-mua-auto-update-init 'gnus 'message)
 
-      ;; Look at all emails not just the first one.
-      (setq bbdb-message-all-addresses t)    
+    ;; Look at all emails not just the first one.
+    (setq bbdb-message-all-addresses t)    
 
-      ;; use ; on a message to invoke bbdb interactively
-      (setq bbdb-mua-update-interactive-p '(query . create))
-      
-      (add-hook
-       'gnus-summary-mode-hook
-       (lambda ()
-         (define-key gnus-summary-mode-map (kbd ";") 'bbdb-mua-edit-field)
-         ))
+    ;; use ; on a message to invoke bbdb interactively
+    (setq bbdb-mua-update-interactive-p '(query . create))
+    
+    (add-hook
+     'gnus-summary-mode-hook
+     #'(lambda () (define-key gnus-summary-mode-map (kbd ";") 'bbdb-mua-edit-field)))
 
-      (setq bbdb-file "~/.emacs.d/bbdb"
-            bbdb-mail-user-agent 'gnus-user-agent  ;;  Tell BBDB which agent is being used.
-            ;;bbdb-complete-name-full-completion t
-            bbdb-completion-list 'primary-or-name  ;;
-            bbdb-complete-mail-allow-cycling t     ;;
-            bbdb-mua-pop-up nil                    ;;  Don't show popup when adding addresses.
-            bbdb-pop-up-window-size 6
-            bbdb-mua-pop-up-window-size 6
-            ;; bbdb-offer-save 1
-            ;; bbdb-use-pop-up t
-            ;; bbdb-electric-p t
-            ;; bbdb-popup-target-lines 1
-            ;; bbdb/mail-auto-create-p t
-            bbdb-update-records-p 'create          ;;  Automaticcaly create new entries.
-            bbdb-ignore-message-alist '(("From" . "@postmaster.twitter.com")
-                                      ("From" . "plus.google.com")
-                                      ("From" . "nothome.com")
-                                      ("From" . "newsletters")
-                                      ("From" . "Mail Delivery System")
-                                      ("From" . "mailer-daemon")
-                                      ("From" . "facebookmail.com")
-                                      ("From" . "noreply")
-                                      ("From" . "no-reply")
-                                      ("From" . "donotreply")
-                                      ("From" . "emacs-orgmode")
-                                      ("From" . "emacs-devel")
-                                      ("Subject" . "SPAM")
-                                      ("X-Spam-Level" . "*")))))
+    (setq bbdb-file "~/.emacs.d/bbdb"
+          bbdb-mail-user-agent 'gnus-user-agent  ;;  Tell BBDB which agent is being used.
+          ;;bbdb-complete-name-full-completion t
+          bbdb-completion-list 'primary-or-name  ;;
+          bbdb-complete-mail-allow-cycling t     ;;
+          bbdb-mua-pop-up nil                    ;;  Don't show popup when adding addresses.
+          bbdb-pop-up-window-size 6
+          bbdb-mua-pop-up-window-size 6
+          ;; bbdb-offer-save 1
+          ;; bbdb-use-pop-up t
+          ;; bbdb-electric-p t
+          ;; bbdb-popup-target-lines 1
+          ;; bbdb/mail-auto-create-p t
+          bbdb-update-records-p 'create          ;;  Automaticcaly create new entries.
+          bbdb-ignore-message-alist '(("From" . "@postmaster.twitter.com")
+                                    ("From" . "plus.google.com")
+                                    ("From" . "nothome.com")
+                                    ("From" . "newsletters")
+                                    ("From" . "Mail Delivery System")
+                                    ("From" . "mailer-daemon")
+                                    ("From" . "facebookmail.com")
+                                    ("From" . "noreply")
+                                    ("From" . "no-reply")
+                                    ("From" . "donotreply")
+                                    ("From" . "emacs-orgmode")
+                                    ("From" . "emacs-devel")
+                                    ("Subject" . "SPAM")
+                                    ("X-Spam-Level" . "*")))))
 #+END_SRC
 
 * Gnus
@@ -1974,7 +1972,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
     ;;  vertically.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (setq helm-display-function
-          (lambda (buf)
+          #'(lambda (buf)
             (split-window-vertically)
             (other-window 1)
             (switch-to-buffer buf)))
@@ -2093,7 +2091,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (define-minor-mode mortal-mode
       "Allow temporary departures from god-mode."
       :lighter " mortal"
-      :keymap '(([return] . (lambda ()
+      :keymap '(([return] . #'(lambda ()
                               "Exit mortal-mode and resume god mode." (interactive)
                               (god-local-mode-resume)
                               (mortal-mode 0))))
@@ -2104,7 +2102,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     ;;  read-only than change the cursor to a purple box and disallow changing from
     ;;  god-mode.
     (add-hook 'post-command-hook
-              (lambda ()
+              #'(lambda ()
                 (cond (buffer-read-only
                        (set-cursor-color "#7b68ee")
                        (setq cursor-type 'box))
@@ -2134,7 +2132,7 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
       :ensure t
       :config
       (progn
-        (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+        (add-hook 'org-mode-hook #'(lambda () (org-bullets-mode 1)))
         (add-hook 'org-mode-hook #'(lambda () (visual-line-mode)))))
     (use-package ox-twbs
       :ensure t)
@@ -2543,7 +2541,7 @@ keywords from the headlines in the table."
     ;;  ORG-MODE hooks.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;; Enable abbrev-mode
-    (add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))
+    (add-hook 'org-mode-hook #'(lambda () (abbrev-mode 1)))
 
     ;; flyspell mode for spell checking everywhere
     (add-hook 'org-mode-hook 'turn-on-flyspell 'append)
@@ -3976,9 +3974,9 @@ Used to create a "workspace" for Java development.
 
     (when neo-persist-show
     (add-hook 'popwin:before-popup-hook
-              (lambda () (setq neo-persist-show nil)))
+              #'(lambda () (setq neo-persist-show nil)))
     (add-hook 'popwin:after-popup-hook
-              (lambda () (setq neo-persist-show t))))))
+              #'(lambda () (setq neo-persist-show t))))))
 #+END_SRC
 
 ** Languages
@@ -4405,7 +4403,9 @@ I previously had this in my configuration to make looking at log files easier.  
 (use-package log4j-mode
   :mode 
   (("\\.log\\(\\.[0-9]+\\)?\\(\\.txt\\)?\\'" . log4j-mode))
-  :ensure t)
+  :ensure t
+  :config
+  (add-hook 'log4j-mode-hook #'(lambda () (visual-line-mode))))
 #+end_src
 
 ** Unkillable scratch
