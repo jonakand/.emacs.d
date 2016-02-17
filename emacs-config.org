@@ -250,6 +250,12 @@ Stripe dired buggers and org-mode tables for easier reading.
     (set-face-attribute stripe-highlight-face nil :background "#073642")))
 #+end_src
 
+Indicate in the left fringe where the end of a buffer is.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(set-default 'indicate-empty-lines t)
+#+END_SRC
+
 * Load work config
 
 Load environment variables that are particular to my work machine.
@@ -631,8 +637,8 @@ Visual way to unto changes.
 (use-package undo-tree
   :ensure t
   :diminish undo-tree-mode
-  :bind (("C-x u" . undo-tree-visualize))
-  :commands undo-tree-visualize
+  :bind (("C-x u" . undo-tree-visualize)
+         ("C-/" . unto-tree-undo))  
   :config
   (progn
     (global-undo-tree-mode)
@@ -1647,6 +1653,28 @@ I use eshell to have a decent shell when on Windows machines at work.  Not much 
   (add-hook 'eshell-mode-hook 'eshell-smart-initialize))
 #+END_SRC
 
+* Ediff
+
+  #+BEGIN_SRC emacs-lisp :tangle yes :exports code
+  (use-package ediff
+    :config
+    (progn
+      (setq ediff-split-window-function 'split-window-horizontally
+            ediff-diff-options "-w")))
+  #+END_SRC
+
+* With editor
+
+Sets up the with-editor package so things that invoke $EDITOR will use the current emacs if I'm already inside of emacs 
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package with-editor
+  :init
+  (progn
+    (add-hook 'shell-mode-hook  'with-editor-export-editor)
+    (add-hook 'eshell-mode-hook 'with-editor-export-editor)))
+#+END_SRC
+
 * BBDB
 
 Add BBDB configuration primarily for use with Gnus.
@@ -1926,8 +1954,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
          ("<f8>" . bookmark-set))
   :config
   (progn
-    (require 'helm-config)
-
+    (use-package helm-config)
     (use-package helm-swoop
       :ensure t
       :config
