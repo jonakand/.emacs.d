@@ -1623,14 +1623,28 @@ I like to see line highlighting for every other row when looking at directory li
 I use eshell to have a decent shell when on Windows machines at work.  Not much work is done in it, so most of the settings come from: https://www.masteringemacs.org/article/complete-guide-mastering-eshell.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (use-package eshell
-    :commands (eshell)
-    :config
-    (use-package em-smart)
-    (setq eshell-where-to-jump 'end)
-    (setq eshell-review-quick-commands nil)
-    (setq eshell-smart-space-goes-to-end t)  
-    (add-hook 'eshell-mode-hook 'eshell-smart-initialize))
+(use-package eshell
+  :commands (eshell)
+  :config
+  (use-package em-smart)  
+  
+  (defalias 'emacs 'find-file)
+  (defalias 'ec 'find-file)
+  
+  (setq eshell-where-to-jump 'begin
+        eshell-review-quick-commands nil
+        eshell-smart-space-goes-to-end t
+        eshell-plain-echo-behavior t
+        eshell-history-size 350
+        eshell-buffer-maximum-lines 12000)
+  
+  (setq eshell-visual-commands '("vi" "screen" "top" "less" "more" "lynx"
+                                 "ncftp" "pine" "tin" "trn" "elm" "vim"
+                                 "nmtui" "alsamixer" "htop" "el" "elinks"))
+  
+  (setq eshell-visual-subcommands '(("git" "log" "diff" "show")))
+  
+  (add-hook 'eshell-mode-hook 'eshell-smart-initialize))
 #+END_SRC
 
 * BBDB
