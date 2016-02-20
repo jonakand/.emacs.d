@@ -94,6 +94,8 @@ Start the server so that when editing I can connect and work quicker.
 
 * UTF-8
 
+Prefer UTF-8 as the coding system.
+
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
@@ -120,7 +122,7 @@ Used to determine if Emacs is being launched at work or not.
   (s-contains? "RAD" (system-name)))
 #+END_SRC
 
-Remove scroll bars and the menu bar.
+Remove visual clutter and gain a little more room on the screen.
   
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
@@ -128,7 +130,7 @@ Remove scroll bars and the menu bar.
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 #+END_SRC
 
-Remove the splash screen.
+Remove the splash screen.  
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (setq inhibit-splash-screen t)
@@ -214,14 +216,13 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
         ;;                  :background "#073642"))))
 #+end_src
 
-Set the default font to Consolas when on a Windows machine.
+Set the default font.  I flip-flop between Consolas and Inconsolata.  Both are nice fonts.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-;; (when (windows-p)
+(if (windows-p)
     ;; (set-face-attribute 'default nil :font "Consolas-12")
-(set-face-attribute 'default nil :font "Inconsolata-12")
-;;(set-face-attribute 'org-level-1 nil :font "Oswald")
-  ;; )
+    (set-face-attribute 'default nil :font "Inconsolata-12")
+  (set-face-attribute 'default nil :font "Inconsolata-12"))
 #+end_src
 
 Disable the file dialog.
@@ -236,7 +237,7 @@ Use 'Y' and 'N' instead of yes and no for prompts.
 (fset 'yes-or-no-p 'y-or-n-p)
 #+end_src
 
-Stripe dired buggers and org-mode tables for easier reading.
+Stripe dired buffers and org-mode tables for easier reading.
 
 #+begin_src emacs-lisp :tangle yes :exports code
 (use-package stripe-buffer
@@ -270,40 +271,40 @@ Load environment variables that are particular to my work machine.
 Setup PATH and some other environment stuff.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (windows-p)
-    (setq exec-path
-          (append exec-path
-                  '("~/emacs/Graphviz/bin"
-                    "~/emacs/Hunspell/bin/"
-                    "~/emacs/Gnutls/bin"
-                    "~/emacs/Leiningen"
-                    "~/Git/bin"))))
+(when (windows-p)
+  (setq exec-path
+        (append exec-path
+                '("~/emacs/Graphviz/bin"
+                  "~/emacs/Hunspell/bin/"
+                  "~/emacs/Gnutls/bin"
+                  "~/emacs/Leiningen"
+                  "~/Git/bin"))))
 #+end_src
 
-Add some work related paths to PATH.
+Add some work related paths to PATH.  This should really be moved to my work file.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(if (at-work-p)
-    (setq exec-path
-          (append exec-path
-                  '("C:/IBM/SDP/jdk/bin"))))
+(when (at-work-p)
+  (setq exec-path
+        (append exec-path
+                '("C:/IBM/SDP/jdk/bin"))))
 #+END_SRC
 
-Set an environment variable for the GraphViz program.  Simply setting the path does not work as expected.
+Set an environment variable for the GraphViz program.  Simply setting the path using ~ doesn't work correctly.  Again, this should be moved to the work file.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (at-work-p)
-    (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
+(when (at-work-p)
+  (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
 #+end_src
 
 Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.  Setting it prior to load does not work properly.  Also setting this path does not work unless the full path is provided.
 
 #+begin_src emacs-lisp :tangle yes :exports code 
-(if (windows-p)
-    (eval-after-load "gnutls" 
-      '(progn 
-         (setq gnutls-trustfiles '("h:/emacs/cacert.pem"))
-         (setq gnutls-log-level 1))))
+(when (windows-p)
+  (eval-after-load "gnutls" 
+    '(progn 
+       (setq gnutls-trustfiles '("h:/emacs/cacert.pem"))
+       (setq gnutls-log-level 1))))
 #+end_src
 
 Set values so that backup files are not littering my directories.  The BACKUP folder will be ignored by git.
@@ -336,7 +337,6 @@ Avy jump looks like it could be helpful.  The configuration needs to be updated 
   :bind (("C-z" . avy-goto-char-timer)))
 #+end_src
 
-
 * Searching
 
 Anzu is a visual regular expression/replace package.  It includes some nice highlighting ability while doing replaces or searches.
@@ -348,7 +348,6 @@ Anzu is a visual regular expression/replace package.  It includes some nice high
   :bind (("C-M-s" . anzu-query-replace)
          ("C-M-%" . anzu-query-replace-regexp)))
 #+end_src
-
 
 * Misc. settings
 
