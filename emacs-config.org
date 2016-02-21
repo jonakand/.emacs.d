@@ -18,7 +18,7 @@ This file can be used to load emacs provided use-package is available prior.  If
   
 My init.el file contains the lines below.  It is just enough to bootstrap use-package and then load this document.
 
-#+begin_src emacs-lisp :tangle no
+#+BEGIN_SRC emacs-lisp :tangle no
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Bootstrap use-package.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -62,7 +62,7 @@ My init.el file contains the lines below.  It is just enough to bootstrap use-pa
 ;;
 ;; (add-hook 'after-init-hook (lambda () (org-babel-tangle-file "~/.emacs.d/emacs-config.org")))
 
-#+end_src
+#+END_SRC
 
 * Keys
 
@@ -102,17 +102,17 @@ Prefer UTF-8 as the coding system.
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (setq default-buffer-file-coding-system 'utf-8)
-#+END_src
+#+END_SRC
 
 * GUI
 
 I found this on [[http://doc.rix.si/org/fsem.html][Hardcore Freestyle Emacs]].  They are defined early so they can be used in this section.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun windows-p ()
   "Returns t if the system is a native Emacs for Windows, otherwise nil"
   (string-equal system-type "windows-nt"))
-#+end_src
+#+END_SRC
 
 Used to determine if Emacs is being launched at work or not.
 
@@ -138,7 +138,7 @@ Remove the splash screen.
 
 The mode-line is configured using the code below.  I like to have a simplified mode-line so many of the usual things have been removed.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defface ry/current-task-face
   '((t (:background "gold")))
   "Face for current task in mode-line."
@@ -174,11 +174,11 @@ clocking string"
                 "Current task: "
                 (:eval (ry/current-task-time))
                 mode-line-end-spaces))
-#+end_src
+#+END_SRC
 
 This is the Solarized color theme that is common to VIM.  I change the mode-line to have a different color and also change a couple faces for code block in org-mode so that they stand out more.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package solarized-theme
   :ensure t
   :config
@@ -214,32 +214,32 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
       ;; Removed from org-mode.  I hope they add it back.
       ;;(set-face-attribute 'org-block-background nil
         ;;                  :background "#073642"))))
-#+end_src
+#+END_SRC
 
 Set the default font.  I flip-flop between Consolas and Inconsolata.  Both are nice fonts.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (if (windows-p)
     ;; (set-face-attribute 'default nil :font "Consolas-12")
     (set-face-attribute 'default nil :font "Inconsolata-12")
   (set-face-attribute 'default nil :font "Inconsolata-12"))
-#+end_src
+#+END_SRC
 
 Disable the file dialog.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq use-file-dialog nil)
-#+end_src
+#+END_SRC
 
 Use 'Y' and 'N' instead of yes and no for prompts.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (fset 'yes-or-no-p 'y-or-n-p)
-#+end_src
+#+END_SRC
 
 Stripe dired buffers and org-mode tables for easier reading.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package stripe-buffer
   :ensure t
   :defer t
@@ -249,7 +249,7 @@ Stripe dired buffers and org-mode tables for easier reading.
     (add-hook 'org-mode-hook 'turn-on-stripe-table-mode)
     (setq stripe-hl-line "#073642")
     (set-face-attribute stripe-highlight-face nil :background "#073642")))
-#+end_src
+#+END_SRC
 
 Indicate in the left fringe where the end of a buffer is.
 
@@ -270,7 +270,7 @@ Load environment variables that are particular to my work machine.
 
 Setup PATH and some other environment stuff.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (when (windows-p)
   (setq exec-path
         (append exec-path
@@ -279,7 +279,7 @@ Setup PATH and some other environment stuff.
                   "~/emacs/Gnutls/bin"
                   "~/emacs/Leiningen"
                   "~/Git/bin"))))
-#+end_src
+#+END_SRC
 
 Add some work related paths to PATH.  This should really be moved to my work file.
 
@@ -292,62 +292,62 @@ Add some work related paths to PATH.  This should really be moved to my work fil
 
 Set an environment variable for the GraphViz program.  Simply setting the path using ~ doesn't work correctly.  Again, this should be moved to the work file.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (when (at-work-p)
   (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
-#+end_src
+#+END_SRC
 
 Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.  Setting it prior to load does not work properly.  Also setting this path does not work unless the full path is provided.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (when (windows-p)
   (eval-after-load "gnutls" 
     '(progn 
        (setq gnutls-trustfiles '("h:/emacs/cacert.pem"))
        (setq gnutls-log-level 1))))
-#+end_src
+#+END_SRC
 
 Set values so that backup files are not littering my directories.  The BACKUP folder will be ignored by git.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq backup-directory-alist
       `((".*" . "~/.emacs.d/BACKUP")))
 (setq auto-save-file-name-transforms
       `((".*" , "~/.emacs.d/BACKUP" t)))
-#+end_src
+#+END_SRC
 
 Change garbage collection to only happen every 20 MB.  Originally found on https://github.com/CQQL/dotfiles/blob/master/src/.emacs.d/lisp/globals.el
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq gc-cons-threshold 100000000)
 (setq jit-lock-stealth-time 1
       ;; jit-lock-stealth-load 200
       jit-lock-chunk-size 1000
       jit-lock-defer-time 0.05)
-#+end_src
+#+END_SRC
 
 * Navigation
 ** Avy Jump
 
 Avy jump looks like it could be helpful.  The configuration needs to be updated to include keybindings.  I originaly also had key chord mixed in here but decided that it was not going to get any use.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package avy
   :ensure t
   :bind (("C-z" . avy-goto-char-timer)))
-#+end_src
+#+END_SRC
 
 * Searching
 
 Anzu is a visual regular expression/replace package.  It includes some nice highlighting ability while doing replaces or searches.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package anzu
   :ensure t
   :diminish anzu-mode
   :bind (("C-M-s" . anzu-query-replace)
          ("C-M-%" . anzu-query-replace-regexp)))
-#+end_src
+#+END_SRC
 
 * Misc. settings
 
@@ -359,21 +359,21 @@ Not sure if this is a good thing or a bad thing but I got tired of having to see
 
 Make apropos a little more helpful.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq apropos-do-all t)
-#+end_src
+#+END_SRC
 
 Show the current function name in the status line.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (which-function-mode 1)
-#+end_src
+#+END_SRC
 
 This removes the message that is displayed when killing a buffer in server mode.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (remove-hook 'kill-buffer-query-functions 'server-kill-buffer-query-function)
-#+end_src
+#+END_SRC
 
 The following disables the warning message that appears when a huge change is made to a buffer.  When working with SQL results sometimes the buffer gets large and I remove a large portion of the buffer contents.  Normally a warning message would show but I don't want it to.
 
@@ -383,30 +383,30 @@ The following disables the warning message that appears when a huge change is ma
 
 Enable subtle highlighting of matching parentheses.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (show-paren-mode 1)
 (setq show-paren-style 'parenthesis)
-#+end_src
+#+END_SRC
 
 I work with log files quite often and sometimes they are very large.  The setting below will allow files to be opened without warnings until they are over 100MB in size.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (set-default 'large-file-warning-threshold 1000000000)
-#+end_src
+#+END_SRC
 
 Automatically revert the buffer to the contents of the file on the disk if it has changed.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (global-auto-revert-mode t)
-#+end_src
+#+END_SRC
 
 This will quit all processes without prompting me to do so when closing Emacs.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (require 'cl)
 (defadvice save-buffers-kill-emacs (around no-query-kill-emacs activate)
            (cl-flet ((process-list ())) ad-do-it))
-#+end_src
+#+END_SRC
 
 Change the map of other window to something a little easier to hit.
 
@@ -418,7 +418,7 @@ Change the map of other window to something a little easier to hit.
 
 Enable editing functions that are disabled by default.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
@@ -427,79 +427,79 @@ Enable editing functions that are disabled by default.
 (put 'narrow-to-defun 'disabled nil) 
 
 (put 'erase-buffer 'disabled nil)
-#+end_src
+#+END_SRC
 
 I dislike the way that Emacs scrolls by default.  I also do not feel like brining in an extra package for scrolling so this is a compromise.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq scroll-margin 5)
 (setq scroll-preserve-screen-position 1)
-#+end_src
+#+END_SRC
 
 Like scrolling the default recenter command has a strange order that recenters happen.  This was a very nice pickup from Abo Abo.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq recenter-positions '(top middle bottom))
-#+end_src
+#+END_SRC
 
 With this option enabled a highlighted region will be overwritten if one is active and I start typing.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (delete-selection-mode t) 
-#+end_src
+#+END_SRC
 
 Enable transient mark mode so that highlighting regions activates special behaviors.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq transient-mark-mode t)
-#+end_src
+#+END_SRC
 
 Set this to enable the deletion of regions.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (delete-selection-mode 1)
-#+end_src
+#+END_SRC
 
 Disable the annoying blinking cursor.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (blink-cursor-mode 0) 
-#+end_src
+#+END_SRC
 
 This setting is used to truncate lines instead of wrapping them.  I like the idea of visual-line-mode but never got used to it.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (set-default 'truncate-lines t)
 ;;(global-visual-line-mode)
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
-#+end_src
+#+END_SRC
 
 Use four spaces in place of tab characters.  Things get weird when programs don't treat tabs the same.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq-default indent-tabs-mode nil)
 (setq tab-width 4)
-#+end_src
+#+END_SRC
 
 The following is an alternative to the typical M-SPC key binding that does different things based on how many times you use it.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (bind-key "M-SPC" 'cycle-spacing)
-#+end_src
+#+END_SRC
 
 I am starting to get used to idea of setting mark and moving back and forth.  This key binding was taken from Sacha Chua.  
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (bind-key "C-x p" 'pop-to-mark-command)
 (setq set-mark-command-repeat-pop t)
-#+end_src
+#+END_SRC
 
 Commands for dealing with rectangular regions.  Found on the emacs wiki.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (global-set-key (kbd "C-x r M-w") 'my-copy-rectangle)
 (global-set-key (kbd "C-x r C-y") 'yank-replace-rectangle)
-#+end_src
+#+END_SRC
 
 Open a numbered temp buffer using f12.
 
@@ -509,9 +509,9 @@ Open a numbered temp buffer using f12.
 
 I don't use tags so I have taken the M-. binding for find-funtion-at-point.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (global-set-key (kbd "M-.") 'find-function-at-point)
-#+end_src
+#+END_SRC
 
 Found this handy function here:  [[http://writequit.org/org/]]
 
@@ -541,7 +541,7 @@ Found this handy function here:  [[http://writequit.org/org/]]
 
 I program most of the time.  Moving to the beginning of the means moving to the first non-whitepace character instead of moving to the true beginning on the line.  This was taken from the Prelude configuration.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun prelude-move-beginning-of-line (arg)
   "Move point back to indentation of beginning of line.
 
@@ -566,7 +566,7 @@ point reaches the beginning or end of the buffer, stop there."
       (move-beginning-of-line 1))))
 
 (global-set-key [remap move-beginning-of-line] 'prelude-move-beginning-of-line)
-#+end_src
+#+END_SRC
 
 Small function to remove all ^M characters from a file.  Taken from http://www.archivum.info/comp.emacs/2007-06/00348/Re-Ignore-%5EM-in-mixed-%28LF-and-CR+LF%29-line-ended-textfiles.html
 
@@ -621,18 +621,18 @@ Helper to open a numbered temp buffer using a number and the f12 key.
 
 Enable the use of multiple cursors.  This is a fantastic package that gets a lot of use in my work.  People think you are a wizard when they see you editing multiple lines/places at once.  Similar to macros but easier to visualize.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package multiple-cursors
   :ensure t
   :bind (("C-S-s C-S-s" . mc/edit-lines)
          ("C->" . mc/mark-next-symbol-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-c *" . mc/mark-all-like-this)))
-#+end_src
+#+END_SRC
 
 Visual way to unto changes.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package undo-tree
   :ensure t
   :diminish undo-tree-mode
@@ -643,45 +643,45 @@ Visual way to unto changes.
     (global-undo-tree-mode)
     (setq undo-tree-visualizer-timestamps t)
     (setq undo-tree-visualizer-diff t)))
-#+end_src
+#+END_SRC
 
 A very helpful package for expanding the current region by semantic units.  
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package expand-region
   :ensure t
   :bind (("C-=" . er/expand-region)))
-#+end_src
+#+END_SRC
 
 Disable arrow keys and force yourself to use the Emacs bindings for navigation.  I put this one when I first stared to use Emacs and it has stuck.  I now get annoyed in other applications when they do not behave as I want.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package guru-mode
   :ensure t
   :init
   (guru-mode))
-#+end_src
+#+END_SRC
 
 This package makes commands work differently based on if a region is selected or not.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package whole-line-or-region
   :ensure t
   :diminish whole-line-or-region-mode
   :config
   (whole-line-or-region-mode))
-#+end_src
+#+END_SRC
 
 Text manipulation helpers.  Need to do some more research on this.  Cannot remember why I added this package.  Could be for the transpose command.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package move-text
   :ensure t)
-#+end_src
+#+END_SRC
 
 I like to know where column 80 is.  This used to be a big deal years ago and is not so much an issue now but I sill like to know where it is in the rare event that I need to print a listing.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package fill-column-indicator
   :ensure t
   :commands (fci-mode)
@@ -708,7 +708,7 @@ I like to know where column 80 is.  This used to be a big deal years ago and is 
 
     (setq fci-rule-column 80)
     (fci-mode)))
-#+end_src
+#+END_SRC
 
 
 
@@ -717,15 +717,15 @@ I like to know where column 80 is.  This used to be a big deal years ago and is 
 
 I am very poor at spelling.  The following will enable flyspell and use Hunspell as the background spelling process.  The dictionary and Hunspell are installed below my home directory on my Windows machines.
 
-#+begin_src emacs-lisp :tangle yes :exports code  
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code  
 (setq ispell-personal-dictionary "~/emacs/Config/en_US_personal")
 (setq ispell-silently-savep t)
 (setq ispell-quietly t)
-#+end_src
+#+END_SRC
 
 Flyspell will need a couple environment variables set to know what the default dictionary is and its path.  This may be done in Linux but is not done properly in Windows, so set it up here.
 
-#+begin_src emacs-lisp :tangle yes :exports code  
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code  
 (if (windows-p)
     (progn
       (setenv "DICTIONARY" "en_US")
@@ -733,11 +733,11 @@ Flyspell will need a couple environment variables set to know what the default d
   (progn
     (setenv "DICTIONARY" "en US")
     (setenv "DICTPATH" "/usr/share/hunspell")))
-#+end_src
+#+END_SRC
 
 Enable spelling for comments in programming modes too.
 
-#+begin_src emacs-lisp :tangle yes :exports code  
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code  
 (add-hook 'java-mode-hook
           #'(lambda ()
             (flyspell-prog-mode)))
@@ -745,28 +745,28 @@ Enable spelling for comments in programming modes too.
 (add-hook 'emacs-lisp-mode-hook
           #'(lambda ()
             (flyspell-prog-mode)))
-#+end_src
+#+END_SRC
 
 This was a suggestion from [[http://www.emacswiki.org/emacs/FlySpell]] as a way to speed up flyspell by not writing messages.
 
-#+begin_src emacs-lisp :tangle yes :exports code   
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code   
 (setq flyspell-issue-message-flag nil)
-#+end_src
+#+END_SRC
 
 ** Key bindings
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (global-set-key (kbd "<f1>") 'ry/flyspell-check-previous-highlighted-word)
 (global-set-key (kbd "<f2>") 'flyspell-correct-word-before-point)
 (global-set-key (kbd "<f3>") 'ry/flyspell-check-next-highlighted-word)
 (global-set-key (kbd "<f4>") 'ispell-buffer)
-#+end_src
+#+END_SRC
 
 ** Functions
 
 This function was taken from http://www.emacswiki.org/emacs/FlySpell.  It will enable the use of a popup for flyspell instead of it's normal mode of operation.  Company uses a popup so why not have a similar behavior for Flyspell.  This could be annoying if checking a whole buffer but I usually do not check a whole buffer at once.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (defun flyspell-emacs-popup-textual (event poss word)
   "A textual flyspell popup menu."
   (require 'popup)
@@ -796,29 +796,29 @@ This function was taken from http://www.emacswiki.org/emacs/FlySpell.  It will e
                 (lambda (arg) (if (consp arg) (car arg) arg))
                 base-menu)))
     (cadr (assoc (popup-menu* menu :scroll-bar t) base-menu))))
-#+end_src
+#+END_SRC
 
 Add a hook for the function defined above using popups for spell checking.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (eval-after-load "flyspell"
   '(progn
      (fset 'flyspell-emacs-popup 'flyspell-emacs-popup-textual)))
-#+end_src
+#+END_SRC
 
 Function to check the next highlighted word.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (defun ry/flyspell-check-next-highlighted-word ()
   "Custom function to spell check next highlighted word"
   (interactive)
   (flyspell-goto-next-error)
   (flyspell-correct-word-before-point))
-#+end_src
+#+END_SRC
 
 This is a slightly modified version of function with the same name from Flyspell.  It uses flyspell-correct-word-before-point instead of ispell-word so that the popup defined above will be used for corrections.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (defun ry/flyspell-check-previous-highlighted-word (&optional arg)
   "Correct the closer misspelled word.
 This function scans a mis-spelled word before the cursor. If it finds one
@@ -849,24 +849,24 @@ misspelled words backwards."
 	  (setq flyspell-word-cache-word nil) ;; Force flyspell-word re-check
 	  (flyspell-word))
       (error "No word to correct before point"))))
-#+end_src
+#+END_SRC
 
 * Buffers
 
 Enable god-mode prior to switching buffers.  This is done as I am trying to use god-mode as a poor-mans evil mode and constantly forget to switch back into god-mode.  It would probably be better to force myself to do the switching but I cannot get it.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/switch-buffer ()
   "Function to switch the current buffer to God-mode
  prior to switching buffers."
   (interactive)
   (god-local-mode 1)
   (helm-mini))
-#+end_src
+#+END_SRC
 
 Two handy little functions courtesy of Sacha Chua, http://pages.sachachua.com/.emacs.d/Sacha.html.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun sacha/vsplit-last-buffer (prefix)
   "Split the window vertically and display the previous buffer."
   (interactive "p")
@@ -881,11 +881,11 @@ Two handy little functions courtesy of Sacha Chua, http://pages.sachachua.com/.e
   (split-window-horizontally)
   (other-window 1 nil)
   (unless prefix (switch-to-next-buffer)))
-#+end_src
+#+END_SRC
 
 I don't use this function but am leaving it in case I do find a need for it.  Taken from http://emacsredux.com/blog/2013/03/30/kill-other-buffers/. 
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun kill-other-buffers ()
   "Kill all buffers but the current one.
 Don't mess with special buffers."
@@ -893,55 +893,55 @@ Don't mess with special buffers."
   (dolist (buffer (buffer-list))
     (unless (or (eql buffer (current-buffer)) (not (buffer-file-name buffer)))
       (kill-buffer buffer))))
-#+end_src
+#+END_SRC
 
 When I am working it is rare that I will kill a buffer other then the currently active one.  This function will kill the current buffer without prompting me.  It was found at http://www.masteringemacs.org/articles/2014/02/28/my-emacs-keybindings/
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun kill-this-buffer () 
   "Kill the current buffer without prompting."  
   (interactive) 
   (kill-buffer (current-buffer)))
-#+end_src
+#+END_SRC
 
 Bindings for custom splitting commands.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (global-set-key (kbd "C-x 2") 'sacha/vsplit-last-buffer)
 (global-set-key (kbd "C-x 3") 'sacha/hsplit-last-buffer)
-#+end_src
+#+END_SRC
 
 Key bindings for managing the size of windows.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (global-set-key (kbd "S-C-<left>") 'shrink-window-horizontally)
 (global-set-key (kbd "S-C-<right>") 'enlarge-window-horizontally)
 (global-set-key (kbd "S-C-<down>") 'shrink-window)
 (global-set-key (kbd "S-C-<up>") 'enlarge-window)
-#+end_src
+#+END_SRC
 
 I only kill the current buffer most of the time.  The binding below is used so that I do not need to select which buffer to kill.  If I need to kill a bunch of buffers or one that is not the current one I will use helm.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (global-set-key (kbd "C-x k") 'kill-this-buffer)
-#+end_src
+#+END_SRC
 
 * Browsing
 ** Configuration
 
 I mainly use Internet Explorer when on Windows machines so browse the current URL using it.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (setq browse-url-browser-function 'browse-url-generic
       browse-url-generic-program (if (windows-p)
                                      "C:/Program Files/Internet Explorer/iexplore.exe"))
-#+end_src
+#+END_SRC
 
 ** Key binding
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (global-set-key (kbd "C-c B") 'browse-url-at-point)
-#+end_src
+#+END_SRC
 
 * SQL
 
@@ -957,20 +957,20 @@ The code below is used to setup a few configurations based on if the client is W
 | +ec    | Print SQLCODE.                                           |
 | +m     | Print number of rows affected by statement.              |
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (if (windows-p)
     (progn  
       (setq sql-db2-program "C:/PROGRA~2/IBM/SQLLIB/BIN/db2cmd.exe")
       (setq sql-db2-options '("-c" "-i" "-w" "db2setcp.bat" "db2" "-tv" "-ec" "-m"))))
-#+end_src
+#+END_SRC
 
 This list will be used to hold the SQL buffers that have the DB2 process.  I have a tendency to leave DB connections alive when I leave for the day.  These settings will keep a list of connection buffers and will close any hanging buffers at 5:00 PM.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (setq db-buffers-list ())
 
 (run-at-time "17:00" 3600 'ry/sql-connection-cleanup)
-#+end_src
+#+END_SRC
 
 ** Key bindings
 
@@ -988,7 +988,7 @@ The key bindings for SQL related commands are below.  The reasoning for using C-
 
 Custom function for opening DB2 database connections.  This may not be the best way to achieve multiple database connections at once as the SQLi hook is not being invoked but I do not have enough knowledge of sql.el to find the solution.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/sql-open-database (database username password)
   "Open a SQLI process and name the SQL statement window with the name provided."
   (interactive (list
@@ -1016,7 +1016,7 @@ Custom function for opening DB2 database connections.  This may not be the best 
 
   ;; This will be used by disconnect and quit.
   (set (make-local-variable 'database-name) (upcase database)))
-#+end_src
+#+END_SRC
 
 Simple method to disconnect from the database currently connected to.  This assumes that the current connection matches the buffer local variable that holds the database name.
 
@@ -1039,7 +1039,7 @@ Simple method to disconnect from the database currently connected to.  This assu
       (sql-send-string "QUIT;"))))
 #+END_SRC
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/sql-reopen-database (username password)
   "Reconnect to the database that the current buffer was
 connected to using the ry/sql-open-database command.  This
@@ -1054,11 +1054,11 @@ function."
   (sql-send-string (concat "CONNECT TO " database-name " USER " username " USING " password ";"))
   
   (setq database-conn-p t))
-#+end_src
+#+END_SRC
 
 This function will be used as part of a run-at-time function.  It will look at the list of known DB2 buffers and close the related connection if it sees that the connection is still open.  There is a hole if the connection in established outside of the normal method used by me.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/sql-connection-cleanup ()
   (interactive)
   "This function will look for open database connections
@@ -1080,7 +1080,7 @@ only opened by ry/sql-open-database."
           (setq db-buffers-list (delete db-buffer db-buffers-list)))))))
 
 
-#+end_src
+#+END_SRC
 
 The method below was created because I have a tendency to forget to put a restriction on the number of rows returned by my queries.  It needs some serious TLC to get it working correctly.
 
@@ -1117,7 +1117,7 @@ to sending."
         (sql-send-string (buffer-substring-no-properties beg end)))))))
 #+END_SRC
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/sql-send-paragraph ()
   "Add FETCH FIRST clause to the SQL statement prior to sending"
   (interactive)
@@ -1139,11 +1139,11 @@ to sending."
             (sql-send-string (buffer-substring-no-properties start (point-max))))))
        (t
         (sql-send-string (buffer-substring-no-properties start end)))))))
-#+end_src
+#+END_SRC
 
 The function below is used quite often.  It is not the prettiest but it gets the job done.  It will wrap the current SQL statement in an EXPORT prior to sending.  This is helpful when I want to see a large XML document or I want to retrieve a row that exceeds the maximum number of characters that the DB2 CLP will return.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/sql-export-dwim (beg end)
   "Prefix the current paragraph or region if selected
 with an EXPORT command and send the paragraph to the
@@ -1191,7 +1191,7 @@ SQL process."
     (goto-char (line-end-position))
     (yank-rectangle)
     (god-local-mode 1)))
-#+end_src
+#+END_SRC
 
 * XML
 ** Key bindings
@@ -1210,7 +1210,7 @@ See the Hydra configuration for the key bindings for XML.
 
 I am a Java programmer so I created my own utility for formatting XML documents.  The listing is below.  Basically it accepts the XML document to be formatted and an optional argument to indicate if you want the compact formatting or pretty print.
 
-#+begin_src java :tangle no :exports code
+#+BEGIN_SRC java :tangle no :exports code
 package com.brookwood.util;
 
 import java.io.IOException;
@@ -1349,11 +1349,11 @@ public class XMLFormatter {
 	}
 	
 }
-#+end_src
+#+END_SRC
 
 Pretty-print the selected region, or buffer if no active region, using the Java utility defined above.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/xml-format (beg end)
   "Call an external Java program to pretty print the
 current region or the current buffer if no region is
@@ -1364,11 +1364,11 @@ active."
      (list (point-min) (point-max))))
   (save-excursion
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar --pretty" (current-buffer) t)))
-#+end_src
+#+END_SRC
 
 Compact the XML document in the active region, or buffer if no active region, using the Java utility defined above.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/xml-linearlize (beg end)
   "Call an external Java program to linearlize the current region.  
 Region needs to contain a valid XML document."
@@ -1378,13 +1378,13 @@ Region needs to contain a valid XML document."
      (list (point-min) (point-max))))  
   (save-excursion
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar " (current-buffer) t)))
-#+end_src
+#+END_SRC
 
 I work with a lot of XML documents.  Most of the time I can just look at the document and see what I need.  Occasionally it can be helpful to write an Xquery to explore the document.  The code below is a modified version of the functions provided on http://donnieknows.com/blog/hacking-xquery-emacs-berkeley-db-xml.  While the article uses Berkley DB XML I opted to use Saxon.  Saxon is easy to obtain and the installation is simply unzipping a file and placing a JAR where I want.  This works well on work machines.
 
 As with the other two XML related functions above this will work on a region or the whole document if no region is selected.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/xquery (beg end)
   "Perform Xquery using Saxon with the current region."
   (interactive
@@ -1416,11 +1416,11 @@ As with the other two XML related functions above this will work on a region or 
                 (concat "java -cp H:/emacs/Java/saxon9he.jar net.sf.saxon.Query -q:\"" file "\" !indent=yes\n")))
   (delete-file file)
   (concat "" result))
-#+end_src
+#+END_SRC
 
 This function is a modified version of the function found at http://www.emacswiki.org/emacs/NxmlMode#toc11.  In addition to displaying the current xpath in the echo area it will be copied to the clipboard.  This has proven to be useful many times when someone asks me for the xpaths for all tags in a document.  It can be added to a macro to generate the list automatically.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/xml-where ()
   "Display the hierarchy of XML elements the point is on as a path."
   (interactive)
@@ -1437,13 +1437,13 @@ This function is a modified version of the function found at http://www.emacswik
           (setq path (cons (xmltok-start-tag-local-name) path)))
         (kill-new (format "/%s" (mapconcat 'identity path "/")))
         (message "XPath copied: 「%s」" (mapconcat 'identity path "/"))))))
-#+end_src
+#+END_SRC
 
 ** NXML
 
 Use the fantastic NXML mode for XML editing.  Folding of a document based on the current tag is bound to ==C-c h== but as much as I like the idea of folding I don't end up using it very much.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package nxml-mode
   :commands nxml-mode
   :config
@@ -1471,7 +1471,7 @@ Use the fantastic NXML mode for XML editing.  Folding of a document based on the
 
       ;; optional key bindings, easier than hs defaults
       (define-key nxml-mode-map (kbd "C-c h") 'hs-toggle-hiding))))
-#+end_src
+#+END_SRC
 
 * Narrow and widen
 
@@ -1522,7 +1522,7 @@ already narrowed."
 
 This little function has proven to be very helpful.  It's not used often but when I need the current path it makes it easy to get it.  It was originally found in Xah Lee's site and modified slightly to get the full path and file named from a dired buffer.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/copy-file-path (&optional dir-path-only-p)
   "Copy the current buffer's file path or dired path to `kill-ring'.
 If `universal-argument' is called, copy only the dir path.  This is 
@@ -1538,13 +1538,13 @@ URL `http://ergoemacs.org/emacs/emacs_copy_file_path.html'"
          fPath
        (file-name-directory fPath)))
     (message "File path copied: 「%s」" fPath)))
-#+end_src
+#+END_SRC
 
 * Launching Windows programs
 
 The following functions were created as an easy way to launch a couple Windows programs.  I usually forget they are in here though.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/launch-windows-explorer ()
   "Open Windows explorer."
   (interactive)
@@ -1558,7 +1558,7 @@ The following functions were created as an easy way to launch a couple Windows p
   (if (windows-p)      
       (shell-command "C:/Progra~1/Intern~1/iexplore.exe https://www.bing.com")
     (error "This command can only be used on Windows.")))
-#+end_src
+#+END_SRC
 
 * Dates
 
@@ -1592,11 +1592,11 @@ Working with dates is a pain.  This group consists of a few helper functions.
 
 Kill buffers for dired mode and package menu mode instead of burying them.  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
 
-#+begin_src emacs-lisp :tangle yes :exports code
-(eval-after-load "dired"
-  (progn
-    '(bind-keys :map dired-mode-map
-                ("q" . kill-this-buffer))))
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package dired
+  :demand
+  :bind (:map dired-mode-map
+              ("q" . kill-this-buffer)))
 
 (bind-keys :map package-menu-mode-map
            ("q" . kill-this-buffer))
@@ -1611,7 +1611,7 @@ Make dired not display the . and .. for the current directory and parent directo
 
 I like to see line highlighting for every other row when looking at directory listings.  
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package dired+
   :ensure t
   :commands (dired)
@@ -1621,7 +1621,7 @@ I like to see line highlighting for every other row when looking at directory li
     (add-to-list 'load-path "~/.emacs.d/extra")
     (require 'dired-sort-menu)
     (setq dired-hide-details-mode nil)))
-#+end_src
+#+END_SRC
 
 * Eshell
 
@@ -1934,10 +1934,11 @@ Use Helm everywhere.  I like the UI for Helm and the way that it allows for narr
 
 The configuration is pretty basic with the exception being mapping the tab key to helm-execute-persistent-action.  This was done so that it behaves in a similar way as bash.  Also I like to force Helm to always split the current window vertically.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package helm
   :ensure t
   :diminish helm-mode
+  :demand
   :bind (("C-M-s" . helm-occur)
          ("C-x C-f" . helm-find-files)
          ("M-x" . helm-M-x)
@@ -1951,22 +1952,26 @@ The configuration is pretty basic with the exception being mapping the tab key t
          ("C-x C-b" . ry/switch-buffer)
          ("<f7>" . helm-bookmarks)
          ("<f8>" . bookmark-set))
+  :bind (:map helm-map
+              ("<tab>" . helm-execute-persistent-action)
+              ("C-i" . helm-execute-persistent-action)
+              ("C-z" . helm-select-action))
   :config
   (progn
     (use-package helm-config)
     (use-package helm-swoop
       :ensure t
+      :demand
+      :bind (("M-i" . helm-swoop)
+             ("M-I" . helm-swoop-back-to-last-point)
+             ("C-c M-i" . heml-multi-swoop)
+             ("C-x M-i" . heml-multi-swoop-all))
+      :bind (:map isearch-mode-map
+                  ("M-i" . helm-swoop-from-isearch))
+      :bind (:map helm-swoop-map
+                  ("M-i" . helm-multi-swoop-all-from-helm-swoop))
       :config
       (progn
-        (global-set-key (kbd "M-i") 'helm-swoop)
-        (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
-        (global-set-key (kbd "C-c M-i") 'helm-multi-swoop)
-        (global-set-key (kbd "C-x M-i") 'helm-multi-swoop-all)
-
-        ;;  When doing isearch, hand the word over to helm-swoop.
-        (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-        (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
-
         ;;  Split the current window.
         (setq helm-swoop-split-with-multiple-windows t)))
 
@@ -1974,10 +1979,6 @@ The configuration is pretty basic with the exception being mapping the tab key t
       :ensure t
       :config
       (helm-descbinds-mode))
-
-    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebihnd tab to do persistent action
-    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
-    (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
 
     (setq helm-quick-update                     t
           helm-split-window-in-side-p           t
@@ -2004,7 +2005,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
             (switch-to-buffer buf)))
 
     (helm-mode)))
-#+end_src
+#+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package abbrev
@@ -2013,7 +2014,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
 
 Save the recent file history.  This is used by Helm.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package recentf
   :ensure t
   :commands (helm-mini)
@@ -2023,7 +2024,7 @@ Save the recent file history.  This is used by Helm.
     (setq recentf-max-saved-items 25)
     (setq recentf-auto-cleanup 'never)
     (add-to-list 'recentf-exclude "COMMIT_EDITMSG\\'")))
-#+end_src
+#+END_SRC
 
 * God Mode
 
@@ -2033,68 +2034,63 @@ In addition to adding keybindings to help work with this mode I have added a hoo
 
 A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-mode/issues/77]].
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package god-mode
   :ensure t
-  :bind (("<escape>" . god-local-mode)
-         ("C-x C-1" . delete-other-windows)
-         ("C-x C-2" . sacha/vsplit-last-buffer)
-         ("C-x C-3" . sacha/hsplit-last-buffer)
-         ("C-x C-0" . delete-window)
-         ("C-x C-k" . kill-this-buffer)
-         ("C-x C-S-k" . kill-other-buffers)
-         ("C-x C-o" . other-window)
-         ("C-x C-n" . narrow-or-widen-dwim)
-         ("C-c C-r" . org-capture)
-         ("C-C C-a" . org-agenda)
-         ("C-x C-h" . mark-whole-buffer)
-         ("C-x C-d" . dired)
-         ("C-x C-g" . magit-status)
-         ("C-c C-g" . magit-status)
-         ("C-c C-t" . hydra-toggle/body)
-         ("C-c C-l" . hydra-launch/body)
-         ("C-c C-x C-f" . ry/xml-format)
-         ("C-c C-x C-l" . ry/xml-linearlize)
-         ("C-c C-x C-w" . ry/xml-where)
-         ("C-c C-d C-s" . ry/sql-send-dwim)
-         ("C-c C-d C-e" . ry/sql-export-dwim)
-         ("C-c C-d C-o" . ry/sql-open-database)
-         ("C-c C-d C-r" . ry/sql-reopen-database)
-         ("C-c C-d C-d" . ry/sql-disconnect)
-         ("C-c C-d C-q" . ry/sql-quit)
-         ("C-c C-e C-c" . eclim-problems-correct))
+  :bind (("<escape>" . god-local-mode))
+  :bind (:map god-local-mode-map
+              ("z" . repeat)
+              ("i" . god-local-mode)
+              ("v" . scroll-up-command)
+              ("r" . ry/replace-character-at-point)
+              ("DEL" . delete-backward-char)
+              ("I" . mortal-mode)
+              ("C-n" . next-line)
+              ("C-p" . previous-line)
+              ("C-f" . forward-char)
+              ("C-b" . backward-char)
+              ("C-a" . beginning-of-line)
+              ("C-e" . end-of-line)
+              ("C-c C-x C-f" . ry/xml-format)
+              ("C-c C-x C-l" . ry/xml-linearlize)
+              ("C-c C-x C-w" . ry/xml-where)
+              ("C-c C-d C-s" . ry/sql-send-dwim)
+              ("C-c C-d C-e" . ry/sql-export-dwim)
+              ("C-c C-d C-o" . ry/sql-open-database)
+              ("C-c C-d C-r" . ry/sql-reopen-database)
+              ("C-c C-d C-d" . ry/sql-disconnect)
+              ("C-c C-d C-q" . ry/sql-quit)
+              ("C-x C-g" . magit-status)
+              ("C-c C-g" . magit-status)
+              ("C-c C-e C-p" . eclim-problems)
+              ("C-c C-e C-c" . eclim-problems-correct)
+              ("C-c C-e C-f" . eclim-java-format)
+              ("C-c C-e C-o" . eclim-java-organize)
+              ("C-c C-e C-g" . eclim-java-generate-getter-and-setter)
+              ("C-c C-e C-r" . eclim-java-refactor-rename-symbol-at-point)
+              ("C-c C-e C-i" . eclim-java-implement)
+              ("C-c C-e C-." . eclim-java-find-declaration)
+              ("C-c C-e C-t" . eclim-java-find-type)
+              ("C-c C-e C-," . eclim-java-find-references)
+              ("C-x C-1" . delete-other-windows)
+              ("C-x C-2" . sacha/vsplit-last-buffer)
+              ("C-x C-3" . sacha/hsplit-last-buffer)
+              ("C-x C-0" . delete-window)
+              ("C-x C-k" . kill-this-buffer)
+              ("C-x C-S-k" . kill-other-buffers)
+              ("C-x C-o" . other-window)
+              ("C-x C-n" . narrow-or-widen-dwim)
+              ("C-c C-r" . org-capture)
+              ("C-C C-a" . org-agenda)
+              ("C-x C-h" . mark-whole-buffer)
+              ("C-x C-d" . dired))
   :init
   (progn
     (god-mode-all)
-    
-    (define-key god-local-mode-map (kbd "z") 'repeat)
-    (define-key god-local-mode-map (kbd "i") 'god-local-mode)
-    (define-key god-local-mode-map (kbd "v") 'scroll-up-command)
-    (define-key god-local-mode-map (kbd "r") 'ry/replace-character-at-point)
-    (define-key god-local-mode-map (kbd "DEL") 'delete-backward-char)
-    (define-key god-local-mode-map (kbd "I") 'mortal-mode)
-
-    ;;  Binds so that I can move in god mode.
-    (define-key god-local-mode-map (kbd "C-n") 'next-line)
-    (define-key god-local-mode-map (kbd "C-p") 'previous-line)
-    (define-key god-local-mode-map (kbd "C-f") 'forward-char)
-    (define-key god-local-mode-map (kbd "C-b") 'backward-char)
-    (define-key god-local-mode-map (kbd "C-a") 'beginning-of-line)
-    (define-key god-local-mode-map (kbd "C-e") 'end-of-line)
 
     ;;  Unbind the usual movement keys so that I am forced to use god mode.
     (dolist (key '("\C-n" "\C-p" "\C-b" "\C-f" "\C-a" "\C-e"))
       (global-unset-key key))
-    
-    ;;  Binds for eclim.
-    (define-key god-local-mode-map (kbd "C-c C-e C-p") 'eclim-problems)
-    (define-key god-local-mode-map (kbd "C-c C-e C-c") 'eclim-problems-correct)
-    (define-key god-local-mode-map (kbd "C-c C-e C-f") 'eclim-java-format)
-    (define-key god-local-mode-map (kbd "C-c C-e C-o") 'eclim-java-import-organize)
-    (define-key god-local-mode-map (kbd "C-c C-e C-g") 'eclim-java-generate-getter-and-setter)
-    (define-key god-local-mode-map (kbd "C-c C-e C-r") 'eclim-java-refactor-rename-symbol-at-point)
-    (define-key god-local-mode-map (kbd "C-c C-e C-i") 'eclim-java-implement)
-    (define-key god-local-mode-map (kbd "C-c C-e C-.") 'eclim-java-find-declaration)
     
     (setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
@@ -2106,14 +2102,17 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (add-to-list 'god-exempt-major-modes 'magit-status-mode)
     (add-to-list 'god-exempt-major-modes 'magit-mode)
 
-    (require 'god-mode-isearch)
-    (define-key isearch-mode-map (kbd "<escape>") 'god-mode-isearch-activate)
-    (define-key god-mode-isearch-map (kbd "<escape>") 'god-mode-isearch-disable)
+    (use-package god-mode-isearch
+      :demand
+      :bind (:map isearch-mode-map
+                  ("<escape>" . god-mode-isearch-activate))
+      :bind (:map god-mode-isearch-map
+                 ("<escape>" . god-mode-isearch-disable)))
 
-    ; This mortal mode is designed to allow temporary departures from god mode
-    ; The idea is that within god-mode, you can hit shift-i, type in a few characters
-    ; and then hit enter to return to god-mode. To avoid clobbering the previous bindings,
-    ; we wrap up this behavior in a minor-mode.
+    ;; This mortal mode is designed to allow temporary departures from god mode
+    ;; The idea is that within god-mode, you can hit shift-i, type in a few characters
+    ;; and then hit enter to return to god-mode. To avoid clobbering the previous bindings,
+    ;; we wrap up this behavior in a minor-mode.
     (define-minor-mode mortal-mode
       "Allow temporary departures from god-mode."
       :lighter " mortal"
@@ -2138,7 +2137,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
                       (t
                        (set-cursor-color "#839496")
                        (setq cursor-type 'bar)))))))
-#+end_src
+#+END_SRC
 
 
 * Org-Mode
@@ -2147,7 +2146,7 @@ What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My or
 
 Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure if I like this more or less than bigblow.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package org
   :ensure t ;org-plus-contrib
   :mode 
@@ -3549,7 +3548,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
             (while (org-up-heading-safe)
               (when (member (nth 2 (org-heading-components)) (list "NEXT"))
                 (org-todo "TODO")))))))))
-#+end_src
+#+END_SRC
 
 
 * Company Mode
@@ -3558,10 +3557,16 @@ Completion is done using Company mode.  I was originally using Auto Complete but
 
 The main modification is to use C-n and C-p to cycle through candidates and the faces for the popup.  The faces are done using the color package so that it fits in with my theme.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package company
   :ensure t
   :diminish company-mode
+  :demand
+  :bind (:map company-active-map
+              ("M-n" . nil)
+              ("M-p" . nil)
+              ("C-n" . company-select-next)
+              ("C-p" . company-select-previous))
   :config
   (progn
     (use-package company-quickhelp
@@ -3570,7 +3575,9 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
       (progn
         (company-quickhelp-mode 1)
         (setq company-quickhelp-delay 0.1)))
+
     (global-company-mode)
+
     (setq company-idle-delay nil)
     (setq company-show-numbers t)
     (setq company-selection-wrap-around t)
@@ -3602,12 +3609,6 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
 
     (setq company-backends (mapcar #'company-mode/backend-with-yas company-backends))
 
-    (with-eval-after-load 'company
-      (define-key company-active-map (kbd "M-n") nil)
-      (define-key company-active-map (kbd "M-p") nil)
-      (define-key company-active-map (kbd "C-n") #'company-select-next)
-      (define-key company-active-map (kbd "C-p") #'company-select-previous))
-
     (require 'color)
     (let ((bg (face-attribute 'default :background)))
       (set-face-attribute 'company-tooltip nil
@@ -3621,61 +3622,45 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
                           :inherit font-lock-function-name-face)
       (set-face-attribute 'company-tooltip-common nil
                           :inherit font-lock-constant-face))))
-#+end_src
+#+END_SRC
 
 
 * Smartparens
    
 This Smartparens configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org and http://pages.sachachua.com/.emacs.d/Sacha.html, https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el, and [[https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el]].  I am still trying to incorporate the package into my workflow.  It seems that it will be a very powerful addition to my work.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package smartparens-config
   :ensure smartparens
   :diminish smartparens-mode
-  :config
-  (progn
-    (require 'smartparens-config)
-
-    (bind-keys
-     :map smartparens-mode-map
+  :bind (:map smartparens-mode-map
      ("C-M-a" . sp-beginning-of-sexp)
      ("C-M-e" . sp-end-of-sexp)
-
      ("C-<down>" . sp-down-sexp)
      ("C-<up>"   . sp-up-sexp)
      ("M-<down>" . sp-backward-down-sexp)
      ("M-<up>"   . sp-backward-up-sexp)
-
      ("C-M-f" . sp-forward-sexp)
      ("C-M-b" . sp-backward-sexp)
-
      ("C-M-n" . sp-next-sexp)
      ("C-M-p" . sp-previous-sexp)
-
      ("C-S-f" . sp-forward-symbol)
      ("C-S-b" . sp-backward-symbol)
-
      ("C-<right>" . sp-forward-slurp-sexp)
      ("M-<right>" . sp-forward-barf-sexp)
      ("C-<left>"  . sp-backward-slurp-sexp)
      ("M-<left>"  . sp-backward-barf-sexp)
-
      ("C-M-t" . sp-transpose-sexp)
      ("C-M-k" . sp-kill-sexp)
      ("C-k"   . sp-kill-hybrid-sexp)
      ("M-k"   . sp-backward-kill-sexp)
      ("C-M-w" . sp-copy-sexp)
-
      ("C-M-d" . delete-sexp)
-
      ("M-<backspace>" . backward-kill-word)
      ("C-<backspace>" . sp-backward-kill-word)  ([remap sp-backward-kill-word] . backward-kill-word)
-
      ("M-[" . sp-backward-unwrap-sexp)
      ("M-]" . sp-unwrap-sexp)
-
      ("C-x C-t" . sp-transpose-hybrid-sexp)
-
      ("C-c ("  . wrap-with-parens)
      ("C-c ["  . wrap-with-brackets)
      ("C-c {"  . wrap-with-braces)
@@ -3683,6 +3668,9 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
      ("C-c \"" . wrap-with-double-quotes)
      ("C-c _"  . wrap-with-underscores)
      ("C-c `"  . wrap-with-back-quotes))
+  :config
+  (progn
+    (require 'smartparens-config)
 
     (smartparens-global-mode t)
 
@@ -3755,8 +3743,7 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
       (sp-local-pair "<!--" "-->")
       (sp-local-pair "<%--" "--%>"))))
 
-#+end_src
-
+#+END_SRC
 
 * Yasnippet
 
@@ -3812,7 +3799,7 @@ Add helm-c-yasnippet so that snippets for the major mode can be seen easily.
    
 The only reason I use git is to save this configuration, but I can see how this mode could be very useful.  Perhaps someday work will make the switch.  This configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package magit
   :ensure t
   :bind (("C-x g" . magit-status)
@@ -3840,11 +3827,11 @@ The only reason I use git is to save this configuration, but I can see how this 
                ("TAB" . magit-section-toggle)
                ("<C-tab>" . magit-section-cycle)
                ("q" . magit-quit-session))))
-#+end_src
+#+END_SRC
 
 Add Git diff information to the gutter so that I can easily track changes.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package git-gutter+
   :ensure t
   :commands git-gutter+-mode
@@ -3855,14 +3842,14 @@ Add Git diff information to the gutter so that I can easily track changes.
     (setq git-gutter+-added-sign "++")    ;; multiple character is OK
     (setq git-gutter+-deleted-sign "--")
     (set-face-background 'git-gutter+-modified "#073642")))
-#+end_src
+#+END_SRC
 
 * Programming
 ** Environment
    
 Used to create a workspace when working in eclim.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package workgroups2
   :ensure t
   :diminish workgroups-mode
@@ -3871,11 +3858,11 @@ Used to create a workspace when working in eclim.
     (setq wg-prefix-key (kbd "C-c w"))
     (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
     (workgroups-mode 1)))
-#+end_src
+#+END_SRC
 
 Make delimiters a little easier to match up without having to be on one of them.  Also a tip found [[http://timothypratley.blogspot.com/2015/07/seven-specialty-emacs-settings-with-big.html][here]] for making unmatched parentheses easier to see.  Also This uses some pastel colors that I found [[http://web.ics.purdue.edu/~dogbe/static/emacs_config_file.html][here]].
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package rainbow-delimiters
   :ensure t 
   :config
@@ -3904,11 +3891,11 @@ Make delimiters a little easier to match up without having to be on one of them.
     (set-face-attribute 'rainbow-delimiters-unmatched-face nil
                         :foreground 'unspecified
                         :inherit 'error)))
-#+end_src
+#+END_SRC
 
 Smartscan mode allows for finding the next/previous occurrence of the symbol under point.  
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package smartscan
   :ensure t
   :commands (smartscan-symbol-go-forward smartscan-symbol-go-backward)
@@ -3916,11 +3903,11 @@ Smartscan mode allows for finding the next/previous occurrence of the symbol und
          ("M-p" . smartscan-symbol-go-backward))
   :config
   (add-hook 'prog-mode-hook 'smartscan-mode))
-#+end_src
+#+END_SRC
 
 Enable Eldoc for Lisp modes.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package "eldoc"  
   :diminish eldoc-mode
   :init
@@ -3929,26 +3916,26 @@ Enable Eldoc for Lisp modes.
     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
     (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
     (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
-#+end_src
+#+END_SRC
 
 Commenting should be DWIM.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package comment-dwim-2
   :ensure t
   :config 
   (global-set-key (kbd "M-;") 'comment-dwim-2))
-#+end_src
+#+END_SRC
 
 On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it is really needed as the syntax highlighing is not working.  Maybe I will look in to it.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package flycheck
   :ensure t
   :config
   (progn
     (add-hook 'after-init-hook #'global-flycheck-mode)))
-#+end_src
+#+END_SRC
 
 Used for displaying errors in a popup.
 
@@ -3961,7 +3948,7 @@ Used for displaying errors in a popup.
 
 Not sure if this package will stay around either.  It is used for highlighting the sysmbol at point.  Highlights a lot if it is enabled in a buffer that has a lot of the same word.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package highlight-symbol
   :ensure t
   :disabled highlight-symbol-mode
@@ -3969,18 +3956,18 @@ Not sure if this package will stay around either.  It is used for highlighting t
   (progn
     (add-hook 'prog-mode-hook 'highlight-symbol-mode)
     (setf highlight-symbol-idle-delay 0)))
-#+end_src
+#+END_SRC
 
 This package is used to display the various members while working in eclim.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
     (use-package imenu-list
       :ensure t
       :config
       (progn
         (setq imenu-list-position 'right)
         (setq imenu-list-auto-resize nil)))
-#+end_src
+#+END_SRC
 
 Used to create a "workspace" for Java development.
 
@@ -4008,10 +3995,13 @@ I wonder if the issue for the problems is that I am running an old version of Ec
 
 The changes that were made to get it working are not pretty.  
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (when (at-work-p)
   (use-package eclim
     :ensure emacs-eclim
+    :bind (:map eclim-mode-map
+                ("M-/" . company-emacs-eclim)
+                ("M-." . eclim-java-find-declaration))
     :init
     (progn
       (setq-default eclim--problems-filter "e")
@@ -4022,7 +4012,9 @@ The changes that were made to get it working are not pretty.
       (setq help-at-pt-timer-delay 0.1)
       (help-at-pt-set-timer)
 
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
       ;;  Show positions in problems buffer.
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
       (setq eclim-problems-show-pos t)     
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -4030,46 +4022,44 @@ The changes that were made to get it working are not pretty.
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
       (company-emacs-eclim-setup)
 
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
       ;;  Ignore case when getting completion options.
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (setq company-emacs-eclim-ignore-case t)
 
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;;  Toggle debugging.
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; (eclim-toggle-print-debug-messages)
+      
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;;  Windows setup so that eclim knows where the bat file is.
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (custom-set-variables
        '(eclim-eclipse-dirs '("C:/IBM/SDP"))
        '(eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")
-       '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat"))
-
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;;  Toggle debugging.
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; (eclim-toggle-print-debug-messages)
-
-      ;; Clobber this keybinding for eclim use.
-      (define-key eclim-mode-map (kbd "M-/") 'company-emacs-eclim)
-      (define-key eclim-mode-map (kbd "M-.") 'eclim-java-find-declaration))))
-#+end_src
+       '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")))))
+#+END_SRC
 
 *** Lisp
 
 Lisp mode hooks for cask files for if/when I start looking in to cask.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package lisp-mode
   :mode ("Cask\\'" . emacs-lisp-mode)
   :config
   (progn
     (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
     (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)))
-#+end_src
+#+END_SRC
 
 
 *** Clojure
 
 I do not write Clojure code but I would like to learn when time permits.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package cider
   :ensure t
   :disabled t
@@ -4080,7 +4070,7 @@ I do not write Clojure code but I would like to learn when time permits.
     (setq nrepl-hide-special-buffers t)
     (setq cider-repl-tab-command #'indent-for-tab-command)
     (add-hook 'cider-repl-mode-hook #'subword-mode)))
-#+end_src
+#+END_SRC
 
 
 *** Haskell
@@ -4111,7 +4101,7 @@ I do not write Clojure code but I would like to learn when time permits.
 
 Enable web mode for various file extensions.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package web-mode
   :ensure t
   :mode 
@@ -4134,18 +4124,18 @@ Enable web mode for various file extensions.
                  (not (or (get-text-property (point) 'part-side)
                           (get-text-property (point) 'block-side))))
         t))))
-#+end_src
+#+END_SRC
 
 
 *** JSON Reformat
 
 Work requires me to work with JSON objects every blue moon.  Being able to pretty print them is a good thing.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package json-reformat
   :ensure t
   :commands (json-pretty-print json-pretty-print-buffer))
-#+end_src
+#+END_SRC
 
 
 * Misc. Packages
@@ -4153,7 +4143,7 @@ Work requires me to work with JSON objects every blue moon.  Being able to prett
 
 Being able to use Emacs while packages are updated is a fantastic thing.  Paradox makes this happen.  The async package should be brought in automatically but for some reason it is here anyway.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package async
   :ensure t)
 
@@ -4164,16 +4154,16 @@ Being able to use Emacs while packages are updated is a fantastic thing.  Parado
   (progn
     (setq paradox-execute-asynchronously t)
     (setq paradox-github-token t)))
-#+end_src
+#+END_SRC
 
 ** Diminish
    
 Diminish reduces the clutter from the mode-line.  Just as with the async package, it really should be brought in as a dependency of another (use-package).
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package diminish
   :ensure t)
-#+end_src
+#+END_SRC
 
 ** Htmlize
 
@@ -4188,7 +4178,7 @@ Pretty print of exported documents.
 
 Use the golden ratio to size windows when multiples are open.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package golden-ratio
   :ensure t
   :diminish golden-ratio-mode
@@ -4199,7 +4189,7 @@ Use the golden ratio to size windows when multiples are open.
           '("dired-mode"
             "ediff-mode"
             "eshell-mode"))))
-#+end_src
+#+END_SRC
 
 ** Hydra
 
@@ -4207,7 +4197,7 @@ Hyrda is a very cool package.  Prior to hydra I was using custom maps for a coup
 
 Whitespace mode was marked as required so that the mode toggle hydra would work correctly.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package hydra
   :ensure t
   :commands (hydra-toggle/body hydra-launch/body hydra-xml/body)
@@ -4302,13 +4292,13 @@ _2_ Punch out           _4_ Clock out
     (global-set-key (kbd "C-c m") 'cqql-multiple-cursors-hydra/body)))
     ;;(global-set-key (kbd "<f9>") 'hydra-clock/body)
 
-#+end_src
+#+END_SRC
 
 ** Eww Lnum
 
 Add numbers to links in web pages when using Eww the same way that Surf or other minimal web browsers do.  I don't use eww very often but it is helpful when I do.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package eww-lnum
   :ensure t
   :commands eww
@@ -4316,63 +4306,63 @@ Add numbers to links in web pages when using Eww the same way that Surf or other
   (eval-after-load "eww"
     '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
             (define-key eww-mode-map "F" 'eww-lnum-universal))))
-#+end_src
+#+END_SRC
 
 ** Stackexchange
 
 Everyone uses Stackexchange.  Why not interact with it through Emacs.
 
-#+begin_src emacs-lisp :tangle yes :exports code 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (use-package sx
   :ensure t
   :commands (sx-tab-feature sx-tab-frontpage sx-tab-hot sx-tab-newest sx-tab))
-#+end_src
+#+END_SRC
 
 ** Re-builder
 
 Visual regular expression building.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package re-builder
   :ensure t
   :commands (re-builder)
   :config
   (setq reb-re-syntax 'string))
-#+end_src
+#+END_SRC
 
 ** Popwin
 
 Fix annoying buffer popups.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package popwin
   :ensure t
   :config
   (popwin-mode))
-#+end_src
+#+END_SRC
 
 ** Discover My Major
 
 Helps to discover keybindings for the current mode.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package discover-my-major
   :ensure t
   :commands discover-my-major)
-#+end_src
+#+END_SRC
 
 ** Log4j
 
 I previously had this in my configuration to make looking at log files easier.  I cannot remember why it was removed.  It's being added back to determine if it is helpful or not.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package log4j-mode
   :mode 
   (("\\.log\\(\\.[0-9]+\\)?\\(\\.txt\\)?\\'" . log4j-mode))
   :ensure t
   :config
   (add-hook 'log4j-mode-hook #'(lambda () (visual-line-mode))))
-#+end_src
+#+END_SRC
 
 ** Unkillable scratch
    
@@ -4399,10 +4389,10 @@ I previously had this in my configuration to make looking at log files easier.  
 
 Why not have SICP in emacs for easy reading?
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package sicp
   :ensure t)
-#+end_src 
+#+END_SRC 
 
 * Disabled packages
 ** Hl-line+
@@ -4462,18 +4452,18 @@ I'm currently running Solarized dark but my move to this in the future.
 
 This is a placeholder for the Jabber configuration.  I need to determine what values to use for the work server.
    
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package jabber
   :ensure t
   :disabled t)
-#+end_src 
+#+END_SRC 
 
 
 ** Langtool
 
 When writing documentation it is helpful to know if you are using the English language correctly.  Langtool will analyze the buffer and find grammatical errors.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
   (use-package langtool
     :ensure t
     :disabled t
@@ -4484,7 +4474,7 @@ When writing documentation it is helpful to know if you are using the English la
                                     "EN_UNPAIRED_BRACKETS"
                                     "COMMA_PARENTHESIS_WHITESPACE"
                                     "EN_QUOTES")))
-#+end_src
+#+END_SRC
 
 I am playing with the idea of keeping a languagetool HTTP server running in the background.
 
@@ -4507,7 +4497,7 @@ I am playing with the idea of keeping a languagetool HTTP server running in the 
 
 Speedbar.  It seems like such a nice thing to have and yet I rarely ever use it.  When in Eclipse I use it all the time but the need is not really there when using Emacs.  May be I will enable it again at some point in time.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package sr-speedbar
   :ensure t
   :commands (sr-speedbar-toggle)
@@ -4517,28 +4507,28 @@ Speedbar.  It seems like such a nice thing to have and yet I rarely ever use it.
     (setq sr-speedbar-skip-other-window-p nil)
     (setq speedbar-use-images nil)
     (setq sr-speedbar-right-side t)))
-#+end_src
+#+END_SRC
 
 
 ** Fold This
 
 A folding package based on the active region.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package fold-this
   :ensure t
   :disabled t
   :bind (("C-c C-f" . fold-this-all)
          ("C-c C-F" . fold-this)
          ("C-c M-f" . fold-this-unfold-all)))
-#+end_src
+#+END_SRC
 
 
 ** Mediawiki
 
 For editing the MediaWiki at work.  An old version of Mediawiki is being used which is incompatible so this is only being used for the little code coloring that it provides.  As such the keybinding for C-x C-s that is provided by the mode is overwritten by the default action.             
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package mediawiki
   :ensure t
   :disabled t
@@ -4546,14 +4536,14 @@ For editing the MediaWiki at work.  An old version of Mediawiki is being used wh
   :config
   (eval-after-load 'mediawiki
     (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer)))
-#+end_src
+#+END_SRC
 
 
 ** Lineum Relative
 
 I don't typically have need to show line numbers but when I do it is helpful to see the relative line numbers instead of only the absolute.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package linum-relative
   :ensure t
   :disabled t
@@ -4562,7 +4552,7 @@ I don't typically have need to show line numbers but when I do it is helpful to 
   (progn
     (setq linum-format 'linum-relative)
     (setq linum-relative-current-symbol "")))
-#+end_src
+#+END_SRC
 
 
 
@@ -4570,13 +4560,13 @@ I don't typically have need to show line numbers but when I do it is helpful to 
 
 Call the change--inner and then the starting character to modify the inside portion of the group.  Not sure if this will get use.  One of those things that could save a lot of time but there is a need to change a deep habit.
 
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package change-inner
   :ensure t
   :disabled t
   :bind (("M-i" . change-inner)
          ("M-o" . change-outer)))
-#+end_src
+#+END_SRC
 
 
 * Disable debugging
@@ -4697,8 +4687,8 @@ Startup is done so stop debugging.
 
 * Provide
   
-#+begin_src emacs-lisp :tangle yes :exports code
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (provide 'emacs-config)
 ;;; emacs-config.el ends here
-#+end_src
+#+END_SRC
 
