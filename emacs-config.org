@@ -658,7 +658,7 @@ Disable arrow keys and force yourself to use the Emacs bindings for navigation. 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package guru-mode
   :ensure t
-  :init
+  :config
   (guru-mode))
 #+END_SRC
 
@@ -709,8 +709,6 @@ I like to know where column 80 is.  This used to be a big deal years ago and is 
     (setq fci-rule-column 80)
     (fci-mode)))
 #+END_SRC
-
-
 
 * Spelling
 ** Configuration
@@ -969,7 +967,7 @@ This list will be used to hold the SQL buffers that have the DB2 process.  I hav
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (setq db-buffers-list ())
 
-(run-at-time "17:00" 3600 'ry/sql-connection-cleanup)
+(run-at-time "1 hour" nil 'ry/sql-connection-cleanup)
 #+END_SRC
 
 ** Key bindings
@@ -1598,8 +1596,9 @@ Kill buffers for dired mode and package menu mode instead of burying them.  Take
   :bind (:map dired-mode-map
               ("q" . kill-this-buffer)))
 
-(bind-keys :map package-menu-mode-map
-           ("q" . kill-this-buffer))
+(use-package package
+  :bind (:map package-menu-mode-map
+              ("q" . kill-this-buffer)))
 #+END_SRC
 
 Make dired not display the . and .. for the current directory and parent directory.
@@ -3759,13 +3758,6 @@ Plain old yasnippet configuration.  The second part is to enable selection based
 
     ;;; use popup menu for yas-choose-value
     (require 'popup)
-
-    ;; add some shotcuts in popup menu mode
-    ;; (define-key popup-menu-keymap (kbd "M-n") 'popup-next)
-    ;; (define-key popup-menu-keymap (kbd "TAB") 'popup-next)
-    ;; (define-key popup-menu-keymap (kbd "<tab>") 'popup-next)
-    ;; (define-key popup-menu-keymap (kbd "<backtab>") 'popup-previous)
-    ;; (define-key popup-menu-keymap (kbd "M-p") 'popup-previous)
 
     (defun yas-popup-isearch-prompt (prompt choices &optional display-fn)
       (when (featurep 'popup)
