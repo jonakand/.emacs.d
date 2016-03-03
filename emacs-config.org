@@ -284,17 +284,17 @@ Setup PATH and some other environment stuff.
 Add some work related paths to PATH.  This should really be moved to my work file.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(when (at-work-p)
-  (setq exec-path
-        (append exec-path
-                '("C:/IBM/SDP/jdk/bin"))))
+;; (when (at-work-p)
+;;   (setq exec-path
+;;         (append exec-path
+;;                 '("C:/IBM/SDP/jdk/bin"))))
 #+END_SRC
 
 Set an environment variable for the GraphViz program.  Simply setting the path using ~ doesn't work correctly.  Again, this should be moved to the work file.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(when (at-work-p)
-  (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
+;; (when (at-work-p)
+;;   (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
 #+END_SRC
 
 Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.  Setting it prior to load does not work properly.  Also setting this path does not work unless the full path is provided.
@@ -617,6 +617,14 @@ Helper to open a numbered temp buffer using a number and the f12 key.
   (switch-to-buffer
    (format "*TEMP%d*" num))
   (god-local-mode 1))
+#+END_SRC
+
+I'm not fond of the usual =zap-to-char= behavior, so use =zap-up-to-char= instead.  It is not autoloaded.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package misc
+  :bind (("M-z" . zap-up-to-char)
+         ("M-Z" . zap-to-char)))
 #+END_SRC
 
 Enable the use of multiple cursors.  This is a fantastic package that gets a lot of use in my work.  People think you are a wizard when they see you editing multiple lines/places at once.  Similar to macros but easier to visualize.
@@ -967,7 +975,7 @@ This list will be used to hold the SQL buffers that have the DB2 process.  I hav
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (setq db-buffers-list ())
 
-(run-at-time "1 hour" nil 'ry/sql-connection-cleanup)
+(run-at-time "5 minutes" nil 'ry/sql-connection-cleanup)
 #+END_SRC
 
 ** Key bindings
@@ -1062,6 +1070,7 @@ This function will be used as part of a run-at-time function.  It will look at t
   "This function will look for open database connections
 and disconnect them.  It is assumed that a connection is
 only opened by ry/sql-open-database."
+  (message "Starting disconnect function: %s" (current-time-string))
   (let ((tmp-list db-buffers-list))
     (dolist (db-buffer tmp-list)
       (if (buffer-live-p db-buffer)
@@ -1076,8 +1085,6 @@ only opened by ry/sql-open-database."
         (progn
           (message "Buffer no longer exists, removing %s." db-buffer)
           (setq db-buffers-list (delete db-buffer db-buffers-list)))))))
-
-
 #+END_SRC
 
 The method below was created because I have a tendency to forget to put a restriction on the number of rows returned by my queries.  It needs some serious TLC to get it working correctly.
@@ -2064,7 +2071,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
               ("C-c C-e C-p" . eclim-problems)
               ("C-c C-e C-c" . eclim-problems-correct)
               ("C-c C-e C-f" . eclim-java-format)
-              ("C-c C-e C-o" . eclim-java-organize)
+              ("C-c C-e C-o" . eclim-java-import-organize)
               ("C-c C-e C-g" . eclim-java-generate-getter-and-setter)
               ("C-c C-e C-r" . eclim-java-refactor-rename-symbol-at-point)
               ("C-c C-e C-i" . eclim-java-implement)
@@ -2137,7 +2144,6 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
                        (set-cursor-color "#839496")
                        (setq cursor-type 'bar)))))))
 #+END_SRC
-
 
 * Org-Mode
 
@@ -3844,6 +3850,7 @@ Used to create a workspace when working in eclim.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package workgroups2
   :ensure t
+  :disabled t
   :diminish workgroups-mode
   :config
   (progn
