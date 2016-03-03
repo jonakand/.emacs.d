@@ -281,22 +281,6 @@ Setup PATH and some other environment stuff.
                   "~/Git/bin"))))
 #+END_SRC
 
-Add some work related paths to PATH.  This should really be moved to my work file.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-;; (when (at-work-p)
-;;   (setq exec-path
-;;         (append exec-path
-;;                 '("C:/IBM/SDP/jdk/bin"))))
-#+END_SRC
-
-Set an environment variable for the GraphViz program.  Simply setting the path using ~ doesn't work correctly.  Again, this should be moved to the work file.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-;; (when (at-work-p)
-;;   (setenv "GRAPHVIZ_DOT" "h:/emacs/Graphviz/bin/dot.exe"))
-#+END_SRC
-
 Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.  Setting it prior to load does not work properly.  Also setting this path does not work unless the full path is provided.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
