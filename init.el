@@ -15,7 +15,8 @@
 (unless (and (package-installed-p 'use-package)
              (package-installed-p 's))
   (package-refresh-contents)
-  (package-install 'use-package))
+  (package-install 'use-package)
+  (package-install 's))
 
 (eval-when-compile
   (require 'use-package))
