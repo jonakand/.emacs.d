@@ -1583,35 +1583,28 @@ Working with dates is a pain.  This group consists of a few helper functions.
 Kill buffers for dired mode and package menu mode instead of burying them.  Taken from : https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package dired
-  :demand
-  :bind (:map dired-mode-map
-              ("q" . kill-this-buffer)))
-
 (use-package package
   :bind (:map package-menu-mode-map
               ("q" . kill-this-buffer)))
 #+END_SRC
 
-Make dired not display the . and .. for the current directory and parent directory.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq-default dired-omit-mode t)
-(setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
-#+END_SRC
-
-I like to see line highlighting for every other row when looking at directory listings.  
+Some basic dired configuration.  Make dired stop creating buffers for each directory.  Make =q= kill the buffer instead of burying it.  List directories first.  Lastly omit the =.= and =..= lines from the listing.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package dired+
   :ensure t
-  :commands (dired)
+  :bind (:map dired-mode-map
+              ("q" . kill-this-buffer))
+  ;; :commands (dired)
+  :demand
   :config
   (progn   
     (diredp-toggle-find-file-reuse-dir 1)
     (add-to-list 'load-path "~/.emacs.d/extra")
-    (require 'dired-sort-menu)
-    (setq dired-hide-details-mode nil)))
+    (setq ls-lisp-dirs-first t)
+    (setq-default dired-omit-mode t)
+    (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
+    (add-hook 'dired-mode-hook #'hl-line-mode)))
 #+END_SRC
 
 * Eshell
@@ -2092,6 +2085,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (add-to-list 'god-exempt-major-modes 'magit-popup-help-mode)
     (add-to-list 'god-exempt-major-modes 'magit-status-mode)
     (add-to-list 'god-exempt-major-modes 'magit-mode)
+    (add-to-list 'god-exempt-major-modes 'special-mode)
 
     (use-package god-mode-isearch
       :demand
@@ -3611,9 +3605,35 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
       (set-face-attribute 'company-tooltip-selection nil
                           :inherit font-lock-function-name-face)
       (set-face-attribute 'company-tooltip-common nil
-                          :inherit font-lock-constant-face))))
-#+END_SRC
+                          :inherit font-lock-constant-face))
 
+    ;;  Use TAB to perform completion using yasnippet and company.
+    ;;  https://www.emacswiki.org/emacs/CompanyMode#toc10
+    (defun check-expansion ()
+      (save-excursion
+        (if (looking-at "\\_>") t
+          (backward-char 1)
+          (if (looking-at "\\.") t
+            (backward-char 1)
+            (if (looking-at "->") t nil)))))
+
+    (defun do-yas-expand ()
+      (let ((yas-fallback-behavior 'return-nil))
+        ;; (yas-expand) 
+        (company-yasnippet)))
+
+    (defun tab-indent-or-complete ()
+      (interactive)
+      (if (minibufferp)
+          (minibuffer-complete)
+        (if (or (not yas-minor-mode)
+                (null (do-yas-expand)))
+            (if (check-expansion)
+                (company-complete-common)
+              (indent-for-tab-command)))))
+
+    (global-set-key [tab] 'tab-indent-or-complete)))
+#+END_SRC
 
 * Smartparens
    
@@ -4025,6 +4045,19 @@ The changes that were made to get it working are not pretty.
        '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")))))
 #+END_SRC
 
+Enable subword mode for Java.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(add-hook 'java-mode-hook
+          #'(lambda ()
+              (subword-mode 1)
+              (local-set-key (kbd "RET") 'c-indent-new-comment-line)
+              (setq c-comment-prefix-regexp "//+\\|/?\\**")
+            
+              (let ((c-buffer-is-cc-mode t))
+                (c-setup-paragraph-variables))))
+
+#+END_SRC
 *** Lisp
 
 Lisp mode hooks for cask files for if/when I start looking in to cask.
@@ -4345,7 +4378,10 @@ I previously had this in my configuration to make looking at log files easier.  
   (("\\.log\\(\\.[0-9]+\\)?\\(\\.txt\\)?\\'" . log4j-mode))
   :ensure t
   :config
-  (add-hook 'log4j-mode-hook #'(lambda () (visual-line-mode))))
+  (add-hook 'log4j-mode-hook #'(lambda () 
+                                 (visual-line-mode 1)
+                                 (hl-line-mode 1)
+                                 (view-mode 1))))
 #+END_SRC
 
 ** Unkillable scratch
@@ -4564,110 +4600,99 @@ Startup is done so stop debugging.
 
 * Temp
 
-  This may or may not be needed for working with company mode and yasnippet.  Auto complete with company has been turned off.
-
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-;; (defun check-expansion ()
-;;   (save-excursion
-;;     (if (looking-at "\\_>") t
-;;       (backward-char 1)
-;;       (if (looking-at "\\.") t
-;;         (backward-char 1)
-;;         (if (looking-at "->") t nil)))))
+;; via http://emacs.stackexchange.com/questions/17327/how-to-have-c-offset-style-correctly-detect-a-java-constructor-and-change-indent
+(defun my/point-in-defun-declaration-p ()
+  (let ((bod (save-excursion (c-beginning-of-defun)
+                             (point))))
+    (<= bod
+        (point)
+        (save-excursion (goto-char bod)
+                        (re-search-forward "{")
+                        (point)))))
 
-;; (defun do-yas-expand ()
-;;   (let ((yas-fallback-behavior 'return-nil))
-;;     ;; (yas-expand) 
-;;     (company-yasnippet)))
-
-;; (defun tab-indent-or-complete ()
-;;   (interactive)
-;;   (if (minibufferp)
-;;       (minibuffer-complete)
-;;     (if (or (not yas-minor-mode)
-;;             (null (do-yas-expand)))
-;;         (if (check-expansion)
-;;             (company-complete-common)
-;;           (indent-for-tab-command)))))
-
-;; (global-set-key [tab] 'tab-indent-or-complete)
-#+END_SRC
-
-  And a second less complete option.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(defun check-expansion ()
+(defun my/is-string-concatenation-p ()
+  "Returns true if the previous line is a string concatenation"
   (save-excursion
-    (if (looking-at "\\_>") t
-      (backward-char 1)
-      (if (looking-at "\\.") t
-    (backward-char 1)
-    (if (looking-at "->") t nil)))))
+    (let ((start (point)))
+      (forward-line -1)
+      (if (re-search-forward " \\\+$" start t) t nil))))
 
-(defun do-yas-expand ()
-  (let ((yas/fallback-behavior 'return-nil))
-    (yas/expand)))
+(defun my/inside-java-lambda-p ()
+  "Returns true if point is the first statement inside of a lambda"
+  (save-excursion
+    (c-beginning-of-statement-1)
+    (let ((start (point)))
+      (forward-line -1)
+      (if (search-forward " -> {" start t) t nil))))
 
-(defun tab-indent-or-complete ()
-  (interactive)
-  (cond
-   ((minibufferp)
-    (minibuffer-complete))
-   (t
-    (indent-for-tab-command)
-    (if (or (not yas/minor-mode)
-        (null (do-yas-expand)))
-    (if (check-expansion)
-        (progn
-          (company-manual-begin)
-          (if (null company-candidates)
-          (progn
-            (company-abort)
-            (indent-for-tab-command)))))))))
+(defun my/trailing-paren-p ()
+  "Returns true if point is a training paren and semicolon"
+  (save-excursion
+    (end-of-line)
+    (let ((endpoint (point)))
+      (beginning-of-line)
+      (if (re-search-forward "[ ]*);$" endpoint t) t nil))))
 
-(defun tab-complete-or-next-field ()
-  (interactive)
-  (if (or (not yas/minor-mode)
-      (null (do-yas-expand)))
-      (if company-candidates
-      (company-complete-selection)
-    (if (check-expansion)
-      (progn
-        (company-manual-begin)
-        (if (null company-candidates)
-        (progn
-          (company-abort)
-          (yas-next-field))))
-      (yas-next-field)))))
+(defun my/prev-line-call-with-no-args-p ()
+  "Return true if the previous line is a function call with no arguments"
+  (save-excursion
+    (let ((start (point)))
+      (forward-line -1)
+      (if (re-search-forward ".($" start t) t nil))))
 
-(defun expand-snippet-or-complete-selection ()
-  (interactive)
-  (if (or (not yas/minor-mode)
-      (null (do-yas-expand))
-      (company-abort))
-      (company-complete-selection)))
+(defun my/arglist-cont-nonempty-indentation (arg)
+  (if (my/inside-java-lambda-p)
+      '+
+    (if (my/is-string-concatenation-p)
+        16 ;; TODO don't hard-code
+      (unless (my/point-in-defun-declaration-p) '++))))
 
-(defun abort-company-or-yas ()
-  (interactive)
-  (if (null company-candidates)
-      (yas-abort-snippet)
-    (company-abort)))
+(defun my/statement-block-intro (arg)
+  (if (and (c-at-statement-start-p) (my/inside-java-lambda-p)) 0 '+))
 
-(global-set-key [tab] 'tab-indent-or-complete)
-(global-set-key (kbd "TAB") 'tab-indent-or-complete)
-(global-set-key [(control return)] 'company-complete-common)
+(defun my/block-close (arg)
+  (if (my/inside-java-lambda-p) '- 0))
 
-(define-key company-active-map [tab] 'expand-snippet-or-complete-selection)
-(define-key company-active-map (kbd "TAB") 'expand-snippet-or-complete-selection)
+(defun my/arglist-close (arg) (if (my/trailing-paren-p) 0 '--))
 
-(define-key yas-minor-mode-map [tab] nil)
-(define-key yas-minor-mode-map (kbd "TAB") nil)
+(defun my/arglist-intro (arg)
+  (if (my/prev-line-call-with-no-args-p) '++ 0))
 
-(define-key yas-keymap [tab] 'tab-complete-or-next-field)
-(define-key yas-keymap (kbd "TAB") 'tab-complete-or-next-field)
-(define-key yas-keymap [(control tab)] 'yas-next-field)
-(define-key yas-keymap (kbd "C-g") 'abort-company-or-yas)
-#+END_SRC
+(defconst intellij-java-style
+  '((c-basic-offset . 4)
+    (c-comment-only-line-offset . (0 . 0))
+    ;; the following preserves Javadoc starter lines
+    (c-offsets-alist
+     .
+     ((inline-open . 0)
+      (topmost-intro-cont    . +)
+      (statement-block-intro . my/statement-block-intro)
+      (block-close           . my/block-close)
+      (knr-argdecl-intro     . +)
+      (substatement-open     . +)
+      (substatement-label    . +)
+      (case-label            . +)
+      (label                 . +)
+      (statement-case-open   . +)
+      (statement-cont        . +)
+      (arglist-intro         . my/arglist-intro)
+      (arglist-cont-nonempty . (my/arglist-cont-nonempty-indentation c-lineup-arglist))
+      (arglist-close         . my/arglist-close)
+      (inexpr-class          . 0)
+      (access-label          . 0)
+      (inher-intro           . ++)
+      (inher-cont            . ++)
+      (brace-list-intro      . +)
+      (func-decl-cont        . ++))))
+  "Elasticsearch's Intellij Java Programming Style")
+
+(c-add-style "intellij" intellij-java-style)
+(customize-set-variable 'c-default-style
+                        '((java-mode . "intellij")
+                          (awk-mode . "awk")
+                          (other . "gnu")))
+  #+END_SRC
 
 * Provide
   
