@@ -4016,6 +4016,9 @@ The changes that were made to get it working are not pretty.
       (setq help-at-pt-timer-delay 0.1)
       (help-at-pt-set-timer)
 
+      (set-face-attribute 'eclim-problems-highlight-error-face nil
+                          :underline '(:style wave :color "#E10080"))
+
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
       ;;  Show positions in problems buffer.
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
@@ -4058,6 +4061,7 @@ Enable subword mode for Java.
                 (c-setup-paragraph-variables))))
 
 #+END_SRC
+
 *** Lisp
 
 Lisp mode hooks for cask files for if/when I start looking in to cask.
