@@ -141,12 +141,12 @@ The mode-line is configured using the code below.  I like to have a simplified m
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defface ry/current-task-face
-  '((t (:background "gold")))
+  '((t (:foreground "gold")))
   "Face for current task in mode-line."
   :group 'faces)
 
 (defface ry/current-time-face
-  '((t (:background "firebrick")))
+  '((t (:foreground "gold")))
   "Face for current task time in mode-line."
   :group 'faces)
 
@@ -199,11 +199,11 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
                         :overline nil
                         :underline nil
                         :box nil
-                        :foreground "#657b83"
+                        :foreground "#657b83"                        
                         :background "#073642")
 
     ;;  Remove the lines between buffers.
-    (set-face-attribute 'vertical-border nil :foreground (face-attribute 'fringe :background))
+    ;;  (set-face-attribute 'vertical-border nil :foreground (face-attribute 'fringe :background))   
 
     (with-eval-after-load 'org
       (set-face-attribute 'org-block-begin-line nil
@@ -2108,6 +2108,24 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
       (when mortal-mode
         (god-local-mode-pause)))
 
+    ;;  Change the color of the modeline based on god-local-mode being enabled 
+    ;;  or not.
+    ;; (add-hook 'post-command-hook
+    ;;           (lambda ()
+    ;;          (if god-local-mode
+    ;;              (progn
+    ;;                (set-face-attribute 'mode-line nil
+    ;;                                    :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
+    ;;                                    :inverse-video nil
+    ;;                                    :box '(:line-width 1 :color "#b22222" :style nil))
+    ;;                (setq cursor-type 'box))
+    ;;            (progn
+    ;;              (set-face-attribute 'mode-line nil
+    ;;                                  :foreground "#ffffff" :background "#006400"
+    ;;                                  :inverse-video nil
+    ;;                                  :box '(:line-width 1 :color "#006400" :style nil))
+    ;;              (setq cursor-type 'bar)))))))
+    
     ;;  Change the color of the cursor to RED if god-mode is enabled.  If the file is
     ;;  read-only than change the cursor to a purple box and disallow changing from
     ;;  god-mode.
@@ -2118,10 +2136,18 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
                        (setq cursor-type 'box))
                       ((bound-and-true-p god-local-mode)
                        (set-cursor-color "#b22222")
-                       (setq cursor-type 'box))
+                       (setq cursor-type 'box)
+                       (set-face-attribute 'mode-line nil
+                                           :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
+                                           :inverse-video nil
+                                           :box '(:line-width 1 :color "#b22222" :style nil)))
                       (t
                        (set-cursor-color "#839496")
-                       (setq cursor-type 'bar)))))))
+                       (setq cursor-type 'bar)
+                       (set-face-attribute 'mode-line nil
+                                           :foreground "#ffffff" :background "#006400"
+                                           :inverse-video nil
+                                           :box '(:line-width 1 :color "#006400" :style nil))))))))
 #+END_SRC
 
 * Org-Mode
@@ -2280,11 +2306,11 @@ only change being the usage of UTF-8 characters as arrows."
       (cond ((= level 1) " ■ ")
             ((and (= level 2) (eq nil next-level)) " └──► ")
             ((eq nil next-level) (concat (make-string (1- level) 32) "└" "► "))        
-            ((> level next-level) (concat  " │" (make-string (1- level) 32) "└─► "))
-            ((and (= level 2) (< level next-level)) (concat  " ├──┬► "))
+            ((> level next-level) (concat  " │ " (make-string (1- level) 32) "└─► "))
+            ((and (= level 2) (< level next-level)) (concat  " ├─┬► "))
             ((and (not(= level 2))(< level next-level)) (concat  " │" (make-string (1- level) 32) "└┬► "))
             ((< level next-level) (concat  " │" (make-string (1- level) 32) "┬► "))
-            (t (eq nil next-level) (concat " │" (make-string (1- level) 32) "├─► "))))
+            (t (eq nil next-level) (concat " │ " (make-string (1- level) 32) "├─► "))))
 
     (defun ry/org-clocktable-write (ipos tables params)
       "Write out a clock table at position IPOS in the current buffer.
@@ -3969,7 +3995,7 @@ This package is used to display the various members while working in eclim.
       :ensure t
       :config
       (progn
-        (setq imenu-list-position 'right)
+        (setq imenu-list-position 'left)
         (setq imenu-list-auto-resize nil)))
 #+END_SRC
 
