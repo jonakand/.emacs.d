@@ -334,6 +334,23 @@ Anzu is a visual regular expression/replace package.  It includes some nice high
          ("C-M-%" . anzu-query-replace-regexp)))
 #+END_SRC
 
+Change the behavior of i-search.
+xd
+http://endlessparentheses.com/leave-the-cursor-at-start-of-match-after-isearch.html?source=rss
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(add-hook 'isearch-mode-end-hook
+          #'endless/goto-match-beginning)
+(defun endless/goto-match-beginning ()
+  "Go to the start of current isearch match.
+Use in `isearch-mode-end-hook'."
+  (when (and isearch-forward
+             (number-or-marker-p isearch-other-end)
+             (not mark-active)
+             (not isearch-mode-end-hook-quit))
+    (goto-char isearch-other-end)))
+#+END_SRC
+
 * Misc. settings
 
 Not sure if this is a good thing or a bad thing but I got tired of having to see the messages from the advise system telling me that a couple definitions got changed.
