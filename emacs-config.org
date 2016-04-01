@@ -1624,6 +1624,12 @@ Some basic dired configuration.  Make dired stop creating buffers for each direc
     (add-hook 'dired-mode-hook #'hl-line-mode)))
 #+END_SRC
 
+Make dired show human readable file sizes.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq dired-listing-switches "-alh")
+#+END_SRC
+
 * Eshell
 
 I use eshell to have a decent shell when on Windows machines at work.  Not much work is done in it, so most of the settings come from: https://www.masteringemacs.org/article/complete-guide-mastering-eshell.
