@@ -2008,6 +2008,9 @@ The configuration is pretty basic with the exception being mapping the tab key t
           helm-ff-file-name-history-use-recentf t
           helm-skip-boring-buffers              t
           helm-skip-boring-files                t
+          helm-buffer-max-length                30
+          helm-autoresize-max-height            25
+          helm-autoresize-min-height            25
           helm-boring-buffer-regexp-list '("\\` " "\\*helm" "\\*helm-mode" "\\*Echo Area" "\\*Minibuf" "\\*Calendar" "\\*magit-diff" "\\*magit-process")
           helm-mini-default-sources '(helm-source-buffers-list
                                       helm-source-recentf
@@ -3708,7 +3711,7 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
 (use-package smartparens-config
   :ensure smartparens
   :diminish smartparens-mode
-  :bind (:map smartparens-mode-map
+  :bind (
      ("C-M-a" . sp-beginning-of-sexp)
      ("C-M-e" . sp-end-of-sexp)
      ("C-<down>" . sp-down-sexp)
@@ -3746,12 +3749,12 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
   :config
   (progn
     (require 'smartparens-config)
+    
+    ;; (smartparens-global-mode t)
 
-    (smartparens-global-mode t)
+    ;; (add-hook 'minibuffer-setup-hook 'turn-on-smartparens-strict-mode)
 
-    (add-hook 'minibuffer-setup-hook 'turn-on-smartparens-strict-mode)
-
-    (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)    
+    ;; (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)    
 
     ;;  org-mode config.
     (sp-with-modes 'org-mode
@@ -4274,7 +4277,14 @@ Use the golden ratio to size windows when multiples are open.
     (setq golden-ratio-exclude-modes
           '("dired-mode"
             "ediff-mode"
-            "eshell-mode"))))
+            "eshell-mode"
+            "messages-buffer-mode"
+            "fundamental-mode"
+            "imenu-list-major-mode"))
+    (defun my/helm-alive-p ()
+      (if (boundp 'helm-alive-p)
+          (symbol-value 'helm-alive-p)))
+    (add-to-list 'golden-ratio-inhibit-functions #'my/helm-alive-p)))
 #+END_SRC
 
 ** Hydra
