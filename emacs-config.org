@@ -4459,8 +4459,7 @@ I previously had this in my configuration to make looking at log files easier.  
   :config
   (add-hook 'log4j-mode-hook #'(lambda () 
                                  (visual-line-mode 1)
-                                 (hl-line-mode 1)
-                                 (view-mode 1))))
+                                 (hl-line-mode 1))))
 #+END_SRC
 
 ** Unkillable scratch
