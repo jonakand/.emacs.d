@@ -4773,6 +4773,9 @@ Startup is done so stop debugging.
                           (other . "gnu")))
   #+END_SRC
 
+* Investigate
+** ejc-sql
+   Package for connecting to databases using clojure and JDBC.  
 * Provide
   
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
