@@ -989,7 +989,8 @@ The key bindings for SQL related commands are below.  The reasoning for using C-
 | C-c C-d C-d | ry/sql-disconnect      |
 | C-c C-d C-e | ry/sql-export-dwim     |
 | C-c C-d C-o | ry/sql-open-database   |
-| C-c C-d C-r | ry/sql-reopen-database |
+| C-c C-d C-O | ry/sql-reopen-database |
+| C-c C-d C-r | sql-send-region        |
 | C-c C-d C-s | ry/sql-send-dwim       |
 
 ** Functions
@@ -1149,6 +1150,11 @@ to sending."
 #+END_SRC
 
 The function below is used quite often.  It is not the prettiest but it gets the job done.  It will wrap the current SQL statement in an EXPORT prior to sending.  This is helpful when I want to see a large XML document or I want to retrieve a row that exceeds the maximum number of characters that the DB2 CLP will return.
+
+** TODO Fix waiting for export
+   Fix the way that the export function waits for the SQL process to finish prior to switching to the export buffer.  Currently emacs will copy the data from the export file and paste it into the export buffer before the SQL process adds data to the file.  This results in having to close the export buffer and then visiting the file containing the exported data.
+
+Based on searches it looks like a process filter will need to be created.  The filter should see if the output has the word export and then act accordingly or if it doesn't contain export insert the value into the process buffer.  The emacs manual has a [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Filter-Functions.html#Filter-Functions][page]] that describes what should be done if the filter is to act like the default filter.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/sql-export-dwim (beg end)
@@ -1444,6 +1450,13 @@ This function is a modified version of the function found at http://www.emacswik
           (setq path (cons (xmltok-start-tag-local-name) path)))
         (kill-new (format "/%s" (mapconcat 'identity path "/")))
         (message "XPath copied: 「%s」" (mapconcat 'identity path "/"))))))
+#+END_SRC
+
+Macro for unescaping double quotes in an XML document.  This should be temporary until I have time to write a function as this is hard to read.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(fset 'ry/xml-escape-quotes
+   (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ([134217765 92 34 return 34 return 33 1] 0 "%d")) arg)))
 #+END_SRC
 
 ** NXML
@@ -2064,7 +2077,8 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
               ("C-c C-d C-s" . ry/sql-send-dwim)
               ("C-c C-d C-e" . ry/sql-export-dwim)
               ("C-c C-d C-o" . ry/sql-open-database)
-              ("C-c C-d C-r" . ry/sql-reopen-database)
+              ("C-c C-d C-O" . ry/sql-reopen-database)
+              ("C-c C-d C-r" . sql-send-region)
               ("C-c C-d C-d" . ry/sql-disconnect)
               ("C-c C-d C-q" . ry/sql-quit)
               ("C-x C-g" . magit-status)
