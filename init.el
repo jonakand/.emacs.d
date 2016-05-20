@@ -27,7 +27,9 @@
 
 (setq use-package-verbose t)   
 
-(add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
+(if (s-contains? "RAD" (system-name))
+    (add-hook 'after-init-hook #'(lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
+  (add-hook 'after-init-hook #'(lambda () (load-file "~/.emacs.d/minimal-config.el"))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;  Tangle and byte compile the source ORG document if it is newer than the
