@@ -1618,6 +1618,13 @@ Kill buffers for dired mode and package menu mode instead of burying them.  Take
               ("q" . kill-this-buffer)))
 #+END_SRC
 
+Some additional features loaded by dired+ if running on a Windows machine.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package w32-browser
+  :ensure t)
+#+END_SRC
+
 Some basic dired configuration.  Make dired stop creating buffers for each directory.  Make =q= kill the buffer instead of burying it.  List directories first.  Lastly omit the =.= and =..= lines from the listing.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
