@@ -1827,7 +1827,7 @@ When I expire a message I want it to immediately move to the Trash/Deleted folde
 Use caching to the max.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq gnus-use-cache t)
+(setq gnus-use-cache t)
 #+END_SRC
 
 Use tree view for groups.
@@ -1985,27 +1985,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
               ("C-z" . helm-select-action))
   :config
   (progn
-    (use-package helm-config)
-    (use-package helm-swoop
-      :ensure t
-      :demand
-      :bind (("M-i" . helm-swoop)
-             ("M-I" . helm-swoop-back-to-last-point)
-             ("C-c M-i" . heml-multi-swoop)
-             ("C-x M-i" . heml-multi-swoop-all))
-      :bind (:map isearch-mode-map
-                  ("M-i" . helm-swoop-from-isearch))
-      :bind (:map helm-swoop-map
-                  ("M-i" . helm-multi-swoop-all-from-helm-swoop))
-      :config
-      (progn
-        ;;  Split the current window.
-        (setq helm-swoop-split-with-multiple-windows t)))
-
-    (use-package helm-descbinds
-      :ensure t
-      :config
-      (helm-descbinds-mode))
+    (use-package helm-config)   
 
     (setq helm-quick-update                     t
           helm-split-window-in-side-p           t
@@ -2035,6 +2015,33 @@ The configuration is pretty basic with the exception being mapping the tab key t
             (switch-to-buffer buf)))
 
     (helm-mode)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package helm-swoop
+      :ensure t
+      :demand
+      :after helm
+      :bind (("M-i" . helm-swoop)
+             ("M-I" . helm-swoop-back-to-last-point)
+             ("C-c M-i" . heml-multi-swoop)
+             ("C-x M-i" . heml-multi-swoop-all))
+      :bind (:map isearch-mode-map
+                  ("M-i" . helm-swoop-from-isearch))
+      :bind (:map helm-swoop-map
+                  ("M-i" . helm-multi-swoop-all-from-helm-swoop))
+      :config
+      (progn
+        ;;  Split the current window.
+        (setq helm-swoop-split-with-multiple-windows t)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package helm-descbinds
+  :ensure t
+  :after helm
+  :config
+  (helm-descbinds-mode))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -2073,8 +2080,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
               ("i" . god-local-mode)
               ("v" . scroll-up-command)
               ("r" . ry/replace-character-at-point)
-              ("DEL" . delete-backward-char)
-              ("I" . mortal-mode)
+              ("DEL" . delete-backward-char)              
               ("C-n" . next-line)
               ("C-p" . previous-line)
               ("C-f" . forward-char)
@@ -2134,45 +2140,6 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (add-to-list 'god-exempt-major-modes 'magit-mode)
     (add-to-list 'god-exempt-major-modes 'special-mode)
 
-    (use-package god-mode-isearch
-      :demand
-      :bind (:map isearch-mode-map
-                  ("<escape>" . god-mode-isearch-activate))
-      :bind (:map god-mode-isearch-map
-                 ("<escape>" . god-mode-isearch-disable)))
-
-    ;; This mortal mode is designed to allow temporary departures from god mode
-    ;; The idea is that within god-mode, you can hit shift-i, type in a few characters
-    ;; and then hit enter to return to god-mode. To avoid clobbering the previous bindings,
-    ;; we wrap up this behavior in a minor-mode.
-    (define-minor-mode mortal-mode
-      "Allow temporary departures from god-mode."
-      :lighter " mortal"
-      :keymap '(([return] . #'(lambda ()
-                              "Exit mortal-mode and resume god mode." (interactive)
-                              (god-local-mode-resume)
-                              (mortal-mode 0))))
-      (when mortal-mode
-        (god-local-mode-pause)))
-
-    ;;  Change the color of the modeline based on god-local-mode being enabled 
-    ;;  or not.
-    ;; (add-hook 'post-command-hook
-    ;;           (lambda ()
-    ;;          (if god-local-mode
-    ;;              (progn
-    ;;                (set-face-attribute 'mode-line nil
-    ;;                                    :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
-    ;;                                    :inverse-video nil
-    ;;                                    :box '(:line-width 1 :color "#b22222" :style nil))
-    ;;                (setq cursor-type 'box))
-    ;;            (progn
-    ;;              (set-face-attribute 'mode-line nil
-    ;;                                  :foreground "#ffffff" :background "#006400"
-    ;;                                  :inverse-video nil
-    ;;                                  :box '(:line-width 1 :color "#006400" :style nil))
-    ;;              (setq cursor-type 'bar)))))))
-    
     ;;  Change the color of the cursor to RED if god-mode is enabled.  If the file is
     ;;  read-only than change the cursor to a purple box and disallow changing from
     ;;  god-mode.
@@ -2197,6 +2164,16 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
                                            :box '(:line-width 1 :color "#006400" :style nil))))))))
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package god-mode-isearch
+  :demand
+  :after god-mode
+  :bind (:map isearch-mode-map
+              ("<escape>" . god-mode-isearch-activate))
+  :bind (:map god-mode-isearch-map
+             ("<escape>" . god-mode-isearch-disable)))
+#+END_SRC
+
 * Org-Mode
 
 What is there to say.  Doesn't everyone who uses Emacs also use org-mode?  My org-mode configuration is contained in another file but will eventually be merged into this one and documented.  Org-plus-contib was added to the config and then had to be removed.  It caused issues with continuous clocking, locating headlines by their ID property would not work when it was enabled.  This is only an issue when trying to send HTML emails using org-mime.
@@ -2208,6 +2185,21 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
   :ensure t ;org-plus-contrib
   :mode 
   (("\\.org\\'" . org-mode))
+  :bind* (("C-M-r" . org-capture)
+          ("C-c r" . org-capture)
+          ("C-c a" . org-agenda)
+          ("<f10>" . org-capture)
+          ("<f9> <f9>" . bh/show-org-agenda)
+          ("<f9> r" . org-capture)
+          ("<f9> i" . org-clock-in)
+          ("<f9> o" . org-clock-out)
+          ("<f9> I" . bh/punch-in)
+          ("<f9> O" . bh/punch-out)
+          ("<f9> g" . org-clock-goto)
+          ("<f9> n" . ry/org-start-note))
+  :bind (:map org-agenda-mode-map
+              ("x" . nil)
+              ("q" . nil))
   :config
   (progn    
     (use-package org-bullets
@@ -2236,32 +2228,32 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ;;  Setup key bindings.
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    (global-set-key (kbd "C-M-r") 'org-capture)
-    (global-set-key (kbd "C-c r") 'org-capture)
-    (global-set-key (kbd "C-c a") 'org-agenda)
-    (global-set-key (kbd "<f10>") 'org-capture)
-    (global-set-key (kbd "<f9> <f9>") 'bh/show-org-agenda)
-    (global-set-key (kbd "<f9> r") 'org-capture)
-    (global-set-key (kbd "<f9> i") 'org-clock-in)
-    (global-set-key (kbd "<f9> o") 'org-clock-out)
-    (global-set-key (kbd "<f9> I") 'bh/punch-in)
-    (global-set-key (kbd "<f9> O") 'bh/punch-out)
-    (global-set-key (kbd "<f9> g") 'org-clock-goto)
-    (global-set-key (kbd "<f9> n") 'ry/org-start-note)
-    (global-set-key (kbd "C-c C-x C-b") 'ry/clock-in-email)
-    (global-set-key (kbd "C-c C-x C-t") 'ry/clock-in-lats)
+    ;; (global-set-key (kbd "C-M-r") 'org-capture)
+    ;; (global-set-key (kbd "C-c r") 'org-capture)
+    ;; (global-set-key (kbd "C-c a") 'org-agenda)
+    ;; (global-set-key (kbd "<f10>") 'org-capture)
+    ;; (global-set-key (kbd "<f9> <f9>") 'bh/show-org-agenda)
+    ;; (global-set-key (kbd "<f9> r") 'org-capture)
+    ;; (global-set-key (kbd "<f9> i") 'org-clock-in)
+    ;; (global-set-key (kbd "<f9> o") 'org-clock-out)
+    ;; (global-set-key (kbd "<f9> I") 'bh/punch-in)
+    ;; (global-set-key (kbd "<f9> O") 'bh/punch-out)
+    ;; (global-set-key (kbd "<f9> g") 'org-clock-goto)
+    ;; (global-set-key (kbd "<f9> n") 'ry/org-start-note)
+    ;; (global-set-key (kbd "C-c C-x C-b") 'ry/clock-in-email)
+    ;; (global-set-key (kbd "C-c C-x C-t") 'ry/clock-in-lats)
 
-    (eval-after-load "org-agenda"
-      '(progn
-         (define-key org-agenda-mode-map "x" nil) 
-         (define-key org-agenda-mode-map "q" 'bury-buffer)
+    ;; (eval-after-load "org-agenda"
+    ;;   '(progn
+    ;;      (define-key org-agenda-mode-map "x" nil) 
+    ;;      (define-key org-agenda-mode-map "q" 'bury-buffer)
 
-         ;; Undefine C-c [ and C-c ] since this breaks my
-         ;; org-agenda files when directories are include It
-         ;; expands the files in the directories individually
-         (define-key org-mode-map "\C-c[" 'undefined)
-         (define-key org-mode-map "\C-c]" 'undefined)
-         (define-key org-mode-map "\C-c;" 'undefined)))
+    ;;      ;; Undefine C-c [ and C-c ] since this breaks my
+    ;;      ;; org-agenda files when directories are include It
+    ;;      ;; expands the files in the directories individually
+    ;;      (define-key org-mode-map "\C-c[" 'undefined)
+    ;;      (define-key org-mode-map "\C-c]" 'undefined)
+    ;;      (define-key org-mode-map "\C-c;" 'undefined)))
 
     (setq org-use-speed-commands t)
     (setq org-speed-commands-user (quote (("0" . ignore)
@@ -3628,26 +3620,19 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
               ("C-p" . company-select-previous))
   :config
   (progn
-    (use-package company-quickhelp
-      :ensure t
-      :config
-      (progn
-        (company-quickhelp-mode 1)
-        (setq company-quickhelp-delay 0.1)))
-
     (global-company-mode)
 
-    (setq company-idle-delay nil)
-    (setq company-show-numbers t)
-    (setq company-selection-wrap-around t)
-    (setq company-tooltip-limit 10)
-    (setq company-tooltip-flip-when-above t)
-    (setq company-dabbrev-downcase nil)
-    (setq company-dabbrev-ignore-invisible t)
-    (setq company-dabbrev-ignore-buffers "\\`[ ]'")
-    (setq company-dabbrev-code-ignore-case t)
-    (setq company-dabbrev-code-other-buffers 'all)
-    (setq company-dabbrev-other-buffers 'all)
+    (setq company-idle-delay                 nil
+          company-show-numbers               t
+          company-selection-wrap-around      t
+          company-tooltip-limit              10
+          company-tooltip-flip-when-above    t
+          company-dabbrev-downcase           nil
+          company-dabbrev-ignore-invisible   t
+          company-dabbrev-ignore-buffers     "\\`[ ]'"
+          company-dabbrev-code-ignore-case   t
+          company-dabbrev-code-other-buffers 'all
+          company-dabbrev-other-buffers      'all)
 
     ;;  Only load the work related company backend if I am at work.
     (when (at-work-p)
@@ -3710,6 +3695,18 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
     (global-set-key [tab] 'tab-indent-or-complete)))
 #+END_SRC
 
+Company quickhelp is handy so load it after company mode.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package company-quickhelp
+  :ensure t
+  :after company
+  :config
+  (progn
+    (company-quickhelp-mode 1)
+    (setq company-quickhelp-delay 0.1)))
+#+END_SRC
+
 * Smartparens
    
 This Smartparens configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org and http://pages.sachachua.com/.emacs.d/Sacha.html, https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el, and [[https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el]].  I am still trying to incorporate the package into my workflow.  It seems that it will be a very powerful addition to my work.
@@ -3757,12 +3754,6 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
   (progn
     (require 'smartparens-config)
     
-    ;; (smartparens-global-mode t)
-
-    ;; (add-hook 'minibuffer-setup-hook 'turn-on-smartparens-strict-mode)
-
-    ;; (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)    
-
     ;;  org-mode config.
     (sp-with-modes 'org-mode
       (sp-local-pair "*" "*" :actions '(insert wrap) :unless '(sp-point-after-word-p sp-point-at-bol-p) :wrap "C-*" :skip-match 'sp--org-skip-asterisk)
@@ -3806,28 +3797,18 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
     (sp-with-modes 'java-mode
       (sp-local-pair "{" nil :post-handlers '(("||\n[i]" "RET")))
       (sp-local-pair "/*" "*/" :post-handlers '((" | " "SPC")
-                                                           ("* ||\n[i]" "RET"))))
+                                                ("* ||\n[i]" "RET"))))
 
     ;;  nxml-mode config.
     (sp-with-modes 'nxml-mode     
       (sp-local-pair "<!--" "-->")
-      (sp-local-pair "<" ">")
-      (sp-local-pair "/" nil :post-handlers '((ry/is-closing-tag))))
-
-
-    (defun ry/is-closing-tag (id action context)
-      ""
-      (message "At char: %s" (point))
-      (if (sp--looking-back-p "</")
-          (progn
-            (message "Need to cleanup...")
-            (delete-backward-char 1))))
+      (sp-local-pair "<" ">"))
     
     ;;  web-mode config.
     (sp-with-modes 'web-mode
       (sp-local-pair "<!--" "-->")
-      (sp-local-pair "<%--" "--%>"))))
-
+      (sp-local-pair "<%--" "--%>"))
+    ))
 #+END_SRC
 
 * Yasnippet
@@ -4178,11 +4159,6 @@ I do not write Clojure code but I would like to learn when time permits.
   (require 'haskell-interactive-mode)
   (require 'haskell-process)
 
-  (use-package flycheck-haskell
-    :ensure t
-    :init
-    (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup))
-
   (add-hook 'haskell-mode-hook 'haskell-indent-mode)
   (add-hook 'haskell-mode-hook 'haskell-interactive-mode)
   
@@ -4192,6 +4168,12 @@ I do not write Clojure code but I would like to learn when time permits.
    '(haskell-process-log t)))
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package flycheck-haskell
+    :ensure t
+    :init
+    (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup))
+#+END_SRC
 
 *** Web
 
@@ -4222,7 +4204,6 @@ Enable web mode for various file extensions.
         t))))
 #+END_SRC
 
-
 *** JSON Reformat
 
 Work requires me to work with JSON objects every blue moon.  Being able to pretty print them is a good thing.
@@ -4232,7 +4213,6 @@ Work requires me to work with JSON objects every blue moon.  Being able to prett
   :ensure t
   :commands (json-pretty-print json-pretty-print-buffer))
 #+END_SRC
-
 
 * Misc. Packages
 ** Paradox
@@ -4516,18 +4496,16 @@ Why not have SICP in emacs for easy reading?
 ** Spaceline
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package spaceline-config
-  :ensure spaceline
-  :disabled t
-  :config
-  (progn
-    (spaceline-spacemacs-theme)
-    (spaceline-helm-mode)
-    (setq powerline-default-separator 'wave)))
+;; (use-package spaceline
+;;   :ensure t
+;;   :demand t
+;;   :init
+;;   (setq powerline-default-separator 'arrow-fade)
+;;   :config
+;;   (require 'spaceline-config)
+;;   (spaceline-spacemacs-theme)
+;;   (spaceline-helm-mode))
 #+END_SRC
-
-
-
 
 ** Origami
 
@@ -4541,7 +4519,6 @@ A nicer way to fold.
   (global-origami-mode))
 #+END_SRC
 
-
 ** Apropospriate theme
    
 I'm currently running Solarized dark but my move to this in the future.
@@ -4552,7 +4529,6 @@ I'm currently running Solarized dark but my move to this in the future.
   :disabled t)
 #+END_SRC
 
-
 ** Jabber
 
 This is a placeholder for the Jabber configuration.  I need to determine what values to use for the work server.
@@ -4562,7 +4538,6 @@ This is a placeholder for the Jabber configuration.  I need to determine what va
   :ensure t
   :disabled t)
 #+END_SRC 
-
 
 ** Langtool
 
@@ -4597,7 +4572,6 @@ I am playing with the idea of keeping a languagetool HTTP server running in the 
         (buffer-string)))))
 #+END_SRC
 
-
 ** Sr-Speedbar
 
 Speedbar.  It seems like such a nice thing to have and yet I rarely ever use it.  When in Eclipse I use it all the time but the need is not really there when using Emacs.  May be I will enable it again at some point in time.
@@ -4614,7 +4588,6 @@ Speedbar.  It seems like such a nice thing to have and yet I rarely ever use it.
     (setq sr-speedbar-right-side t)))
 #+END_SRC
 
-
 ** Fold This
 
 A folding package based on the active region.
@@ -4627,7 +4600,6 @@ A folding package based on the active region.
          ("C-c C-F" . fold-this)
          ("C-c M-f" . fold-this-unfold-all)))
 #+END_SRC
-
 
 ** Mediawiki
 
@@ -4642,7 +4614,6 @@ For editing the MediaWiki at work.  An old version of Mediawiki is being used wh
   (eval-after-load 'mediawiki
     (define-key mediawiki-mode-map (kbd "C-x C-s") 'save-buffer)))
 #+END_SRC
-
 
 ** Lineum Relative
 
@@ -4659,8 +4630,6 @@ I don't typically have need to show line numbers but when I do it is helpful to 
     (setq linum-relative-current-symbol "")))
 #+END_SRC
 
-
-
 ** Change Inner
 
 Call the change--inner and then the starting character to modify the inside portion of the group.  Not sure if this will get use.  One of those things that could save a lot of time but there is a need to change a deep habit.
@@ -4672,7 +4641,6 @@ Call the change--inner and then the starting character to modify the inside port
   :bind (("M-i" . change-inner)
          ("M-o" . change-outer)))
 #+END_SRC
-
 
 * Disable debugging
 
@@ -4782,6 +4750,30 @@ Startup is done so stop debugging.
 * Investigate
 ** ejc-sql
    Package for connecting to databases using clojure and JDBC.  
+** HEX -> ASCII
+
+Need a way to go from a hex string to a UTF-16 String.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/hex-to-ascii (beg end)
+  ""
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (let ((beg (point-min))
+           (end (point-max)))
+       (list beg end))))
+  (let* ((hex-string (buffer-substring-no-properties beg end))
+         (ascii-string (concat
+                        (--map
+                         (string-to-number (concat it) 16)
+                         (-partition 2 (string-to-list hex-string))))))
+    (decode-coding-string (string-make-unibyte ascii-string) 'utf-16)
+    (delete-region beg end)
+    (setq-local buffer-file-coding-system 'utf-16)
+    (insert ascii-string)))
+#+END_SRC
+
 * Provide
   
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
