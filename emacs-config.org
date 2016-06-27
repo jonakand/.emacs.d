@@ -1644,6 +1644,15 @@ Some basic dired configuration.  Make dired stop creating buffers for each direc
     (add-hook 'dired-mode-hook #'hl-line-mode)))
 #+END_SRC
 
+Enable narrowing in dired buffers to help hide uninteresting files.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package dired-narrow
+  :ensure t
+  :bind (:map dired-mode-map
+              ("/" . dired-narrow)))
+#+END_SRC
+
 Make dired show human readable file sizes.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
