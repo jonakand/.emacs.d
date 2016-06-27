@@ -27,9 +27,12 @@
 
 (setq use-package-verbose t)   
 
+;; Load a minimal configuration if NOT on my work VM.
 (if (s-contains? "RAD" (system-name))
     (add-hook 'after-init-hook #'(lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
   (add-hook 'after-init-hook #'(lambda () (load-file "~/.emacs.d/minimal-config.el"))))
+
+;;(add-hook 'after-init-hook #'(lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;  Tangle and byte compile the source ORG document if it is newer than the
