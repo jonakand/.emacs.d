@@ -444,7 +444,7 @@ Like scrolling the default recenter command has a strange order that recenters h
 (setq recenter-positions '(top middle bottom))
 #+END_SRC
 
-With this option enabled a highlighted region will be overwritten if one is active and I start typing.
+With this option enabled a highlighted region will be overwritten if one is active and I start typing.  This makes Emacs behave like other editors.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (delete-selection-mode t) 
@@ -454,12 +454,6 @@ Enable transient mark mode so that highlighting regions activates special behavi
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 (setq transient-mark-mode t)
-#+END_SRC
-
-Set this to enable the deletion of regions.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(delete-selection-mode 1)
 #+END_SRC
 
 Disable the annoying blinking cursor.
