@@ -604,6 +604,19 @@ Helper for replacing/yanking one rectangle with another.  Taken from http://www.
   (yank-rectangle))
 #+END_SRC
 
+I have to copy columns from emacs and past them into Emacs often enough that a function is helpful.  It extracts the rectangular region, yanks the rectangle into a temp buffer, and then copies the contents of the temp bugger into the clipboard.  The regular rectangle commands create a list of strings which is not so helpful outside of emacs.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/copy-rectangle (beg end)
+  "Copy a rectangle as plain text, instead of a list of strings, 
+that can then be pasted in another program."
+  (interactive "r")
+  (let ((killed-rectangle (extract-rectangle beg end)))
+    (with-temp-buffer
+      (insert (s-join "\n" killed-rectangle))          
+      (kill-region (point-min) (point-max)))))
+#+END_SRC
+
 Helper to open a numbered temp buffer using a number and the f12 key.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
