@@ -30,3 +30,6 @@ company-sql.el
 /org-clock-save.el
 semantic/*
 semantic*
+/minimal-config.el
+/profile-dotemacs.el
+/tramp

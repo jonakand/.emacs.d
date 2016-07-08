@@ -1143,6 +1143,23 @@ to sending."
         (sql-send-string (buffer-substring-no-properties start end)))))))
 #+END_SRC
 
+I have two wrap a bunch of lines in single quotes and commas to create queries often enough that a function was needed.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/sql-wrap-in (beg end)
+  "Wrap the active region in single quotes so that it can be used within
+parentheses in the IN portion of a WHERE clause."
+  (interactive "r")
+  (save-restriction
+    (narrow-to-region beg end)
+    (goto-char (point-min))
+    (while (search-forward-regexp "^\\(.*\\)$" nil t)     
+      (replace-match "'\\1',"))
+    (goto-char (point-max))
+    (when (eq (char-before) 44)
+        (delete-char -1))))
+#+END_SRC
+
 The function below is used quite often.  It is not the prettiest but it gets the job done.  It will wrap the current SQL statement in an EXPORT prior to sending.  This is helpful when I want to see a large XML document or I want to retrieve a row that exceeds the maximum number of characters that the DB2 CLP will return.
 
 ** TODO Fix waiting for export
