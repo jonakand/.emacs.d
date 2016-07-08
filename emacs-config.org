@@ -4680,8 +4680,8 @@ Call the change--inner and then the starting character to modify the inside port
 Startup is done so stop debugging.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq debug-on-error nil)
-(setq debug-on-quit nil)
+(setq debug-on-error nil
+      debug-on-quit nil)
 #+END_SRC
 
 * Temp
@@ -4740,7 +4740,8 @@ Startup is done so stop debugging.
 (defun my/block-close (arg)
   (if (my/inside-java-lambda-p) '- 0))
 
-(defun my/arglist-close (arg) (if (my/trailing-paren-p) 0 '--))
+(defun my/arglist-close (arg) 
+  (if (my/trailing-paren-p) 0 '--))
 
 (defun my/arglist-intro (arg)
   (if (my/prev-line-call-with-no-args-p) '++ 0))
