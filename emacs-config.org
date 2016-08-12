@@ -3853,8 +3853,10 @@ Plain old yasnippet configuration.  The second part is to enable selection based
   :ensure t
   :diminish yas-minor-mode
   :config
-  (progn    
+  (progn
+    (yas-load-directory "~/.emacs.d/snippets")
     (yas-global-mode 1)
+    
 
     ;;; use popup menu for yas-choose-value
     (require 'popup)
