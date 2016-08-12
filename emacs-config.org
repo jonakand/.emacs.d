@@ -2924,7 +2924,7 @@ Switch projects and subprojects from NEXT back to TODO"
                     (tags-todo "-HOLD-CANCELLED/!"
                                ((org-agenda-overriding-header "Stuck Projects")
                                 (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-                    (tags-todo "-WAITING-CANCELLED-KRANTHI-RITA-TIFFANY-NICK-REFILE/!NEXT"
+                    (tags-todo "-WAITING-CANCELLED-KRANTHI-RITA-TIFFANY-NICK-REFILE-CLOCK/!NEXT"
                                ((org-agenda-overriding-header "Next Tasks")
                                 (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
                                 (org-agenda-todo-ignore-scheduled t)
