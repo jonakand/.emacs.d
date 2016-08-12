@@ -1609,7 +1609,7 @@ The following functions were created as an easy way to launch a couple Windows p
 Working with dates is a pain.  This group consists of a few helper functions.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :export code 
-(defun ry/convert-us-date (beg end)
+(defun ry/convert-us-to-iso-date (beg end)
   "Convert a US date to ISO format."
   (interactive "r")
   (let* ((old-date (buffer-substring-no-properties beg end))
@@ -1621,7 +1621,7 @@ Working with dates is a pain.  This group consists of a few helper functions.
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :export code 
-(defun ry/convert-iso-date (beg end)
+(defun ry/convert-iso-to-us-date (beg end)
   "Convert an ISO date to US format."
   (interactive "r")
   (let* ((old-date (buffer-substring-no-properties beg end))
