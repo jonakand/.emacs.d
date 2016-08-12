@@ -4135,8 +4135,8 @@ The changes that were made to get it working are not pretty.
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       (custom-set-variables
        '(eclim-eclipse-dirs '("C:/IBM/SDP"))
-       '(eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")
-       '(company-eclim-executable "C:/IBM/SDP/p2/cic.p2.cache.location/plugins/org.eclim_1.7.14/bin/eclim.bat")))))
+       '(eclim-executable "C:/IBM/SDP/eclim.bat")
+       '(company-eclim-executable "C:/IBM/SDP/eclim.bat")))))
 #+END_SRC
 
 Enable subword mode for Java.
