@@ -1704,9 +1704,8 @@ Some basic dired configuration.  Make dired stop creating buffers for each direc
   :ensure t
   :bind (:map dired-mode-map
               ("q" . kill-this-buffer))
-  ;; :commands (dired)
-  :demand
-  :config
+  :commands (dired)
+  :init
   (progn   
     (diredp-toggle-find-file-reuse-dir 1)
     (add-to-list 'load-path "~/.emacs.d/extra")
@@ -1778,6 +1777,7 @@ Add BBDB configuration primarily for use with Gnus.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package bbdb
   :ensure t
+  :if (not(at-work-p))
   :config
   (progn
     (bbdb-initialize 'gnus 'message)
@@ -1849,180 +1849,138 @@ Place the following contents in [[~/.emacs.d/.authinfo]]
 Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-one-year-guide/blob/master/gnus-guide-en.org]].
   
   #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-    (eval-after-load "gnutls"
-      '(progn
-         (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
+      (eval-after-load "gnutls"
+        '(progn
+           (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
 
-    (use-package gnus)
+  (use-package gnus
+    :if (not(at-work-p))
+    :config
+    (progn
+      (setq gnus-select-method '(nntp "news.gmane.org"))
 
-    (setq gnus-select-method '(nntp "news.gmane.org"))
-  #+END_SRC
+    ;;Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
+    ;; (add-to-list 'gnus-secondary-select-methods
+    ;;              '(nnimap "gmail"
+    ;;                       (nnimap-address "imap.gmail.com")
+    ;;                       (nnimap-server-port 993)
+    ;;                       (nnimap-stream ssl)
+    ;;                       (nnir-search-engine imap)))
 
-Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
+      ;; (add-to-list 'gnus-secondary-select-methods
+      ;;              '(nnimap "outlook"
+      ;;                       (nnimap-address "imap-mail.outlook.com")
+      ;;                       (nimap-server-port 993)
+      ;;                       (nnimap-stream ssl)
+      ;;                       (nnir-search-engine imap)))
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  ;; (add-to-list 'gnus-secondary-select-methods
-  ;;              '(nnimap "gmail"
-  ;;                       (nnimap-address "imap.gmail.com")
-  ;;                       (nnimap-server-port 993)
-  ;;                       (nnimap-stream ssl)
-  ;;                       (nnir-search-engine imap)))
+      (setq gnus-thread-sort-functions
+            '((not gnus-thread-sort-by-date)
+              (not gnus-thread-sort-by-number)))
 
-  (add-to-list 'gnus-secondary-select-methods
-               '(nnimap "outlook"
-                        (nnimap-address "imap-mail.outlook.com")
-                        (nnimap-server-port 993)
-                        (nnimap-stream ssl)
-                        (nnir-search-engine imap)))
+  ;;When I expire a message I want it to immediately move to the Trash/Deleted folder.
 
-  (setq gnus-thread-sort-functions
-        '((not gnus-thread-sort-by-date)
-          (not gnus-thread-sort-by-number)))
-#+END_SRC
+      ;; (setq nnmail-expiry-target 'ry/gnus-fancy-expire)
+      (setq nnmail-expiry-wait 'immediate)
 
-When I expire a message I want it to immediately move to the Trash/Deleted folder.
+      ;; (defun ry/gnus-fancy-expire (group-name)
+      ;;   "Determine which expiry target should use for a given message."
+      ;;   (interactive)  
+      ;;   (if (s-contains-p "INBOX" group-name)      
+      ;;       (format "nnimap+gmail:[Gmail]/Trash")    
+      ;;     (format "nnimap+outlook:Deleted")))
 
-  #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-    (setq nnmail-expiry-target 'ry/gnus-fancy-expire)
-    (setq nnmail-expiry-wait 'immediate)
+  ;;  Use caching to the max.
+      (setq gnus-use-cache t)
 
-    (defun ry/gnus-fancy-expire (group-name)
-      "Determine which expiry target should use for a given message."
-      (interactive)  
-      (if (s-contains-p "INBOX" group-name)      
-          (format "nnimap+gmail:[Gmail]/Trash")    
-        (format "nnimap+outlook:Deleted")))
-  #+END_SRC
+  ;;  Use tree view for groups.
+      (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
 
-Use caching to the max.
+  ;;  Enable threading with full display of subtrees.
+      (setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject)
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq gnus-use-cache t)
-#+END_SRC
+  ;;  Personal information.
+      (setq user-full-name "Ryan Yanson"
+            user-mail-address "ryanson@outlook.com")
 
-Use tree view for groups.
+  ;;  The next setting was found on [[http://www.gnu.org/software/emacs/manual/html_node/gnus/FAQ-9_002d2.html]].  Seeing as I don't care about CJK characters it's set.
+      (setq gnus-use-correct-string-widths nil)
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
-#+END_SRC
+  ;;  Setup faces for the summary buffer.
+      (copy-face 'font-lock-negation-char-face 'gnus-face-5)
+      (setq gnus-face-5 'gnus-face-5)
 
-Enable threading with full display of subtrees.
+      (copy-face 'font-lock-comment-face 'gnus-face-6)
+      (setq gnus-face-6 'gnus-face-6)
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject)
-#+END_SRC
+      (copy-face 'font-lock-builtin-face 'gnus-face-7)
+      (setq gnus-face-7 'gnus-face-7)
 
-Personal information.
+      (copy-face 'font-lock-warning-face 'gnus-face-8)
+      (setq gnus-face-8 'gnus-face-8)
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq user-full-name "Ryan Yanson"
-        user-mail-address "ryanson@outlook.com")
-#+END_SRC
+  ;;  Customize the formatting found in the summary buffer.
+      (setq-default
+       gnus-summary-line-format "%U%R%z %7{│%} %5{%&user-date;%} %7{│%} %8{%-30,30f%} %7{│%} %B%6{%-80,80s%}\n"
+       gnus-user-date-format-alist '((t . "%Y-%m-%d %H:%M"))
+       gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references
+       gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-number)
+       gnus-article-sort-functions '(gnus-article-sort-by-most-recent-number)
+       gnus-sum-thread-tree-false-root "○ "
+       gnus-sum-thread-tree-indent " "
+       gnus-sum-thread-tree-leaf-with-other "├► "
+       gnus-sum-thread-tree-root "● "
+       gnus-sum-thread-tree-single-leaf "╰► "
+       gnus-sum-thread-tree-vertical "│"
+       gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
 
-The next setting was found on [[http://www.gnu.org/software/emacs/manual/html_node/gnus/FAQ-9_002d2.html]].  Seeing as I don't care about CJK characters it's set.
- 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq gnus-use-correct-string-widths nil)
-#+END_SRC
+  ;;  Customize the formatting in the group buffer.  I don't like to see the ugly names for the groups so they are mapped to shorter names.
+      (setq-default gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
 
-Setup faces for the summary buffer.
+      (defun gnus-user-format-function-G (arg)
+        "Formatting function for formatting group names nicely."
+        (let ((mapped-name (assoc gnus-tmp-group group-name-map)))
+          (if (null mapped-name)
+              gnus-tmp-group
+            (cdr mapped-name))))
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (copy-face 'font-lock-negation-char-face 'gnus-face-5)
-  (setq gnus-face-5 'gnus-face-5)
+      ;; (setq group-name-map '(;;("nnimap+gmail:INBOX" . "Gmail/Inbox")
+      ;;                        ;; ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
+      ;;                        ;; ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
+      ;;                        ;; ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
+      ;;                        ;; ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
+      ;;                        ;; ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
+      ;;                        ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
+      ;;                        ("nnimap+outlook:Inbox" . "Outlook/Inbox")
+      ;;                        ("nnimap+outlook:Deleted" . "Outlook/Deleted")
+      ;;                        ("nnimap+outlook:Macys" . "Outlook/Macys")
+      ;;                        ("nnimap+outlook:Amazon" . "Outlook/Amazon")
+      ;;                        ("nnimap+outlook:Bills" . "Outlook/Bills")
+      ;;                        ("nnimap+outlook:Sent" . "Outlook/Sent")))
 
-  (copy-face 'font-lock-comment-face 'gnus-face-6)
-  (setq gnus-face-6 'gnus-face-6)
+  ;;    (setq mm-text-html-renderersh 'r)
+      (setq gnus-inhibit-images nil)
 
-  (copy-face 'font-lock-builtin-face 'gnus-face-7)
-  (setq gnus-face-7 'gnus-face-7)
+      (setq mm-attachment-override-types '("image/.*"))
+      (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
 
-  (copy-face 'font-lock-warning-face 'gnus-face-8)
-  (setq gnus-face-8 'gnus-face-8)
+  ;;  Configure outgoing email.
+      ;; (setq message-send-mail-function 'smtpmail-send-it
+      ;;       smtpmail-default-smtp-server "smtp-mail.outlook.com"
+      ;;       smtpmail-smtp-service 587
+      ;;       smtpmail-local-domain "brookwood.com")
 
-#+END_SRC
+      (setq gnus-always-read-dribble-file t)
 
-Customize the formatting found in the summary buffer.
+  ;;  Check for new mail every five minutes.
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq-default
-   gnus-summary-line-format "%U%R%z %7{│%} %5{%&user-date;%} %7{│%} %8{%-30,30f%} %7{│%} %B%6{%-80,80s%}\n"
-   gnus-user-date-format-alist '((t . "%Y-%m-%d %H:%M"))
-   gnus-summary-thread-gathering-function 'gnus-gather-threads-by-references
-   gnus-thread-sort-functions '(gnus-thread-sort-by-most-recent-number)
-   gnus-article-sort-functions '(gnus-article-sort-by-most-recent-number)
-   gnus-sum-thread-tree-false-root "○ "
-   gnus-sum-thread-tree-indent " "
-   gnus-sum-thread-tree-leaf-with-other "├► "
-   gnus-sum-thread-tree-root "● "
-   gnus-sum-thread-tree-single-leaf "╰► "
-   gnus-sum-thread-tree-vertical "│"
-   gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
-#+END_SRC
+      (gnus-demon-add-handler 'gnus-demon-scan-news 5 t)
 
-Customize the formatting in the group buffer.  I don't like to see the ugly names for the groups so they are mapped to shorter names.
+  ;;  Kill the message buffer after sending an email instead of burying it.
+      (setq message-kill-buffer-on-exit t)
 
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq-default gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
-
-  (defun gnus-user-format-function-G (arg)
-    "Formatting function for formatting group names nicely."
-    (let ((mapped-name (assoc gnus-tmp-group group-name-map)))
-      (if (null mapped-name)
-          gnus-tmp-group
-        (cdr mapped-name))))
-
-  (setq group-name-map '(;;("nnimap+gmail:INBOX" . "Gmail/Inbox")
-                         ;; ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
-                         ;; ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
-                         ;; ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
-                         ;; ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
-                         ;; ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
-                         ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
-                         ("nnimap+outlook:Inbox" . "Outlook/Inbox")
-                         ("nnimap+outlook:Deleted" . "Outlook/Deleted")
-                         ("nnimap+outlook:Macys" . "Outlook/Macys")
-                         ("nnimap+outlook:Amazon" . "Outlook/Amazon")
-                         ("nnimap+outlook:Bills" . "Outlook/Bills")
-                         ("nnimap+outlook:Sent" . "Outlook/Sent")))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq mm-text-html-renderer 'shr)
-  (setq gnus-inhibit-images nil)
-
-  (setq mm-attachment-override-types '("image/.*"))
-  (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
-#+END_SRC
-
-Configure outgoing email.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq message-send-mail-function 'smtpmail-send-it
-      smtpmail-default-smtp-server "smtp-mail.outlook.com"
-      smtpmail-smtp-service 587
-      smtpmail-local-domain "brookwood.com")
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq gnus-always-read-dribble-file t)
-#+END_SRC
-
-Check for new mail every five minutes.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (gnus-demon-add-handler 'gnus-demon-scan-news 5 t)
-#+END_SRC
-
-Kill the message buffer after sending an email instead of burying it.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-  (setq message-kill-buffer-on-exit t)
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq  mail-user-agent 'gnus-user-agent)
-(setq read-mail-command 'gnus-user-agent)
+      (setq mail-user-agent 'gnus-user-agent)
+      (setq read-mail-command 'gnus-user-agent)))
 #+END_SRC
 
 * Helm
