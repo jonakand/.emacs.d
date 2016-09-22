@@ -1173,6 +1173,57 @@ parentheses in the IN portion of a WHERE clause."
         (delete-char -1))))
 #+END_SRC
 
+To make looking at results easier the function below can be used to convert a region into an org-mode table.  It is assumed that the first row in the region is column headings that do not contain spaces.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/sql-result-to-org-table (beg end)
+  "Convert a DB2 result to an org-mode table."
+  (interactive "r")
+  (let* ((buf (current-buffer))
+         (table
+          (with-temp-buffer
+            (insert-buffer-substring-no-properties buf beg end)
+            (goto-char (point-min))
+            (let ((pt (point))
+                  (lc (count-lines (point-min) (point-max)))
+                  (d))
+              
+              ;;  Loop over each whitespace delimited column
+              ;;  on the first line.
+              (while (= (line-number-at-pos) 1)
+
+                ;;  Loop over each row in the column and
+                ;;  add pipes on each line.
+                (while (and (<= (line-number-at-pos) lc)
+                            (eq d nil))
+                  (insert "|")
+
+                  ;;  If not at the bottom of a column go
+                  ;;  to the next row and backup one
+                  ;;  character else set a flag to denote
+                  ;;  that the bottom of a column was hit.
+                  (if (/= (line-number-at-pos) lc)
+                      (progn
+                        (next-logical-line 1)
+                        (goto-char (- (point) 1)))
+                    (setq d t)))
+
+                ;;  Go back to the top of the current column (pt),
+                ;;  set pt to point to remember where the top of
+                ;;  the column is, move to the next column, and
+                ;;  reset the of the column flag (d).
+                (goto-char pt)
+                (forward-whitespace 1)
+                (setq pt (point))
+                (setq d nil)))
+            (org-mode)
+            (org-table-align)
+            (buffer-substring-no-properties (point-min) (point-max)))))
+    (delete-region beg end)
+    (goto-char beg)
+    (insert table)))
+#+END_SRC
+
 The function below is used quite often.  It is not the prettiest but it gets the job done.  It will wrap the current SQL statement in an EXPORT prior to sending.  This is helpful when I want to see a large XML document or I want to retrieve a row that exceeds the maximum number of characters that the DB2 CLP will return.
 
 ** TODO Fix waiting for export
