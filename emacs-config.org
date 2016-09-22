@@ -1764,23 +1764,12 @@ I use eshell to have a decent shell when on Windows machines at work.  Not much 
 
   #+BEGIN_SRC emacs-lisp :tangle yes :exports code
   (use-package ediff
+    :commands (ediff-buffers ediff-files)
     :config
     (progn
       (setq ediff-split-window-function 'split-window-horizontally
             ediff-diff-options "-w")))
   #+END_SRC
-
-* With editor
-
-Sets up the with-editor package so things that invoke $EDITOR will use the current emacs if I'm already inside of emacs 
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package with-editor
-  :init
-  (progn
-    (add-hook 'shell-mode-hook  'with-editor-export-editor)
-    (add-hook 'eshell-mode-hook 'with-editor-export-editor)))
-#+END_SRC
 
 * BBDB
 
@@ -2331,7 +2320,9 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
       (progn
         (add-hook 'org-mode-hook #'(lambda () (org-bullets-mode 1)))
         (add-hook 'org-mode-hook #'(lambda () (visual-line-mode)))))
+
     (use-package ox-twbs
+      :commands (org-twbs-export-to-html org-twbs-export-as-html)
       :ensure t)
 
     ;;(add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\)$" . org-mode))
@@ -3949,7 +3940,8 @@ Plain old yasnippet configuration.  The second part is to enable selection based
     
 
     ;;; use popup menu for yas-choose-value
-    (require 'popup)
+    (use-package popup
+      :ensure t)
 
     (defun yas-popup-isearch-prompt (prompt choices &optional display-fn)
       (when (featurep 'popup)
@@ -4032,20 +4024,6 @@ Add Git diff information to the gutter so that I can easily track changes.
 * Programming
 ** Environment
    
-Used to create a workspace when working in eclim.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package workgroups2
-  :ensure t
-  :disabled t
-  :diminish workgroups-mode
-  :config
-  (progn
-    (setq wg-prefix-key (kbd "C-c w"))
-    (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
-    (workgroups-mode 1)))
-#+END_SRC
-
 Make delimiters a little easier to match up without having to be on one of them.  Also a tip found [[http://timothypratley.blogspot.com/2015/07/seven-specialty-emacs-settings-with-big.html][here]] for making unmatched parentheses easier to see.  Also This uses some pastel colors that I found [[http://web.ics.purdue.edu/~dogbe/static/emacs_config_file.html][here]].
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -4094,14 +4072,14 @@ Smartscan mode allows for finding the next/previous occurrence of the symbol und
 Enable Eldoc for Lisp modes.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package "eldoc"  
-  :diminish eldoc-mode
-  :init
-  (progn
-    (setq eldoc-idle-delay 0.2)
-    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-    (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
+;; (use-package "eldoc"  
+;;   :diminish eldoc-mode
+;;   :init
+;;   (progn
+;;     (setq eldoc-idle-delay 0.2)
+;;     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+;;     (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+;;     (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 #+END_SRC
 
 Commenting should be DWIM.
@@ -4109,8 +4087,7 @@ Commenting should be DWIM.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package comment-dwim-2
   :ensure t
-  :config 
-  (global-set-key (kbd "M-;") 'comment-dwim-2))
+  :bind (("M-;" . comment-dwim-2)))
 #+END_SRC
 
 On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it is really needed as the syntax highlighing is not working.  Maybe I will look in to it.
@@ -4118,6 +4095,7 @@ On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package flycheck
   :ensure t
+  :commands (flycheck-mode)
   :config
   (progn
     (add-hook 'after-init-hook #'global-flycheck-mode)))
@@ -4126,33 +4104,23 @@ On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it
 Used for displaying errors in a popup.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-    (use-package flycheck-tip
-      :ensure t
-      :config
-      (flycheck-tip-use-timer 'verbose))
-#+END_SRC
-
-Not sure if this package will stay around either.  It is used for highlighting the sysmbol at point.  Highlights a lot if it is enabled in a buffer that has a lot of the same word.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package highlight-symbol
+(use-package flycheck-tip
   :ensure t
-  :disabled highlight-symbol-mode
+  :after flycheck
   :config
-  (progn
-    (add-hook 'prog-mode-hook 'highlight-symbol-mode)
-    (setf highlight-symbol-idle-delay 0)))
+  (flycheck-tip-use-timer 'verbose))
 #+END_SRC
 
 This package is used to display the various members while working in eclim.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-    (use-package imenu-list
-      :ensure t
-      :config
-      (progn
-        (setq imenu-list-position 'left)
-        (setq imenu-list-auto-resize nil)))
+(use-package imenu-list
+  :ensure t
+  :after eclim
+  :config
+  (progn
+    (setq imenu-list-position 'left)
+    (setq imenu-list-auto-resize nil)))
 #+END_SRC
 
 Used to create a "workspace" for Java development.
@@ -4160,6 +4128,7 @@ Used to create a "workspace" for Java development.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package neotree
   :ensure t
+  :disabled t
   :bind (("<f11>" . neotree-toggle))
   :config
   (progn
@@ -4182,52 +4151,53 @@ I wonder if the issue for the problems is that I am running an old version of Ec
 The changes that were made to get it working are not pretty.  
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(when (at-work-p)
-  (use-package eclim
-    :ensure emacs-eclim
-    :bind (:map eclim-mode-map
-                ("M-/" . company-emacs-eclim)
-                ("M-." . eclim-java-find-declaration))
-    :init
-    (progn
-      (setq-default eclim--problems-filter "e")
-      (global-eclim-mode))
-    :config
-    (progn
-      (setq help-at-pt-display-when-idle t)
-      (setq help-at-pt-timer-delay 0.1)
-      (help-at-pt-set-timer)
+;; (when (at-work-p))
+(use-package eclim
+  :ensure emacs-eclim
+  :bind (:map eclim-mode-map
+              ("M-/" . company-emacs-eclim)
+              ("M-." . eclim-java-find-declaration))
+  :if (at-work-p)
+  :init
+  (progn
+    (setq-default eclim--problems-filter "e")
+    (global-eclim-mode))
+  :config
+  (progn
+    (setq help-at-pt-display-when-idle t)
+    (setq help-at-pt-timer-delay 0.1)
+    (help-at-pt-set-timer)
 
-      (set-face-attribute 'eclim-problems-highlight-error-face nil
-                          :underline '(:style wave :color "#E10080"))
-
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
-      ;;  Show positions in problems buffer.
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
-      (setq eclim-problems-show-pos t)     
-
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;;  Use the company backend that comes with eclim.
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
-      (company-emacs-eclim-setup)
+    (set-face-attribute 'eclim-problems-highlight-error-face nil
+                        :underline '(:style wave :color "#E10080"))
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
-      ;;  Ignore case when getting completion options.
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      (setq company-emacs-eclim-ignore-case t)
+    ;;  Show positions in problems buffer.
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
+    (setq eclim-problems-show-pos t)     
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;;  Toggle debugging.
+    ;;  Use the company backend that comes with eclim.
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
+    (company-emacs-eclim-setup)
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
+    ;;  Ignore case when getting completion options.
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; (eclim-toggle-print-debug-messages)
-      
+    (setq company-emacs-eclim-ignore-case t)
+
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;;  Windows setup so that eclim knows where the bat file is.
+    ;;  Toggle debugging.
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      (custom-set-variables
-       '(eclim-eclipse-dirs '("C:/IBM/SDP"))
-       '(eclim-executable "C:/IBM/SDP/eclim.bat")
-       '(company-eclim-executable "C:/IBM/SDP/eclim.bat")))))
+    ;; (eclim-toggle-print-debug-messages)
+    
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;  Windows setup so that eclim knows where the bat file is.
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (custom-set-variables
+     '(eclim-eclipse-dirs '("C:/IBM/SDP"))
+     '(eclim-executable "C:/IBM/SDP/eclim.bat")
+     '(company-eclim-executable "C:/IBM/SDP/eclim.bat"))))
 #+END_SRC
 
 Enable subword mode for Java.
@@ -4249,12 +4219,12 @@ Enable subword mode for Java.
 Lisp mode hooks for cask files for if/when I start looking in to cask.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package lisp-mode
-  :mode ("Cask\\'" . emacs-lisp-mode)
-  :config
-  (progn
-    (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
-    (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)))
+;; (use-package lisp-mode
+;;   :mode ("Cask\\'" . emacs-lisp-mode)
+;;   :config
+;;   (progn
+;;     (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
+;;     (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)))
 #+END_SRC
 
 
@@ -4263,42 +4233,26 @@ Lisp mode hooks for cask files for if/when I start looking in to cask.
 I do not write Clojure code but I would like to learn when time permits.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package cider
-  :ensure t
-  :disabled t
+;; (use-package cider
+;;   :ensure t
+;;   :disabled t
 ;;  :bind (("<f10>" . cider-jack-in))
-  :config
-  (progn
-    (add-hook 'cider-mode-hook #'eldoc-mode)
-    (setq nrepl-hide-special-buffers t)
-    (setq cider-repl-tab-command #'indent-for-tab-command)
-    (add-hook 'cider-repl-mode-hook #'subword-mode)))
+  ;; :config
+  ;; (progn
+  ;;   (add-hook 'cider-mode-hook #'eldoc-mode)
+  ;;   (setq nrepl-hide-special-buffers t)
+  ;;   (setq cider-repl-tab-command #'indent-for-tab-command)
+  ;;   (add-hook 'cider-repl-mode-hook #'subword-mode)))
 #+END_SRC
-
 
 *** Haskell
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package haskell-mode
+(use-package intero
   :ensure t
-  :init
-  (require 'haskell-interactive-mode)
-  (require 'haskell-process)
-
-  (add-hook 'haskell-mode-hook 'haskell-indent-mode)
-  (add-hook 'haskell-mode-hook 'haskell-interactive-mode)
-  
-  (custom-set-variables
-   '(haskell-process-suggest-remove-import-lines t)
-   '(haskell-process-auto-import-loaded-modules t)
-   '(haskell-process-log t)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package flycheck-haskell
-    :ensure t
-    :init
-    (add-hook 'flycheck-mode-hook 'flycheck-haskell-setup))
+  :if (not (at-work-p))
+  :config
+  (add-hook 'haskell-mode-hook 'intero-mode))
 #+END_SRC
 
 *** Web
@@ -4373,7 +4327,8 @@ Pretty print of exported documents.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package htmlize
-  :ensure t)
+  :ensure t
+  :commands (htmlize-file htmlize-buffer htmlize-region))
 #+END_SRC
 
 ** Golden Ratio
@@ -4394,10 +4349,11 @@ Use the golden ratio to size windows when multiples are open.
             "messages-buffer-mode"
             "fundamental-mode"
             "imenu-list-major-mode"))
-    (defun my/helm-alive-p ()
-      (if (boundp 'helm-alive-p)
-          (symbol-value 'helm-alive-p)))
-    (add-to-list 'golden-ratio-inhibit-functions #'my/helm-alive-p)))
+    ;; (defun my/helm-alive-p ()
+    ;;   (if (boundp 'helm-alive-p)
+    ;;       (symbol-value 'helm-alive-p)))
+    ;; (add-to-list 'golden-ratio-inhibit-functions #'my/helm-alive-p)
+    ))
 #+END_SRC
 
 ** Hydra
@@ -4409,6 +4365,7 @@ Whitespace mode was marked as required so that the mode toggle hydra would work 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package hydra
   :ensure t
+  :disabled t
   :commands (hydra-toggle/body hydra-launch/body hydra-xml/body)
   :bind (("C-c t" . hydra-toggle/body)
          ("C-c l" . hydra-launch/body)
@@ -4582,6 +4539,7 @@ I previously had this in my configuration to make looking at log files easier.  
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package unkillable-scratch
   :ensure t
+  :disabled t
   :config
   (progn
     (unkillable-scratch)))
@@ -4602,7 +4560,8 @@ Why not have SICP in emacs for easy reading?
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package sicp
-  :ensure t)
+  :ensure t
+  :disabled t)
 #+END_SRC 
 
 * Disabled packages
@@ -4610,7 +4569,7 @@ Why not have SICP in emacs for easy reading?
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package hl-line+
-  :ensure t
+;;  :ensure t
   :disabled t
   :config
   (progn
@@ -4622,15 +4581,15 @@ Why not have SICP in emacs for easy reading?
 ** Spaceline
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-;; (use-package spaceline
-;;   :ensure t
-;;   :demand t
-;;   :init
-;;   (setq powerline-default-separator 'arrow-fade)
-;;   :config
-;;   (require 'spaceline-config)
-;;   (spaceline-spacemacs-theme)
-;;   (spaceline-helm-mode))
+(use-package spaceline
+  ;; :ensure t
+  :disabled t
+  :init
+  (setq powerline-default-separator 'arrow-fade)
+  :config
+  (require 'spaceline-config)
+  (spaceline-spacemacs-theme)
+  (spaceline-helm-mode))
 #+END_SRC
 
 ** Origami
@@ -4639,7 +4598,7 @@ A nicer way to fold.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package origami
-  :ensure t
+;;  :ensure t
   :disabled t
   :config
   (global-origami-mode))
@@ -4651,7 +4610,7 @@ I'm currently running Solarized dark but my move to this in the future.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package apropospriate-theme
-  :ensure t
+;;  :ensure t
   :disabled t)
 #+END_SRC
 
@@ -4661,7 +4620,7 @@ This is a placeholder for the Jabber configuration.  I need to determine what va
    
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package jabber
-  :ensure t
+;;  :ensure t
   :disabled t)
 #+END_SRC 
 
@@ -4671,7 +4630,7 @@ When writing documentation it is helpful to know if you are using the English la
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
   (use-package langtool
-    :ensure t
+;;    :ensure t
     :disabled t
     :config
     (setq langtool-language-tool-jar "~/emacs/Langtool/languagetool-commandline.jar"
@@ -4686,7 +4645,7 @@ I am playing with the idea of keeping a languagetool HTTP server running in the 
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package http-post-simple
-  :ensure t
+;;  :ensure t
   :config
   (progn
 
@@ -4704,7 +4663,7 @@ Speedbar.  It seems like such a nice thing to have and yet I rarely ever use it.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package sr-speedbar
-  :ensure t
+;;  :ensure t
   :commands (sr-speedbar-toggle)
   :disabled t
   :config
@@ -4720,7 +4679,7 @@ A folding package based on the active region.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package fold-this
-  :ensure t
+;;  :ensure t
   :disabled t
   :bind (("C-c C-f" . fold-this-all)
          ("C-c C-F" . fold-this)
@@ -4733,7 +4692,7 @@ For editing the MediaWiki at work.  An old version of Mediawiki is being used wh
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package mediawiki
-  :ensure t
+;;  :ensure t
   :disabled t
   :commands mediawiki-mode
   :config
@@ -4747,7 +4706,7 @@ I don't typically have need to show line numbers but when I do it is helpful to 
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package linum-relative
-  :ensure t
+;;  :ensure t
   :disabled t
   :commands linum-mode
   :config
@@ -4762,10 +4721,55 @@ Call the change--inner and then the starting character to modify the inside port
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package change-inner
-  :ensure t
+;;  :ensure t
   :disabled t
   :bind (("M-i" . change-inner)
          ("M-o" . change-outer)))
+#+END_SRC
+
+** Workgroups2
+
+Used to create a workspace when working in eclim.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package workgroups2
+;;  :ensure t
+  :disabled t
+  :diminish workgroups-mode
+  :config
+  (progn
+    (setq wg-prefix-key (kbd "C-c w"))
+    (setq wg-session-file "~/.emacs.d/.emacs_workgroups")
+    (workgroups-mode 1)))
+#+END_SRC
+
+** Highlight-symbol
+
+Not sure if this package will stay around either.  It is used for highlighting the sysmbol at point.  Highlights a lot if it is enabled in a buffer that has a lot of the same word.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package highlight-symbol
+;;  :ensure t
+  :disabled highlight-symbol-mode
+  :config
+  (progn
+    (add-hook 'prog-mode-hook 'highlight-symbol-mode)
+    (setf highlight-symbol-idle-delay 0)))
+#+END_SRC
+
+
+** With editor
+
+Sets up the with-editor package so things that invoke $EDITOR will use the current emacs if I'm already inside of emacs 
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package with-editor
+  :ensure t
+  :disabled t
+  :init
+  (progn
+    (add-hook 'shell-mode-hook  'with-editor-export-editor)
+    (add-hook 'eshell-mode-hook 'with-editor-export-editor)))
 #+END_SRC
 
 * Disable debugging
