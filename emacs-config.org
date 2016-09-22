@@ -2045,6 +2045,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package helm
   :ensure t
+  :disabled t
   :diminish helm-mode
   :demand
   :bind (("C-M-s" . helm-occur)
@@ -2066,7 +2067,9 @@ The configuration is pretty basic with the exception being mapping the tab key t
               ("C-z" . helm-select-action))
   :config
   (progn
-    (use-package helm-config)   
+    (require 'helm-config)  
+
+    (helm-mode 1)
 
     (setq helm-quick-update                     t
           helm-split-window-in-side-p           t
@@ -2093,15 +2096,13 @@ The configuration is pretty basic with the exception being mapping the tab key t
           #'(lambda (buf)
             (split-window-vertically)
             (other-window 1)
-            (switch-to-buffer buf)))
-
-    (helm-mode)))
+            (switch-to-buffer buf)))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package helm-swoop
-      :ensure t
-      :demand
+  :ensure t
+  :disabled t
       :after helm
       :bind (("M-i" . helm-swoop)
              ("M-I" . helm-swoop-back-to-last-point)
@@ -2120,6 +2121,7 @@ The configuration is pretty basic with the exception being mapping the tab key t
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package helm-descbinds
   :ensure t
+  :disabled t
   :after helm
   :config
   (helm-descbinds-mode))
@@ -2142,6 +2144,46 @@ Save the recent file history.  This is used by Helm.
     (setq recentf-max-saved-items 25)
     (setq recentf-auto-cleanup 'never)
     (add-to-list 'recentf-exclude "COMMIT_EDITMSG\\'")))
+#+END_SRC
+
+* Ivy
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package ivy 
+  :ensure t
+  :diminish (ivy-mode . "")
+  :bind (("C-M-s" . ivy-occur)
+         ("C-x C-f" . counsel-find-file)
+         ("M-x" . counsel-M-x)
+         ("C-x b" . ivy-switch-buffer)
+         ("C-x C-b" . ivy-switch-buffer)
+         ;; ("C-x r l" . helm-bookmarks)
+         ;; ("C-h f" . helm-apropos)
+         ;; ("C-h r" . helm-info-emacs)
+         ;; ("C-h C-l" . helm-locate-library)
+         ("M-y" . counsel-yank-pop)
+         ;; ("C-x C-b" . ry/switch-buffer)
+         ;; ("<f7>" . helm-bookmarks)
+         ;; ("<f8>" . bookmark-set)
+         )
+  :bind (:map ivy-mode-map ("C-'" . ivy-avy))
+  :config (ivy-mode 1)
+
+  ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+  (setq ivy-use-virtual-buffers t)
+
+  ;; number of result lines to display
+  (setq ivy-height 10)
+
+  ;; does not count candidates
+  (setq ivy-count-format "")
+
+  ;; no regexp by default
+  (setq ivy-initial-inputs-alist nil)
+
+  ;; configure regexp engine.
+  (setq ivy-re-builders-alist ;; allow input not in order
+        '((t . ivy--regex-ignore-order))))
 #+END_SRC
 
 * God Mode
@@ -3932,6 +3974,7 @@ Add helm-c-yasnippet so that snippets for the major mode can be seen easily.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package helm-c-yasnippet
   :ensure t
+  :disabled t
   :bind (("C-c y" . helm-yas-complete))
   :config
   (setq helm-yas-space-match-any-greedy t))
