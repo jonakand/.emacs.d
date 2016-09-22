@@ -1454,6 +1454,22 @@ active."
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar --pretty" (current-buffer) t)))
 #+END_SRC
 
+Placeholder.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/xml-xpath-gen (beg end)
+  "Call an external Java program to"
+  (interactive
+   (if (use-region-p)
+       (list (region-beginning) (region-end))
+     (list (point-min) (point-max))))
+  (save-excursion
+    (let ((com (concat "java -jar H:/emacs/Java/XpathGen.jar \""
+                       (s-replace-all '(("\"" . "'")) (buffer-substring-no-properties beg end))
+                       "\"")))
+      (shell-command com))))
+#+END_SRC
+
 Compact the XML document in the active region, or buffer if no active region, using the Java utility defined above.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
