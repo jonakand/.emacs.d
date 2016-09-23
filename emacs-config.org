@@ -1454,11 +1454,145 @@ active."
     (shell-command-on-region beg end "java -jar H:/emacs/Java/XMLFormatter.jar --pretty" (current-buffer) t)))
 #+END_SRC
 
-Placeholder.
+The following Java program is used to generate a list of xpaths for the document in the current region.
+
+#+BEGIN_SRC java :tangle no :exports code
+package com.brookwood.util;
+
+import java.io.StringReader;
+
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+
+/*******************************************************************************
+ * Small utility to generate Xpaths for the XML document passed.  The code to
+ * do this was written by Blaise Doughan and found on StackOverflow.
+ * 
+ * http://stackoverflow.com/a/4783172/6735702
+ *
+ ******************************************************************************/
+public class XpathGen {
+
+    /***************************************************************************
+     * Main driver.  Accept args and pass it on to the main process.
+     * 
+     * @param args the arguments passed to the program.
+     * @throws Exception when something goes wrong.
+     **************************************************************************/
+	public static void main(String[] args) throws Exception {	 
+		new XpathGen().doWork(args);
+	}
+
+	/***************************************************************************
+	 * Main processing to generate XPATHs from input String.
+	 * 
+	 * @param args arguments passed to the program.
+	 * @throws Exception when something goes wrong.
+	 **************************************************************************/
+	private void doWork(String[] args) throws Exception {
+	    if (args.length < 1) {
+	        System.err.println("Usage: XpathGen <XML_DOCUMENT>");
+	        System.exit(1);
+	    }
+	    
+		SAXParserFactory spf = SAXParserFactory.newInstance();
+		SAXParser sp = spf.newSAXParser();
+		XMLReader xr = sp.getXMLReader();
+		
+		StringReader sr = new StringReader(args[0]);
+
+		xr.setContentHandler(new FragmentContentHandler(xr));
+		xr.parse(new InputSource(sr));
+		
+		System.exit(0);
+	}
+
+}
+#+END_SRC
+
+Handler for the xpath generation class above.
+
+#+BEGIN_SRC java :tangle no :exports code
+package com.brookwood.util;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+
+/*******************************************************************************
+ * Small utility to generate Xpaths for the XML document passed.  The code to
+ * do this was written by Blaise Doughan and found on StackOverflow.
+ * 
+ * http://stackoverflow.com/a/4783172/6735702
+ *
+ ******************************************************************************/
+public class FragmentContentHandler extends DefaultHandler {
+
+    private String xPath = "/";
+    private XMLReader xmlReader;
+    private FragmentContentHandler parent;
+    private StringBuilder characters = new StringBuilder();
+    private Map<String, Integer> elementNameCount = new HashMap<String, Integer>();
+
+    public FragmentContentHandler(XMLReader xmlReader) {
+        this.xmlReader = xmlReader;
+    }
+
+    private FragmentContentHandler(String xPath, XMLReader xmlReader, FragmentContentHandler parent) {
+        this(xmlReader);
+        this.xPath = xPath;
+        this.parent = parent;
+    }
+
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+        Integer count = elementNameCount.get(qName);
+        if(null == count) {
+            count = 1;
+        } else {
+            count++;
+        }
+        elementNameCount.put(qName, count);
+        String childXPath = xPath + "/" + qName + "[" + count + "]";
+
+        int attsLength = atts.getLength();
+        for(int x=0; x<attsLength; x++) {
+            System.out.println(childXPath + "[@" + atts.getQName(x) + "='" + atts.getValue(x) + "']");
+        }
+
+        FragmentContentHandler child = new FragmentContentHandler(childXPath, xmlReader, this);
+        xmlReader.setContentHandler(child);
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        String value = characters.toString().trim();
+        if(value.length() > 0) {
+            System.out.println(xPath + "='" + characters.toString() + "'");
+        }
+        xmlReader.setContentHandler(parent);
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length) throws SAXException {
+        characters.append(ch, start, length);
+    }
+
+}
+#+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/xml-xpath-gen (beg end)
-  "Call an external Java program to"
+  "Call an external Java program to generate a
+list of xpaths for the document in the current
+region."
   (interactive
    (if (use-region-p)
        (list (region-beginning) (region-end))
@@ -2104,26 +2238,26 @@ Save the recent file history.  This is used by Helm.
          ("M-x" . counsel-M-x)
          ("C-x b" . ivy-switch-buffer)
          ("C-x C-b" . ivy-switch-buffer)
-         ;; ("C-x r l" . helm-bookmarks)
-         ;; ("C-h f" . helm-apropos)
-         ;; ("C-h r" . helm-info-emacs)
-         ;; ("C-h C-l" . helm-locate-library)
-         ("M-y" . counsel-yank-pop)
-         ;; ("C-x C-b" . ry/switch-buffer)
-         ;; ("<f7>" . helm-bookmarks)
-         ;; ("<f8>" . bookmark-set)
-         )
+         ("M-y" . counsel-yank-pop))
   :bind (:map ivy-mode-map ("C-'" . ivy-avy))
-  :config (ivy-mode 1)
+  :config
+  (ivy-mode 1)
+  (counsel-mode 1)
 
   ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
   (setq ivy-use-virtual-buffers t)
 
   ;; number of result lines to display
-  (setq ivy-height 10)
+  (setq ivy-height 15)
 
-  ;; does not count candidates
-  (setq ivy-count-format "")
+  ;; Remove ./ and ../ from ivy
+  (setq ivy-extra-directories nil)
+
+  ;; Color matching portions of candidates.
+  (setq ivy-display-style 'fancy)
+  
+  ;; show candidate count
+  (setq ivy-count-format "(%d/%d) ")
 
   ;; no regexp by default
   (setq ivy-initial-inputs-alist nil)
@@ -2132,7 +2266,7 @@ Save the recent file history.  This is used by Helm.
   (setq ivy-re-builders-alist ;; allow input not in order
         '((t . ivy--regex-ignore-order))))
 #+END_SRC
-
+  
 * God Mode
 
 I am not a huge fan of VIM but I can admit that the modal editing is better for my hands.  I spent all this time getting used to the Emacs keybindings so I am using god-mode instead of evil.
@@ -2196,8 +2330,8 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     (god-mode-all)
 
     ;;  Unbind the usual movement keys so that I am forced to use god mode.
-    (dolist (key '("\C-n" "\C-p" "\C-b" "\C-f" "\C-a" "\C-e"))
-      (global-unset-key key))
+    ;; (dolist (key '("\C-n" "\C-p" "\C-b" "\C-f" "\C-a" "\C-e"))
+    ;;   (global-unset-key key))
     
     (setq god-exempt-major-modes nil)
     (add-to-list 'god-exempt-major-modes 'dired-mode)
@@ -3512,6 +3646,7 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
 (use-package smartparens-config
   :ensure smartparens
   :diminish smartparens-mode
+  :demand t
   :bind (
      ("C-M-a" . sp-beginning-of-sexp)
      ("C-M-e" . sp-end-of-sexp)
@@ -3667,6 +3802,8 @@ The only reason I use git is to save this configuration, but I can see how this 
   :config
   (progn
     (setq magit-use-overlays nil)
+
+    (setq magit-completing-read-function 'ivy-completing-read)
     
     (defadvice magit-status (around magit-fullscreen activate)
       (window-configuration-to-register :magit-fullscreen)
