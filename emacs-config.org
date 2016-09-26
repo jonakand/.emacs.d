@@ -137,6 +137,12 @@ Remove the splash screen.
 (setq inhibit-splash-screen t)
 #+END_SRC
 
+Make the cursor a bar instead of a box.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq cursor-type 'bar)
+#+END_SRC
+
 The mode-line is configured using the code below.  I like to have a simplified mode-line so many of the usual things have been removed.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -2238,7 +2244,8 @@ Save the recent file history.  This is used by Helm.
          ("M-x" . counsel-M-x)
          ("C-x b" . ivy-switch-buffer)
          ("C-x C-b" . ivy-switch-buffer)
-         ("M-y" . counsel-yank-pop))
+         ("M-y" . counsel-yank-pop)
+         ("C-s" . counsel-grep-or-swiper))
   :bind (:map ivy-mode-map ("C-'" . ivy-avy))
   :config
   (ivy-mode 1)
@@ -2254,7 +2261,8 @@ Save the recent file history.  This is used by Helm.
   (setq ivy-extra-directories nil)
 
   ;; Color matching portions of candidates.
-  (setq ivy-display-style 'fancy)
+  ;; (setq ivy-display-style 'fancy)
+  (setq ivy-display-style nil)
   
   ;; show candidate count
   (setq ivy-count-format "(%d/%d) ")
@@ -2349,23 +2357,23 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
     ;;  god-mode.
     (add-hook 'post-command-hook
               #'(lambda ()
-                (cond (buffer-read-only
-                       (set-cursor-color "#7b68ee")
-                       (setq cursor-type 'box))
-                      ((bound-and-true-p god-local-mode)
-                       (set-cursor-color "#b22222")
-                       (setq cursor-type 'box)
-                       (set-face-attribute 'mode-line nil
-                                           :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
-                                           :inverse-video nil
-                                           :box '(:line-width 1 :color "#b22222" :style nil)))
-                      (t
-                       (set-cursor-color "#839496")
-                       (setq cursor-type 'bar)
-                       (set-face-attribute 'mode-line nil
-                                           :foreground "#ffffff" :background "#006400"
-                                           :inverse-video nil
-                                           :box '(:line-width 1 :color "#006400" :style nil))))))))
+                  (cond (buffer-read-only
+                         (set-cursor-color "#7b68ee")
+                         (setq cursor-type 'box))
+                        ((bound-and-true-p god-local-mode)
+                         (set-cursor-color "#b22222")
+                         ;; (setq cursor-type 'box)
+                         (set-face-attribute 'mode-line nil
+                                             :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
+                                             :inverse-video nil
+                                             :box '(:line-width 1 :color "#b22222" :style nil)))
+                        (t
+                         (set-cursor-color "#839496")
+                         ;; (setq cursor-type 'bar)
+                         (set-face-attribute 'mode-line nil
+                                             :foreground "#ffffff" :background "#006400"
+                                             :inverse-video nil
+                                             :box '(:line-width 1 :color "#006400" :style nil))))))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -4346,6 +4354,7 @@ I previously had this in my configuration to make looking at log files easier.  
   :mode 
   (("\\.log\\(\\.[0-9]+\\)?\\(\\.txt\\)?\\'" . log4j-mode))
   :ensure t
+  :disabled t
   :config
   (add-hook 'log4j-mode-hook #'(lambda () 
                                  (visual-line-mode 1)
