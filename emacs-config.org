@@ -160,13 +160,15 @@ The mode-line is configured using the code below.  I like to have a simplified m
   "Concat the current clocking item and the time spent into a
 propertized string.  If no item is being clocked return a no
 clocking string"
-  (if org-clock-current-task
-      (progn
-        (concat 
-         (propertize org-clock-current-task 'face 'ry/current-task-face)
-         " : "
-         (propertize (org-minutes-to-clocksum-string (org-clock-get-clocked-time)) 'face 'ry/current-time-face)))
-    (propertize "Not clocking" 'face 'ry/current-time-face)))
+  (cond (org-clock-current-task
+         (concat 
+          (propertize org-clock-current-task 'face 'ry/current-task-face)
+          " : "
+          (propertize (org-minutes-to-clocksum-string (org-clock-get-clocked-time)) 'face 'ry/current-time-face)))
+        ((get-buffer "CAPTURE-refile.org")
+         (propertize "Capturing" 'face 'ry/current-time-face))
+        ((t)
+         (propertize "Not clocking" 'face 'ry/current-time-face))))
 
 (setq-default mode-line-format
               '("%e"
