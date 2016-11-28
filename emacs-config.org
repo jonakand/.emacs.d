@@ -2292,96 +2292,96 @@ In addition to adding keybindings to help work with this mode I have added a hoo
 A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-mode/issues/77]].
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package god-mode
-  :ensure t
-  :bind (("<escape>" . god-local-mode))
-  :bind (:map god-local-mode-map
-              ("z" . repeat)
-              ("i" . god-local-mode)
-              ("v" . scroll-up-command)
-              ("r" . ry/replace-character-at-point)
-              ("DEL" . delete-backward-char)              
-              ("C-n" . next-line)
-              ("C-p" . previous-line)
-              ("C-f" . forward-char)
-              ("C-b" . backward-char)
-              ("C-a" . beginning-of-line)
-              ("C-e" . end-of-line)
-              ("C-c C-x C-f" . ry/xml-format)
-              ("C-c C-x C-l" . ry/xml-linearlize)
-              ("C-c C-x C-w" . ry/xml-where)
-              ("C-c C-d C-s" . ry/sql-send-dwim)
-              ("C-c C-d C-e" . ry/sql-export-dwim)
-              ("C-c C-d C-o" . ry/sql-open-database)
-              ("C-c C-d C-O" . ry/sql-reopen-database)
-              ("C-c C-d C-r" . sql-send-region)
-              ("C-c C-d C-d" . ry/sql-disconnect)
-              ("C-c C-d C-q" . ry/sql-quit)
-              ("C-x C-g" . magit-status)
-              ("C-c C-g" . magit-status)
-              ("C-c C-e C-p" . eclim-problems)
-              ("C-c C-e C-c" . eclim-problems-correct)
-              ("C-c C-e C-f" . eclim-java-format)
-              ("C-c C-e C-o" . eclim-java-import-organize)
-              ("C-c C-e C-g" . eclim-java-generate-getter-and-setter)
-              ("C-c C-e C-r" . eclim-java-refactor-rename-symbol-at-point)
-              ("C-c C-e C-i" . eclim-java-implement)
-              ("C-c C-e C-." . eclim-java-find-declaration)
-              ("C-c C-e C-t" . eclim-java-find-type)
-              ("C-c C-e C-," . eclim-java-find-references)
-              ("C-x C-1" . delete-other-windows)
-              ("C-x C-2" . sacha/vsplit-last-buffer)
-              ("C-x C-3" . sacha/hsplit-last-buffer)
-              ("C-x C-0" . delete-window)
-              ("C-x C-k" . kill-this-buffer)
-              ("C-x C-S-k" . kill-other-buffers)
-              ("C-x C-o" . other-window)
-              ("C-x C-n" . narrow-or-widen-dwim)
-              ("C-c C-r" . org-capture)
-              ("C-C C-a" . org-agenda)
-              ("C-x C-h" . mark-whole-buffer)
-              ("C-x C-d" . dired))
-  :init
-  (progn
-    (god-mode-all)
+  (use-package god-mode
+    :ensure t
+    :bind (("<escape>" . god-local-mode))
+    :bind (:map god-local-mode-map
+                ("z" . repeat)
+                ("i" . god-local-mode)
+                ("v" . scroll-up-command)
+                ("r" . ry/replace-character-at-point)
+                ("DEL" . delete-backward-char)              
+                ("C-n" . next-line)
+                ("C-p" . previous-line)
+                ("C-f" . forward-char)
+                ("C-b" . backward-char)
+                ("C-a" . beginning-of-line)
+                ("C-e" . end-of-line)
+                ("C-c C-x C-f" . ry/xml-format)
+                ("C-c C-x C-l" . ry/xml-linearlize)
+                ("C-c C-x C-w" . ry/xml-where)
+                ("C-c C-d C-s" . ry/sql-send-dwim)
+                ("C-c C-d C-e" . ry/sql-export-dwim)
+                ("C-c C-d C-o" . ry/sql-open-database)
+                ("C-c C-d C-O" . ry/sql-reopen-database)
+                ("C-c C-d C-r" . sql-send-region)
+                ("C-c C-d C-d" . ry/sql-disconnect)
+                ("C-c C-d C-q" . ry/sql-quit)
+                ("C-x C-g" . magit-status)
+                ("C-c C-g" . magit-status)
+                ("C-c C-e C-p" . eclim-problems)
+                ("C-c C-e C-c" . eclim-problems-correct)
+                ("C-c C-e C-f" . eclim-java-format)
+                ("C-c C-e C-o" . eclim-java-import-organize)
+                ("C-c C-e C-g" . eclim-java-generate-getter-and-setter)
+                ("C-c C-e C-r" . eclim-java-refactor-rename-symbol-at-point)
+                ("C-c C-e C-i" . eclim-java-implement)
+                ("C-c C-e C-." . eclim-java-find-declaration)
+                ("C-c C-e C-t" . eclim-java-find-type)
+                ("C-c C-e C-," . eclim-java-find-references)
+                ("C-x C-1" . delete-other-windows)
+                ("C-x C-2" . sacha/vsplit-last-buffer)
+                ("C-x C-3" . sacha/hsplit-last-buffer)
+                ("C-x C-0" . delete-window)
+                ("C-x C-k" . kill-this-buffer)
+                ("C-x C-S-k" . kill-other-buffers)
+                ("C-x C-o" . other-window)
+                ("C-x C-n" . narrow-or-widen-dwim)
+                ("C-c C-r" . org-capture)
+                ("C-C C-a" . org-agenda)
+                ("C-x C-h" . mark-whole-buffer)
+                ("C-x C-d" . dired))
+    :init
+    (progn
+      (god-mode-all)
 
-    ;;  Unbind the usual movement keys so that I am forced to use god mode.
-    ;; (dolist (key '("\C-n" "\C-p" "\C-b" "\C-f" "\C-a" "\C-e"))
-    ;;   (global-unset-key key))
-    
-    (setq god-exempt-major-modes nil)
-    (add-to-list 'god-exempt-major-modes 'dired-mode)
-    (add-to-list 'god-exempt-major-modes 'org)
-    (add-to-list 'god-exempt-major-modes 'eshell-mode)
-    (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
-    (add-to-list 'god-exempt-major-modes 'magit-popup-mode)
-    (add-to-list 'god-exempt-major-modes 'magit-popup-help-mode)
-    (add-to-list 'god-exempt-major-modes 'magit-status-mode)
-    (add-to-list 'god-exempt-major-modes 'magit-mode)
-    (add-to-list 'god-exempt-major-modes 'special-mode)
+      ;;  Unbind the usual movement keys so that I am forced to use god mode.
+      ;; (dolist (key '("\C-n" "\C-p" "\C-b" "\C-f" "\C-a" "\C-e"))
+      ;;   (global-unset-key key))
+      
+      (setq god-exempt-major-modes nil)
+      (add-to-list 'god-exempt-major-modes 'dired-mode)
+      (add-to-list 'god-exempt-major-modes 'org)
+      (add-to-list 'god-exempt-major-modes 'eshell-mode)
+      (add-to-list 'god-exempt-major-modes 'org-agenda-mode)
+      (add-to-list 'god-exempt-major-modes 'magit-popup-mode)
+      (add-to-list 'god-exempt-major-modes 'magit-popup-help-mode)
+      (add-to-list 'god-exempt-major-modes 'magit-status-mode)
+      (add-to-list 'god-exempt-major-modes 'magit-mode)
+      (add-to-list 'god-exempt-major-modes 'special-mode)
 
-    ;;  Change the color of the cursor to RED if god-mode is enabled.  If the file is
-    ;;  read-only than change the cursor to a purple box and disallow changing from
-    ;;  god-mode.
-    (add-hook 'post-command-hook
-              #'(lambda ()
-                  (cond (buffer-read-only
-                         (set-cursor-color "#7b68ee")
-                         (setq cursor-type 'box))
-                        ((bound-and-true-p god-local-mode)
-                         (set-cursor-color "#b22222")
-                         ;; (setq cursor-type 'box)
-                         (set-face-attribute 'mode-line nil
-                                             :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
-                                             :inverse-video nil
-                                             :box '(:line-width 1 :color "#b22222" :style nil)))
-                        (t
-                         (set-cursor-color "#839496")
-                         ;; (setq cursor-type 'bar)
-                         (set-face-attribute 'mode-line nil
-                                             :foreground "#ffffff" :background "#006400"
-                                             :inverse-video nil
-                                             :box '(:line-width 1 :color "#006400" :style nil))))))))
+      ;;  Change the color of the cursor to RED if god-mode is enabled.  If the file is
+      ;;  read-only than change the cursor to a purple box and disallow changing from
+      ;;  god-mode.
+      (add-hook 'post-command-hook
+                #'(lambda ()
+                    (cond (buffer-read-only
+                           (set-cursor-color "#7b68ee"))
+                           ;; (setq cursor-type 'box))
+                          ((bound-and-true-p god-local-mode)
+                           (set-cursor-color "#b22222")
+                           ;; (setq cursor-type 'box)
+                           (set-face-attribute 'mode-line nil
+                                               :foreground "#ffffff" :background "#b22222" ;;"#ff1493"
+                                               :inverse-video nil
+                                               :box '(:line-width 1 :color "#b22222" :style nil)))
+                          (t
+                           (set-cursor-color "#839496")
+                           ;; (setq cursor-type 'bar)
+                           (set-face-attribute 'mode-line nil
+                                               :foreground "#ffffff" :background "#006400"
+                                               :inverse-video nil
+                                               :box '(:line-width 1 :color "#006400" :style nil))))))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
