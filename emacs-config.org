@@ -3704,59 +3704,59 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
     (require 'smartparens-config)
     
     ;;  org-mode config.
-    (sp-with-modes 'org-mode
-      (sp-local-pair "*" "*" :actions '(insert wrap) :unless '(sp-point-after-word-p sp-point-at-bol-p) :wrap "C-*" :skip-match 'sp--org-skip-asterisk)
-      (sp-local-pair "_" "_" :unless '(sp-point-after-word-p) :wrap "C-_")
-      (sp-local-pair "/" "/" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
-      (sp-local-pair "~" "~" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
-      (sp-local-pair "=" "=" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
-      (sp-local-pair "«" "»"))
+    ;; (sp-with-modes 'org-mode
+    ;;   (sp-local-pair "*" "*" :actions '(insert wrap) :unless '(sp-point-after-word-p sp-point-at-bol-p) :wrap "C-*" :skip-match 'sp--org-skip-asterisk)
+    ;;   (sp-local-pair "_" "_" :unless '(sp-point-after-word-p) :wrap "C-_")
+    ;;   (sp-local-pair "/" "/" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+    ;;   (sp-local-pair "~" "~" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+    ;;   (sp-local-pair "=" "=" :unless '(sp-point-after-word-p) :post-handlers '(("[d1]" "SPC")))
+    ;;   (sp-local-pair "«" "»"))
 
-    (defun sp--org-skip-asterisk (ms mb me)
-      (or (and (= (line-beginning-position) mb)
-               (eq 32 (char-after (1+ mb))))
-          (and (= (1+ (line-beginning-position)) me)
-               (eq 32 (char-after me)))))
+    ;; (defun sp--org-skip-asterisk (ms mb me)
+    ;;   (or (and (= (line-beginning-position) mb)
+    ;;            (eq 32 (char-after (1+ mb))))
+    ;;       (and (= (1+ (line-beginning-position)) me)
+    ;;            (eq 32 (char-after me)))))
 
     ;;  lisp-modes config
-    (sp-with-modes sp-lisp-modes
-      (sp-local-pair "(" nil
-                     :wrap "C-("
-                     :pre-handlers '(my-add-space-before-sexp-insertion)
-                     :post-handlers '(my-add-space-after-sexp-insertion)))
+    ;; (sp-with-modes sp-lisp-modes
+    ;;   (sp-local-pair "(" nil
+    ;;                  :wrap "C-("
+    ;;                  :pre-handlers '(my-add-space-before-sexp-insertion)
+    ;;                  :post-handlers '(my-add-space-after-sexp-insertion)))
    
-    (defun my-add-space-after-sexp-insertion (id action _context)
-      (when (eq action 'insert)
-        (save-excursion
-          (forward-char (sp-get-pair id :cl-l))
-          (when (or (eq (char-syntax (following-char)) ?w)
-                    (looking-at (sp--get-opening-regexp)))
-            (insert " ")))))
+    ;; (defun my-add-space-after-sexp-insertion (id action _context)
+    ;;   (when (eq action 'insert)
+    ;;     (save-excursion
+    ;;       (forward-char (sp-get-pair id :cl-l))
+    ;;       (when (or (eq (char-syntax (following-char)) ?w)
+    ;;                 (looking-at (sp--get-opening-regexp)))
+    ;;         (insert " ")))))
 
-    (defun my-add-space-before-sexp-insertion (id action _context)
-      (when (eq action 'insert)
-        (save-excursion
-          (backward-char (length id))
-          (when (or (eq (char-syntax (preceding-char)) ?w)
-                    (and (looking-back (sp--get-closing-regexp))
-                         (not (eq (char-syntax (preceding-char)) ?'))))
-            (insert " ")))))
+    ;; (defun my-add-space-before-sexp-insertion (id action _context)
+    ;;   (when (eq action 'insert)
+    ;;     (save-excursion
+    ;;       (backward-char (length id))
+    ;;       (when (or (eq (char-syntax (preceding-char)) ?w)
+    ;;                 (and (looking-back (sp--get-closing-regexp))
+    ;;                      (not (eq (char-syntax (preceding-char)) ?'))))
+    ;;         (insert " ")))))
     
     ;;  java-mode config.
-    (sp-with-modes 'java-mode
-      (sp-local-pair "{" nil :post-handlers '(("||\n[i]" "RET")))
-      (sp-local-pair "/*" "*/" :post-handlers '((" | " "SPC")
-                                                ("* ||\n[i]" "RET"))))
+    ;; (sp-with-modes 'java-mode
+    ;;   (sp-local-pair "{" nil :post-handlers '(("||\n[i]" "RET")))
+    ;;   (sp-local-pair "/*" "*/" :post-handlers '((" | " "SPC")
+    ;;                                             ("* ||\n[i]" "RET"))))
 
     ;;  nxml-mode config.
-    (sp-with-modes 'nxml-mode     
-      (sp-local-pair "<!--" "-->")
-      (sp-local-pair "<" ">"))
+    ;; (sp-with-modes 'nxml-mode     
+    ;;   (sp-local-pair "<!--" "-->")
+    ;;   (sp-local-pair "<" ">"))
     
     ;;  web-mode config.
-    (sp-with-modes 'web-mode
-      (sp-local-pair "<!--" "-->")
-      (sp-local-pair "<%--" "--%>"))
+    ;; (sp-with-modes 'web-mode
+    ;;   (sp-local-pair "<!--" "-->")
+    ;;   (sp-local-pair "<%--" "--%>"))
     ))
 #+END_SRC
 
