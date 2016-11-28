@@ -4070,16 +4070,16 @@ Lisp mode hooks for cask files for if/when I start looking in to cask.
 I do not write Clojure code but I would like to learn when time permits.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-;; (use-package cider
-;;   :ensure t
-;;   :disabled t
-;;  :bind (("<f10>" . cider-jack-in))
-  ;; :config
-  ;; (progn
-  ;;   (add-hook 'cider-mode-hook #'eldoc-mode)
-  ;;   (setq nrepl-hide-special-buffers t)
-  ;;   (setq cider-repl-tab-command #'indent-for-tab-command)
-  ;;   (add-hook 'cider-repl-mode-hook #'subword-mode)))
+(use-package cider
+  :ensure t
+  :if (not (at-work-p))
+  :bind (("<f10>" . cider-jack-in))
+  :config
+  (progn
+    (add-hook 'cider-mode-hook #'eldoc-mode)
+    (setq nrepl-hide-special-buffers t)
+    (setq cider-repl-tab-command #'indent-for-tab-command)
+    (add-hook 'cider-repl-mode-hook #'subword-mode)))
 #+END_SRC
 
 *** Haskell
