@@ -4341,6 +4341,7 @@ Fix annoying buffer popups.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package popwin
   :ensure t
+  :disabled t
   :config
   (popwin-mode))
 #+END_SRC
