@@ -69,9 +69,54 @@ My init.el file contains the lines below.  It is just enough to bootstrap use-pa
 
 This section will contain a table of keys that are defined in this file.
 
-| Key | Command | Usage |
-|-----+---------+-------|
-|     |         |       |
+| Key         | Command                                    | Usage |
+|-------------+--------------------------------------------+-------|
+| C-c C-d C-d | ry/sql-disconnect                          |       |
+| C-c C-d C-e | ry/sql-export-dwim                         |       |
+| C-c C-d C-o | ry/sql-open-database                       |       |
+| C-c C-d C-O | ry/sql-reopen-database                     |       |
+| C-c C-d C-r | sql-send-region                            |       |
+| C-c C-d C-s | ry/sql-send-dwim                           |       |
+| C-c C-d C-d | ry/sql-disconnect                          |       |
+| C-c C-d C-q | ry/sql-quit                                |       |
+| C-c C-x C-f | ry/xml-format                              |       |
+| C-c C-x C-l | ry/xml-linearlize                          |       |
+| C-c C-x C-w | ry/xml-where                               |       |
+|             | Run xquery on buffer                       |       |
+|             | Run xquery on region                       |       |
+| C-x C-g     | magit-status                               |       |
+| C-c -C-g    | magit-status                               |       |
+| C-c C-e C-p | eclim-problems                             |       |
+| C-c C-e C-c | eclim-problems-correct                     |       |
+| C-c C-e C-f | eclim-format                               |       |
+| C-c C-e C-o | eclim-java-import-organize                 |       |
+| C-c C-e C-g | eclim-java-generate-getter-and-setter      |       |
+| C-c C-e C-r | eclim-java-refactor-rename-symbol-at-point |       |
+| C-c C-e C-i | eclim-java-implement                       |       |
+| C-c C-e C-. | eclim-java-find-declaration                |       |
+| C-c C-e C-t | eclim-java-find-type                       |       |
+| C-c C-e C-, | eclim-java-find-references                 |       |
+| C-x C-1     | delete-other-windows                       |       |
+| C-x C-2     | sacha/vsplit-last-buffer                   |       |
+| C-x C-3     | sacha/hsplit-last-buffer                   |       |
+| C-x C-0     | delete-window                              |       |
+| C-x C-k     | kill-this-buffer                           |       |
+| C-x C-S-k   | kill-other-buffers                         |       |
+| C-x C-o     | other-window                               |       |
+| C-x C-n     | narrow-or-widen-dwim                       |       |
+| C-c C-r     | org-capture                                |       |
+| C-C C-a     | org-agenda                                 |       |
+| C-x C-h     | mark-whole-buffer                          |       |
+| C-x C-d     | dired                                      |       |
+| C-M-s       | ivy-occur                                  |       |
+| C-x C-f     | counsel-find-file                          |       |
+| M-x         | counsel-M-x                                |       |
+| C-x b       | ivy-switch-buffer                          |       |
+| C-x C-b     | ivy-switch-buffer                          |       |
+| M-y         | counsel-yank-pop                           |       |
+| C-s         | counsel-grep-or-swiper                     |       |
+| C-'         | ivy-avy                                    |       |
+|             |                                            |       |
 
 * Startup
 
