@@ -701,7 +701,8 @@ Text manipulation helpers.  Need to do some more research on this.  Cannot remem
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package move-text
-  :ensure t)
+  :ensure t
+  :disabled t)
 #+END_SRC
 
 I like to know where column 80 is.  This used to be a big deal years ago and is not so much an issue now but I sill like to know where it is in the rare event that I need to print a listing.
