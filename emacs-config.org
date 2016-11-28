@@ -3661,8 +3661,9 @@ This Smartparens configuration was taken from https://github.com/mwfogleman/conf
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package smartparens-config
   :ensure smartparens
+  :disabled t
   :diminish smartparens-mode
-  :demand t
+  ;; :demand t
   :bind (
      ("C-M-a" . sp-beginning-of-sexp)
      ("C-M-e" . sp-end-of-sexp)
