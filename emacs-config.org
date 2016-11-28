@@ -2264,8 +2264,8 @@ Save the recent file history.  This is used by Helm.
   (setq ivy-extra-directories nil)
 
   ;; Color matching portions of candidates.
-  ;; (setq ivy-display-style 'fancy)
-  (setq ivy-display-style nil)
+  (setq ivy-display-style 'fancy)
+  ;;(setq ivy-display-style nil)
   
   ;; show candidate count
   (setq ivy-count-format "(%d/%d) ")
@@ -2276,6 +2276,11 @@ Save the recent file history.  This is used by Helm.
   ;; configure regexp engine.
   (setq ivy-re-builders-alist ;; allow input not in order
         '((t . ivy--regex-ignore-order))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package smex
+  :ensure t)
 #+END_SRC
   
 * God Mode
