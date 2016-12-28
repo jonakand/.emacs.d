@@ -2284,6 +2284,11 @@ Save the recent file history.  This is used by Helm.
 * Ivy
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package counsel
+  :ensure t)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package ivy 
   :ensure t
   :diminish (ivy-mode . "")
@@ -2328,6 +2333,14 @@ Save the recent file history.  This is used by Helm.
   :ensure t)
 #+END_SRC
   
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package ivy-rich
+  :ensure t
+  :after ivy
+  :config
+  (ivy-set-display-transformer 'ivy-switch-buffer 'ivy-rich-switch-buffer-transformer))
+#+END_SRC
+
 * God Mode
 
 I am not a huge fan of VIM but I can admit that the modal editing is better for my hands.  I spent all this time getting used to the Emacs keybindings so I am using god-mode instead of evil.
