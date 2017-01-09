@@ -2481,7 +2481,8 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
           ("<f9> n" . ry/org-start-note))
   :bind (:map org-agenda-mode-map
               ("x" . nil)
-              ("q" . nil))
+              ("q" . nil)
+              ("b" . nil))
   :config
   (progn    
     (use-package org-bullets
@@ -2775,7 +2776,7 @@ Switch projects and subprojects from NEXT back to TODO"
                                    "~/emacs/Org/das.org")))
 
     (setq org-todo-keywords
-          (quote ((sequence "TODO(t)" "NEXT(n)" "MIGRATED(m)" "|" "DONE(d)" "RESCHEDULED(r)")
+          (quote ((sequence "TODO(t)" "NEXT(n)" "MIGRATED(m)" "MEETING(g)" "EMAIL(e)" "|" "DONE(d)" "RESCHEDULED(r)")
                   (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
 
     (setq org-todo-keyword-faces
@@ -2785,7 +2786,9 @@ Switch projects and subprojects from NEXT back to TODO"
                   ("WAITING" :foreground "orange" :weight bold)
                   ("HOLD" :foreground "magenta" :weight bold)
                   ("CANCELLED" :foreground "forest green" :weight bold)
-                  ("MIGRATED" :foreground "sea green" :weight bold))))
+                  ("MIGRATED" :foreground "sea green" :weight bold)
+                  ("MEETING" :foreground "lemon chiffon" :weight bold)
+                  ("EMAIL" :foreground "saddle brown" :weight bold))))
 
     (setq org-use-fast-todo-selection t)
 
@@ -2795,11 +2798,12 @@ Switch projects and subprojects from NEXT back to TODO"
           (quote (("CANCELLED" ("CANCELLED" . t))
                   ("WAITING" ("WAITING" . t))
                   ("HOLD" ("WAITING" . t) ("HOLD" . t))
-                  (done ("WAITING") ("HOLD"))
+                  ("DONE" ("WAITING") ("HOLD"))
                   ("TODO" ("WAITING") ("CANCELLED") ("HOLD"))
+                  ("MEETING" ("CANCELLED") ("RESCHEDULED") ("DONE"))
                   ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
                   ("DONE" ("WAITING") ("CANCELLED") ("HOLD"))
-                  ("MIGRATED" ("MIGRATED" . t) ("WAITING") ("CANCELLED") ("HOLD")))))
+                  ("MIGRATED" ("MIGRATED" . t) ("WAITING") ("CANCELLED") ("HOLD") ("DONE")))))
 
     (setq org-directory "~/emacs/Org")
     (setq org-default-notes-file "~/emacs/Org/refile.org")
@@ -2837,11 +2841,12 @@ Switch projects and subprojects from NEXT back to TODO"
 
     (setq org-refile-target-verify-function 'bh/verify-refile-target)
 
-    ;; Do not dim blocked tasks
-    (setq org-agenda-dim-blocked-tasks nil)
+    ;; Dim blocked tasks 
+    (setq org-enforce-todo-dependencies t)
+    (setq org-agenda-dim-blocked-tasks nil) 
 
-    ;; Compact the block agenda view
-    (setq org-agenda-compact-blocks t)
+    ;; Compact the block agenda view (disabled) 
+    (setq org-agenda-compact-blocks nil) 
 
     ;; Custom agenda command definitions
     (setq org-agenda-custom-commands
@@ -2853,10 +2858,23 @@ Switch projects and subprojects from NEXT back to TODO"
                     (org-agenda-sorting-strategy
                      '(todo-state-down effort-up category-keep))))
                   (" " "Agenda"
-                   ((agenda "" nil)
+                   ((agenda "" ((org-agenda-overriding-header "Todays Schedule:")
+                                (org-agenda-span 1)
+                                (org-agenda-start-on-weekday nil)
+                                (org-agenda-start-day "+0d")
+                                (org-agenda-todo-ignore-deadlines nil)))                    
+                    (agenda "" ((org-agenda-overriding-header "Week At A Glance:")
+                                (org-agenda-span
+                                 (cond ((s-equals? () "Mon") 4)
+                                       ((s-equals? () "Tue") 3)
+                                       ((s-equals? () "Wed") 2)
+                                       ((s-equals? () "Thu") 1)
+                                       (t 0)))
+                                (org-agenda-start-day "+1d")
+                                (org-agenda-prefix-format '((agenda . "  %-12:c%?-12t %s [%b]")))))
                     (tags-todo "REFILE"
                                ((org-agenda-overriding-header "Tasks to Refile")
-                                (org-tags-match-list-sublevels nil)))
+                                (org-tags-match-list-sublevels nil)))                    
                     (tags-todo "-HOLD-CANCELLED/!"
                                ((org-agenda-overriding-header "Projects")
                                 (org-agenda-skip-function 'bh/skip-non-projects)
@@ -3090,8 +3108,8 @@ Switch projects and subprojects from NEXT back to TODO"
                                        (0900 1100 1300 1500 1700))))
 
     ;; Display tags farther right
-    ;; (setq org-agenda-tags-column -130)
-    (setq org-agenda-tags-column -80)
+    (setq org-agenda-tags-column -130)
+    ;; (setq org-agenda-tags-column -80)
 
     (setq org-agenda-cmp-user-defined 'bh/agenda-sort)
 
