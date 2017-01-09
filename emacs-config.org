@@ -1009,7 +1009,7 @@ Custom function for opening DB2 database connections.  This may not be the best 
 (defun ry/sql-open-database (database username password)
   "Open a SQLI process and name the SQL statement window with the name provided."
   (interactive (list
-                (read-string "Database: ")
+                (ivy-read "Database: " ry/company-database-list)
                 (read-string "Username: ")
                 (read-passwd "Password: ")))
   (god-local-mode)
@@ -1223,6 +1223,62 @@ To make looking at results easier the function below can be used to convert a re
     (delete-region beg end)
     (goto-char beg)
     (insert table)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun ry/sql-kill-as-tab-delimited (beg end)
+  "Kill the active region as a tab delimited verion of
+itself.  The top line in the region is assumed to have
+the column headers from a DB2 query result."
+  (interactive "r")
+  (let* ((buf (current-buffer))
+         (table
+          (with-temp-buffer
+            (insert-buffer-substring-no-properties buf beg end)
+            (goto-char (point-min))
+
+            ;;  Move past the first column      
+            (forward-whitespace 1)
+            
+            (let ((pt (point))
+                  (lc (count-lines (point-min) (point-max)))
+                  (d))
+
+              ;;  Loop over each whitespace delimited column
+              ;;  on the first line.
+              (while (= (line-number-at-pos) 1)
+
+                ;;  Loop over each row in the column and
+                ;;  add pipes on each line.
+                (while (and (<= (line-number-at-pos) lc)
+                            (eq d nil))
+                  (insert "|")
+
+                  ;;  If not at the bottom of a column go
+                  ;;  to the next row and backup one
+                  ;;  character else set a flag to denote
+                  ;;  that the bottom of a column was hit.
+                  (if (/= (line-number-at-pos) lc)
+                      (progn
+                        (next-logical-line 1)
+                        (goto-char (- (point) 1)))
+                    (setq d t)))
+
+                ;;  Go back to the top of the current column (pt),
+                ;;  set pt to point to remember where the top of
+                ;;  the column is, move to the next column, and
+                ;;  reset the of the column flag (d).
+                (goto-char pt)
+                (forward-whitespace 1)
+                (setq pt (point))
+                (setq d nil)))
+
+            ;;  Replace the pipes that were inserted with TAB
+            ;;  characters.
+            (goto-char (point-min))
+            (while (search-forward-regexp "\\s-*|" nil t)
+              (replace-match "\t"))
+            (kill-region (point-min) (point-max)))))))
 #+END_SRC
 
 The function below is used quite often.  It is not the prettiest but it gets the job done.  It will wrap the current SQL statement in an EXPORT prior to sending.  This is helpful when I want to see a large XML document or I want to retrieve a row that exceeds the maximum number of characters that the DB2 CLP will return.
