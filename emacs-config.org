@@ -1743,7 +1743,7 @@ Macro for unescaping double quotes in an XML document.  This should be temporary
 
 ** NXML
 
-Use the fantastic NXML mode for XML editing.  Folding of a document based on the current tag is bound to ==C-c h== but as much as I like the idea of folding I don't end up using it very much.
+Use the fantastic NXML mode for XML editing.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package nxml-mode
@@ -4431,6 +4431,7 @@ Helps to discover keybindings for the current mode.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package discover-my-major
   :ensure t
+  :disabled t
   :commands discover-my-major)
 #+END_SRC
 
