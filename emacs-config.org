@@ -740,11 +740,12 @@ I am very poor at spelling.  The following will enable flyspell and use Hunspell
 #+END_SRC
 
 Flyspell will need a couple environment variables set to know what the default dictionary is and its path.  This may be done in Linux but is not done properly in Windows, so set it up here.
-
+thsat 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code  
 (if (windows-p)
     (progn
       (setenv "DICTIONARY" "en_US")
+      (setenv "LANG" "en_US")
       (setenv "DICPATH" "~/emacs/Hunspell/share/hunspell"))
   (progn
     (setenv "DICTIONARY" "en US")
