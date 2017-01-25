@@ -2585,6 +2585,10 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
     ;;  Set the org ellipsis to something nicer.
     (setq org-ellipsis " ▾")
 
+    ;;  Set this so that the agenda doesn't show scheduled: next to items in the calendar if they are scheduled
+    ;;  it seems silly to show scheduled if we know it is scheduled.
+    (setq org-agenda-scheduled-leaders '("" "Sched.%2dx: "))
+
     (defun ry/org-start-note ()
       "Small function to insert an inactive timestamp and a hyphen to start a note."
       (interactive)      
@@ -2600,6 +2604,7 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
     (setq org-clock-goto-hook 'ry/org-agenda-after-show-hook)
 
     (setq org-agenda-span 2)
+    (setq org-agenda-timegrid-use-ampm t)
     (setq org-agenda-time-grid
           '((daily today require-timed)
             "----------------"
@@ -2888,13 +2893,13 @@ Switch projects and subprojects from NEXT back to TODO"
                                 (org-agenda-todo-ignore-deadlines nil)))                    
                     (agenda "" ((org-agenda-overriding-header "Week At A Glance:")
                                 (org-agenda-span
-                                 (cond ((s-equals? () "Mon") 4)
-                                       ((s-equals? () "Tue") 3)
-                                       ((s-equals? () "Wed") 2)
-                                       ((s-equals? () "Thu") 1)
+                                 (cond ((s-equals? (format-time-string "%a") "Mon") 4)
+                                       ((s-equals? (format-time-string "%a") "Tue") 3)
+                                       ((s-equals? (format-time-string "%a") "Wed") 2)
+                                       ((s-equals? (format-time-string "%a") "Thu") 1)
                                        (t 0)))
                                 (org-agenda-start-day "+1d")
-                                (org-agenda-prefix-format '((agenda . "  %-12:c%?-12t %s [%b]")))))
+                                (org-agenda-prefix-format '((agenda . "  %-12:c%?-12t %s")))))
                     (tags-todo "REFILE"
                                ((org-agenda-overriding-header "Tasks to Refile")
                                 (org-tags-match-list-sublevels nil)))                    
