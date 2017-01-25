@@ -1003,36 +1003,59 @@ The key bindings for SQL related commands are below.  The reasoning for using C-
 
 ** Functions
 
-Custom function for opening DB2 database connections.  This may not be the best way to achieve multiple database connections at once as the SQLi hook is not being invoked but I do not have enough knowledge of sql.el to find the solution.
+Custom function for opening DB2 database connections.  This is customized to the naming convention used at my employer.  Database names along with environments are stored in lists in a custom company config.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(defun ry/sql-open-database (database username password)
-  "Open a SQLI process and name the SQL statement window with the name provided."
+(defun ry/sql-open-database (database environment username password)
+  "Open a SQLi process and name the SQL statement window with the name provided."
   (interactive (list
                 (ivy-read "Database: " ry/company-database-list)
+                (ivy-read "Environment: " ry/company-environment-list)
                 (read-string "Username: ")
                 (read-passwd "Password: ")))
-  (god-local-mode)
-  (setq sql-set-product "db2")
-  
-  (sql-db2 (upcase database))
-  (sql-rename-buffer (upcase database))
-  (setq sql-buffer (current-buffer))
-  (sql-send-string (concat "CONNECT TO " database " USER " username " USING " password ";"))
-  
-  ;;  These will be used later by midnight mode.
-  (set (make-local-variable 'database-name) (upcase database))
-  (set (make-local-variable 'database-conn-p) t)
-  (add-to-list 'db-buffers-list (current-buffer))
+  (let* ((u-database-name (concat (upcase database) (upcase environment)))
+         (sql-buffer-name (concat "*SQL: " u-database-name "*"))
+         (db-buffer-name (concat "*DB: " u-database-name "*")))
+    (cond ((get-buffer sql-buffer-name)
+           (message "Database buffers exist, switching to them...")
 
-  (other-window 1)
-  (switch-to-buffer (concat "*DB:" (upcase database) "*"))
-  (sql-mode)
-  (sql-set-product "db2")
-  (setq sql-buffer (concat "*SQL: " (upcase database) "*"))
+           ;;  Buffers exist for the database selected so open the SQL
+           ;;  and DB buffers side-by-side getting rid of other windows.
+           (switch-to-buffer db-buffer-name)
+           (delete-other-windows)
+           (split-window-horizontally)
+           (other-window 1)
+           (switch-to-buffer sql-buffer-name)
+           (other-window 1))
+          (t
+           (god-local-mode)
+           (setq sql-set-product "db2")
 
-  ;; This will be used by disconnect and quit.
-  (set (make-local-variable 'database-name) (upcase database)))
+           ;;  Open *SQL* buffer, start SQLi process, and rename the
+           ;;  buffer to make it match the database being connected to.
+           (sql-db2 u-database-name)
+           (sql-rename-buffer u-database-name)
+
+           ;;  Send connection string to process.
+           (sql-send-string (concat "CONNECT TO " u-database-name " USER " username " USING " password ";"))
+           
+           ;;  These will be used later to automatically disconnect from the
+           ;;  database if it is left connected.  
+           (set (make-local-variable 'database-name) u-database-name)
+           (set (make-local-variable 'database-conn-p) t)
+           (add-to-list 'db-buffers-list (current-buffer))
+
+           ;;  sql-mode split the frame so move to the other side, switch
+           ;;  to the DB buffer, and set things up so that it will interact
+           ;;  with the SQLi process.
+           (other-window 1)
+           (switch-to-buffer db-buffer-name)
+           (sql-mode)
+           (sql-set-product "db2")
+
+           ;;  Set the buffer to send SQL queries to.
+           (setq sql-buffer sql-buffer-name)
+           (set (make-local-variable 'database-name) u-database-name)))))
 #+END_SRC
 
 Simple method to disconnect from the database currently connected to.  This assumes that the current connection matches the buffer local variable that holds the database name.
