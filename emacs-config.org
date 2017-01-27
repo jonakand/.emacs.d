@@ -1146,15 +1146,32 @@ to sending."
     (save-excursion
       (narrow-to-region beg end)
       (goto-char (point-min))
-      (cond
-       ((search-forward-regexp "select" nil t)       
-        (if (search-forward-regexp "fetch" nil t)         
-            (sql-send-string (buffer-substring-no-properties beg end))
-          (progn
-            (replace-regexp ";" "\n FETCH FIRST 50 ROWS ONLY WITH UR;")
-            (sql-send-string (buffer-substring-no-properties beg (point-max))))))
-       (t
-        (sql-send-string (buffer-substring-no-properties beg end)))))))
+      (when (search-forward "select" nil t)
+        (let ((sql-contains-fetch (buffer-contains-substring "fetch"))
+              (sql-contains-with (buffer-contains-substring "with")))
+          (cond         
+           ((and sql-contains-fetch (not sql-contains-with))
+            (while (search-forward ";" nil t)
+              (replace-match "\n  WITH UR;")))
+           ((and (not sql-contains-fetch) sql-contains-with)
+            (goto-char (point-min))
+            (while (search-forward " with ur;" nil t)
+              (replace-match "\n FETCH FIRST 50 ROWS ONLY\n  WITH UR;")))
+           ((and (not sql-contains-fetch) (not sql-contains-with))
+            (message "3")
+            (while (search-forward ";" nil t)
+              (replace-match "\n FETCH FIRST 50 ROWS ONLY\n  WITH UR;"))))))
+      (sql-send-string (buffer-substring-no-properties (point-min) (point-max))))))
+
+
+(defun buffer-contains-substring (string)
+  "Used to tell if a given string is in the
+current buffer.  Found at:
+http://stackoverflow.com/questions/3034237/check-if-current-emacs-buffer-contains-a-string"
+  (save-excursion
+    (save-match-data
+      (goto-char (point-min))
+      (search-forward string nil t))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -1170,15 +1187,19 @@ to sending."
     (save-restriction
       (narrow-to-region start end)
       (goto-char (point-min))
-      (cond
-       ((search-forward-regexp "select" nil t)       
-        (if (search-forward-regexp "fetch" nil t)         
-            (sql-send-string (buffer-substring-no-properties start end))
-          (progn
-            (replace-regexp ";" " FETCH FIRST 50 ROWS ONLY WITH UR;")
-            (sql-send-string (buffer-substring-no-properties start (point-max))))))
-       (t
-        (sql-send-string (buffer-substring-no-properties start end)))))))
+      (when (search-forward "select" nil t)       
+        (cond         
+         ((and (search-forward "fetch" nil t) (not (search-forward "with" nil t)))
+          (while (search-forward ";" nil t)
+            (replace-match " WITH UR;")))
+         ((and (not (search-forward "fetch" nil t)) (search-forward "with" nil t))
+          (goto-char (point-min))
+          (while (search-forward " with ur;" nil t)
+            (replace-match " FETCH FIRST 50 ROWS ONLY WITH UR;")))
+         ((and (not (search-forward "fetch" nil t)) (not (search-forward "with" nil t)))
+          (while (search-forward ";" nil t)
+            (replace-match " FETCH FIRST 50 ROWS ONLY WITH UR;")))))
+      (sql-send-string (buffer-substring-no-properties (point-min) (point-max))))))
 #+END_SRC
 
 I have two wrap a bunch of lines in single quotes and commas to create queries often enough that a function was needed.
