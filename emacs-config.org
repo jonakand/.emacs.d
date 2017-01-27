@@ -2548,6 +2548,15 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
     (when (at-work-p)
       (setq org-babel-java-compiler "C:/IBM/SDP/jdk/bin/javac.exe")
       (setq org-babel-java-command "C:/IBM/SDP/jdk/bin/java.exe"))
+
+    ;;  Make Windows use the correct application for a number
+    ;;  of Office file extensions.
+    (mapc #'(lambda (v)
+              (push v org-file-apps)) '(("\\.doc\\'" . default) 
+                                        ("\\.docx\\'" . default)
+                                        ("\\.xlsx\\'" . default)
+                                        ("\\.xls\\'" . default) 
+                                        ("\\.xlsm\\'" . default)))
     
     ;;  Use yasnippets for templates instead.
     (setq org-structure-template-alist nil)
