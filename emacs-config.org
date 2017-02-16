@@ -1006,59 +1006,54 @@ The key bindings for SQL related commands are below.  The reasoning for using C-
 
 ** Functions
 
-Custom function for opening DB2 database connections.  This is customized to the naming convention used at my employer.  Database names along with environments are stored in lists in a custom company config.
+Possible new conenction command setup.  This would use the sql.el framework.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(defun ry/sql-open-database (database environment username password)
-  "Open a SQLi process and name the SQL statement window with the name provided."
+(defun ry/sql-open-database (conn)
+  "Open a SQLi process for the connection provided."
   (interactive (list
-                (ivy-read "Database: " ry/company-database-list)
-                (ivy-read "Environment: " ry/company-environment-list)
-                (read-string "Username: ")
-                (read-passwd "Password: ")))
-  (let* ((u-database-name (concat (upcase database) (upcase environment)))
-         (sql-buffer-name (concat "*SQL: " u-database-name "*"))
-         (db-buffer-name (concat "*DB: " u-database-name "*")))
-    (cond ((get-buffer sql-buffer-name)
-           (message "Database buffers exist, switching to them...")
+                (ivy-read "Connection: " sql-connection-alist :predicate nil :require-match t)))
+  (setq sql-product 'db2)
+  (sql-connect conn conn)
 
-           ;;  Buffers exist for the database selected so open the SQL
-           ;;  and DB buffers side-by-side getting rid of other windows.
-           (switch-to-buffer db-buffer-name)
-           (delete-other-windows)
-           (split-window-horizontally)
-           (other-window 1)
-           (switch-to-buffer sql-buffer-name)
-           (other-window 1))
-          (t
-           (god-local-mode)
-           (setq sql-set-product "db2")
+  (let ((sql-buffer-name (concat "*SQL: " conn "*"))
+        (db-buffer-name (concat "*DB: " conn "*")))
+    (delete-other-windows (get-buffer-window sql-buffer-name))
+    
+    ;;  These will be used later to automatically disconnect from the
+    ;;  database if it is left connected.  
+    (set (make-local-variable 'database-conn-p) t)
+    (add-to-list 'db-buffers-list (current-buffer))
 
-           ;;  Open *SQL* buffer, start SQLi process, and rename the
-           ;;  buffer to make it match the database being connected to.
-           (sql-db2 u-database-name)
-           (sql-rename-buffer u-database-name)
+    ;;  sql-mode split the frame so move to the other side, switch
+    ;;  to the DB buffer, and set things up so that it will interact
+    ;;  with the SQLi process.
+    (split-window-horizontally)
+    (other-window 1)
+    (switch-to-buffer db-buffer-name)
+    (sql-mode)
+    (sql-set-product "db2")
 
-           ;;  Send connection string to process.
-           (sql-send-string (concat "CONNECT TO " u-database-name " USER " username " USING " password ";"))
-           
-           ;;  These will be used later to automatically disconnect from the
-           ;;  database if it is left connected.  
-           (set (make-local-variable 'database-name) u-database-name)
-           (set (make-local-variable 'database-conn-p) t)
-           (add-to-list 'db-buffers-list (current-buffer))
+    ;;  Set the buffer to send SQL queries to.
+    (setq sql-buffer sql-buffer-name)))
+  
+(defun ry/sql-open-database-hook ()
+  "Send the connection string to the SQLi process."
+  (let* ((password (read-passwd "Password: ")))
+    (god-local-mode)
+    
+    ;;  Send connection string to process.
+    (sql-send-string (concat "CONNECT TO " sql-connection " USER " sql-user " USING " password ";"))))
 
-           ;;  sql-mode split the frame so move to the other side, switch
-           ;;  to the DB buffer, and set things up so that it will interact
-           ;;  with the SQLi process.
-           (other-window 1)
-           (switch-to-buffer db-buffer-name)
-           (sql-mode)
-           (sql-set-product "db2")
+;;  Add hook to automatically send the CONNECT string to the SQLi process.
+(add-hook 'sql-login-hook
+          #'ry/sql-open-database-hook)
+#+END_SRC
 
-           ;;  Set the buffer to send SQL queries to.
-           (setq sql-buffer sql-buffer-name)
-           (set (make-local-variable 'database-name) u-database-name)))))
+Originally I was using a custom company compltion backend for completing schema name, table name, column name.  It was suggested that this be done as a completion at point function instead and then company would get it for "free" as it will use the completion at point functions.  Defining it this way is a little shorter.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+;;  Code to be added here...
 #+END_SRC
 
 Simple method to disconnect from the database currently connected to.  This assumes that the current connection matches the buffer local variable that holds the database name.
@@ -1067,36 +1062,36 @@ Simple method to disconnect from the database currently connected to.  This assu
 (defun ry/sql-disconnect ()
   "Disconnect the current DB connection."
   (interactive)
-  (let ((db-buffer (sql-find-sqli-buffer)))
-    (when db-buffer     
-      (sql-send-string (concat "DISCONNECT " database-name ";")))))
+  (when (and sql-buffer database-conn-p)
+    (with-current-buffer sql-buffer
+      (let ((conn (buffer-local-value 'sql-connection (current-buffer))))
+        (sql-send-string (concat "DISCONNECT " conn ";"))
+        (setq database-conn-p nil)))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (defun ry/sql-quit ()
   "Quit the current DB2 CLP process."
   (interactive)
-  (let ((db-buffer (sql-find-sqli-buffer)))
-    (when db-buffer
-      (ry/sql-disconnect)
-      (sql-send-string "QUIT;"))))
+  (when sql-buffer
+    (with-current-buffer sql-buffer
+      (let ((conn (buffer-local-value 'sql-connection (current-buffer))))
+        (ry/sql-disconnect)
+        (sql-send-string (concat "QUIT;"))))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(defun ry/sql-reopen-database (username password)
+(defun ry/sql-reopen-database (password)
   "Reconnect to the database that the current buffer was
 connected to using the ry/sql-open-database command.  This
 command relies on the database-name created by the other
 function."
-  (interactive (list       
-                (read-string "Username: ")
-                (read-passwd "Password: ")))
-
-  ;;  TODO : Need to check to make sure the current buffer is a DB buffer.
-
-  (sql-send-string (concat "CONNECT TO " database-name " USER " username " USING " password ";"))
-  
-  (setq database-conn-p t))
+  (interactive (list (read-passwd "Password: ")))
+  (when (and sql-buffer (not database-conn-p))
+    (with-current-buffer sql-buffer
+      (let ((conn (buffer-local-value 'sql-connection (current-buffer))))
+        (sql-send-string (concat "CONNECT TO " conn " USER " sql-user " USING " password ";"))
+        (setq database-conn-p t)))))
 #+END_SRC
 
 This function will be used as part of a run-at-time function.  It will look at the list of known DB2 buffers and close the related connection if it sees that the connection is still open.  There is a hole if the connection in established outside of the normal method used by me.
