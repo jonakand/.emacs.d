@@ -203,7 +203,7 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
                         :background "#073642")
 
     ;;  Remove the lines between buffers.
-    ;;  (set-face-attribute 'vertical-border nil :foreground (face-attribute 'fringe :background))   
+    (set-face-attribute 'vertical-border nil :foreground (face-attribute 'fringe :background))
 
     (with-eval-after-load 'org
       (set-face-attribute 'org-block-begin-line nil
@@ -220,10 +220,12 @@ This is the Solarized color theme that is common to VIM.  I change the mode-line
 Set the default font.  I flip-flop between Consolas and Inconsolata.  Both are nice fonts.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(if (windows-p)
-    ;; (set-face-attribute 'default nil :font "Consolas-12")
-    (set-face-attribute 'default nil :font "Inconsolata-12")
-  (set-face-attribute 'default nil :font "Inconsolata-12"))
+(cond ((x-list-fonts "Inconsolata")
+       (add-to-list 'default-frame-alist '(font . "Inconsolata-11"))
+       (set-face-attribute 'default t :font "Inconsolata-11"))
+      ((x-list-fonts "Consolas")
+       (add-to-list 'default-frame-alist '(font . "Consolas-11"))
+       (set-face-attribute 'default t :font "Consolas-11")))
 #+END_SRC
 
 Disable the file dialog.
