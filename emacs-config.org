@@ -1948,6 +1948,16 @@ Some basic dired configuration.  Make dired stop creating buffers for each direc
     (add-hook 'dired-mode-hook #'hl-line-mode)))
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package dired-quick-sort
+  :ensure t
+  :disabled t
+  :config
+  (dired-quick-sort-setup)
+  (setq insert-directory-program "ls")
+  (setq ls-lisp-use-insert-directory-program nil)
+#+END_SRC
+
 Enable narrowing in dired buffers to help hide uninteresting files.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -3715,7 +3725,8 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
           company-dabbrev-ignore-buffers     "\\`[ ]'"
           company-dabbrev-code-ignore-case   t
           company-dabbrev-code-other-buffers 'all
-          company-dabbrev-other-buffers      'all)
+          company-dabbrev-other-buffers      'all
+          company-tooltip-align-annotations  t)
 
     ;;  Only load the work related company backend if I am at work.
     (when (at-work-p)
@@ -3763,7 +3774,7 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
     (defun do-yas-expand ()
       (let ((yas-fallback-behavior 'return-nil))
         ;; (yas-expand) 
-        (company-yasnippet)))
+        (company-yasnippet nil)))
 
     (defun tab-indent-or-complete ()
       (interactive)
