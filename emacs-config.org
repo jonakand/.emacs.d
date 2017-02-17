@@ -4087,14 +4087,41 @@ Smartscan mode allows for finding the next/previous occurrence of the symbol und
 Enable Eldoc for Lisp modes.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-;; (use-package "eldoc"  
-;;   :diminish eldoc-mode
-;;   :init
-;;   (progn
-;;     (setq eldoc-idle-delay 0.2)
-;;     (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-;;     (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-;;     (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
+(use-package "eldoc"  
+  :diminish eldoc-mode
+  :init
+  (progn
+    (setq eldoc-idle-delay 0.2)
+
+    ;; define a key
+    (define-key edebug-mode-map "A" 'my-elisp-add-to-watch)
+
+    ;; the implementation
+    (defun my-elisp-add-to-watch (&optional region-start region-end)
+      "Add the current variable to the *EDebug* window"
+      (interactive "r")
+      (let ((statement (if (and region-start region-end (use-region-p))
+                           (buffer-substring region-start region-end)
+                         (symbol-name (eldoc-current-symbol)))))
+
+        ;; open eval buffer
+        (edebug-visit-eval-list)
+
+        ;; jump to the end of it and add a newline
+        (goto-char (point-max)) (newline)
+
+        ;; insert the variable
+        (insert statement)
+
+        ;; update the list
+        (edebug-update-eval-list)
+
+        ;; jump back to where we were
+        (edebug-where)))
+    
+    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 #+END_SRC
 
 Commenting should be DWIM.
