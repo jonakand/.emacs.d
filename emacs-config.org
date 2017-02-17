@@ -2632,6 +2632,20 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
       (interactive)      
       (org-insert-time-stamp (current-time) t t)
       (insert " - "))
+
+    (defun ry/org-set-ritm (ritm-number)
+      "Add the RITM property with the RITM number
+and also set the RITM tag."
+      (interactive "sRITM number: ")
+      (org-set-property "RITM" ritm-number)
+      (org-toggle-tag "RITM" 'on))
+
+    (defun ry/org-set-migration (migration-number)
+      "Add the MIGRATION property with the migration
+number and also set the MIGRATED tag."
+      (interactive "sMigration number: ")
+      (org-set-property "MIGRATION" migration-number)
+      (org-toggle-tag "MIGRATED" 'on))
     
     (defun ry/org-agenda-after-show-hook ()
       "Show the subtree when viewing it from the agenda."
