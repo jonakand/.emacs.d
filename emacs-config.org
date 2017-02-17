@@ -467,8 +467,9 @@ Disable the annoying blinking cursor.
 This setting is used to truncate lines instead of wrapping them.  I like the idea of visual-line-mode but never got used to it.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(set-default 'truncate-lines t)
-;;(global-visual-line-mode)
+;;(set-default 'truncate-lines t)
+(global-visual-line-mode)
+(setq line-move-visual t)
 (setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 #+END_SRC
 
@@ -1048,6 +1049,18 @@ Possible new conenction command setup.  This would use the sql.el framework.
 ;;  Add hook to automatically send the CONNECT string to the SQLi process.
 (add-hook 'sql-login-hook
           #'ry/sql-open-database-hook)
+#+END_SRC
+
+Turn off visual line mode for sql-mode.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(add-hook 'sql-mode-hook
+          #'(lambda ()
+              (visual-line-mode 0)))
+
+(add-hook 'sql-interactive-mode-hook
+          #'(lambda ()
+              (visual-line-mode 0)))
 #+END_SRC
 
 Originally I was using a custom company compltion backend for completing schema name, table name, column name.  It was suggested that this be done as a completion at point function instead and then company would get it for "free" as it will use the completion at point functions.  Defining it this way is a little shorter.
@@ -2544,6 +2557,7 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
         (add-hook 'org-mode-hook #'(lambda () (org-bullets-mode 1)))
         (add-hook 'org-mode-hook #'(lambda () (visual-line-mode)))))
 
+
     (use-package ox-twbs
       :commands (org-twbs-export-to-html org-twbs-export-as-html)
       :ensure t)
@@ -2683,7 +2697,10 @@ number and also set the MIGRATED tag."
 
     ;; Always hilight the current agenda line
     (add-hook 'org-agenda-mode-hook
-              '(lambda () (hl-line-mode 1))
+              '(lambda () 
+                 (hl-line-mode 1)
+                 (visual-line-mode 0)
+                 (toggle-truncate-lines 1))
               'append)
 
     (org-clock-persistence-insinuate)
@@ -3707,7 +3724,6 @@ Late deadlines first, then scheduled, then non-late deadlines"
               (when (member (nth 2 (org-heading-components)) (list "NEXT"))
                 (org-todo "TODO")))))))))
 #+END_SRC
-
 
 * Company Mode
 
