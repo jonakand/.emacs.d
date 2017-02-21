@@ -1969,7 +1969,7 @@ Some basic dired configuration.  Make dired stop creating buffers for each direc
   :config
   (dired-quick-sort-setup)
   (setq insert-directory-program "ls")
-  (setq ls-lisp-use-insert-directory-program nil)
+  (setq ls-lisp-use-insert-directory-program nil))
 #+END_SRC
 
 Enable narrowing in dired buffers to help hide uninteresting files.
@@ -4090,6 +4090,8 @@ Enable Eldoc for Lisp modes.
 (use-package "eldoc"  
   :diminish eldoc-mode
   :init
+  :bind (:map edebug-mode-map
+              ("A" . my-elisp-add-to-watch))
   (progn
     (setq eldoc-idle-delay 0.2)
 
