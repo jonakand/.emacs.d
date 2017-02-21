@@ -2560,6 +2560,10 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
         (add-hook 'org-mode-hook #'(lambda () (org-bullets-mode 1)))
         (add-hook 'org-mode-hook #'(lambda () (visual-line-mode)))))
 
+    (use-package org-table-sticky-header
+      :ensure t
+      :config
+      (add-hook 'org-mode-hook 'org-table-sticky-header-mode))
 
     (use-package ox-twbs
       :commands (org-twbs-export-to-html org-twbs-export-as-html)
