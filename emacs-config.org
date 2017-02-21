@@ -1057,11 +1057,13 @@ Turn off visual line mode for sql-mode.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (add-hook 'sql-mode-hook
           #'(lambda ()
-              (visual-line-mode 0)))
+              (visual-line-mode 0)
+              (toggle-truncate-lines 1)))
 
 (add-hook 'sql-interactive-mode-hook
           #'(lambda ()
-              (visual-line-mode 0)))
+              (visual-line-mode 0)
+              (toggle-truncate-lines 1)))
 #+END_SRC
 
 Originally I was using a custom company compltion backend for completing schema name, table name, column name.  It was suggested that this be done as a completion at point function instead and then company would get it for "free" as it will use the completion at point functions.  Defining it this way is a little shorter.
