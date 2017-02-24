@@ -159,7 +159,7 @@ clocking string"
           (propertize (org-minutes-to-clocksum-string (org-clock-get-clocked-time)) 'face 'ry/current-time-face)))
         ((get-buffer "CAPTURE-refile.org")
          (propertize "Capturing" 'face 'ry/current-time-face))
-        ((t)
+        (t
          (propertize "Not clocking" 'face 'ry/current-time-face))))
 
 (setq-default mode-line-format
@@ -173,7 +173,7 @@ clocking string"
                 mode-line-modes              
                 "  "
                 "Current task: "
-                (:eval (ry/current-task-time))
+                (eval (ry/current-task-time))
                 mode-line-end-spaces))
 #+END_SRC
 
