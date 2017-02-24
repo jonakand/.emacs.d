@@ -2804,12 +2804,12 @@ Switch projects and subprojects from NEXT back to TODO"
             (bh/clock-in-organization-task-as-default))))      
       )
 
-    ;; (defun bh/punch-in (arg)
-    ;;   "Start continuous clocking and set the Organization task
-    ;; as the default task."
-    ;;   (interactive "p")
-    ;;   (setq bh/keep-clock-running t)
-    ;;   (bh/clock-in-organization-task-as-default))
+;;    (defun bh/punch-in (arg)
+;;      "Start continuous clocking and set the Organization task
+;;    as the default task."
+;;      (interactive "p")
+;;      (setq bh/keep-clock-running t)
+;;      (bh/clock-in-organization-task-as-default))
 
     (defun bh/punch-out ()
       (interactive)
@@ -2838,7 +2838,7 @@ Switch projects and subprojects from NEXT back to TODO"
               (when bh/keep-clock-running
                 (bh/clock-in-default-task)))))))
 
-    (defvar bh/organization-task-id "eb155a82-92b2-4f25-a3c6-0304591af2f9")
+    (defvar bh/organization-task-id "ae2a4626-416d-4244-8a2a-e15bca7b971d")
     (defvar ry/email-task-id "b86a72cd-99f1-435f-969c-dacd4a54b6b7")
     (defvar ry/lats-task-id "81a916f6-59b6-4b5d-a381-211ec3388b14")
 
@@ -4267,12 +4267,11 @@ Enable subword mode for Java.
 Lisp mode hooks for cask files for if/when I start looking in to cask.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-;; (use-package lisp-mode
-;;   :mode ("Cask\\'" . emacs-lisp-mode)
-;;   :config
-;;   (progn
-;;     (add-hook 'emacs-lisp-mode-hook 'eldoc-mode)
-;;     (add-hook 'emacs-lisp-mode-hook 'smartparens-strict-mode)))
+(use-package lisp-mode
+  :mode ("Cask\\'" . emacs-lisp-mode)
+  :config
+  (progn
+    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)))
 #+END_SRC
 
 
