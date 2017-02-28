@@ -173,7 +173,7 @@ clocking string"
                 mode-line-modes              
                 "  "
                 "Current task: "
-                (eval (ry/current-task-time))
+                (:eval (ry/current-task-time))
                 mode-line-end-spaces))
 #+END_SRC
 
