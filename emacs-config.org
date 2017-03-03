@@ -323,7 +323,7 @@ Anzu is a visual regular expression/replace package.  It includes some nice high
 #+END_SRC
 
 Change the behavior of i-search.
-xd
+
 http://endlessparentheses.com/leave-the-cursor-at-start-of-match-after-isearch.html?source=rss
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -652,15 +652,6 @@ A very helpful package for expanding the current region by semantic units.
   :bind (("C-=" . er/expand-region)))
 #+END_SRC
 
-Disable arrow keys and force yourself to use the Emacs bindings for navigation.  I put this one when I first stared to use Emacs and it has stuck.  I now get annoyed in other applications when they do not behave as I want.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package guru-mode
-  :ensure t
-  :config
-  (guru-mode))
-#+END_SRC
-
 This package makes commands work differently based on if a region is selected or not.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
@@ -707,7 +698,7 @@ I like to know where column 80 is.  This used to be a big deal years ago and is 
         (turn-on-fci-mode)))
 
     (setq fci-rule-column 80)
-    (fci-mode)))
+    (turn-on-fci-mode)))
 #+END_SRC
 
 * Spelling
@@ -2425,7 +2416,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
               ("C-p" . previous-line)
               ("C-f" . forward-char)
               ("C-b" . backward-char)
-              ("C-a" . beginning-of-line)
+              ("C-a" . prelude-move-beginning-of-line)
               ("C-e" . end-of-line)
               ("C-c C-x C-f" . ry/xml-format)
               ("C-c C-x C-l" . ry/xml-linearlize)
@@ -2555,6 +2546,7 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
 
     (use-package org-table-sticky-header
       :ensure t
+      :diminish 'org-table-sticky-header
       :config
       (add-hook 'org-mode-hook 'org-table-sticky-header-mode))
 

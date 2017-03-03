@@ -5,7 +5,7 @@ image-dired/
 newsticker/
 schema/
 server/
-snippets/
+snippets/*
 themes/
 url/
 vendor/
