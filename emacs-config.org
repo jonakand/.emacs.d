@@ -2554,7 +2554,7 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
           ("<f9> g" . org-clock-goto)
           ("<f9> n" . ry/org-start-note))
   :bind (:map org-agenda-mode-map
-              ("x" . nil)
+              ("x" . ivy-switch-buffer)
               ("q" . nil)
               ("b" . nil)
               ("n" . org-agenda-next-item)
