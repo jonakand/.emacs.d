@@ -3787,10 +3787,10 @@ The main modification is to use C-n and C-p to cycle through candidates and the 
           company-tooltip-align-annotations  t)
 
     ;;  Only load the work related company backend if I am at work.
-    (when (at-work-p)
-      (add-to-list 'load-path "~/.emacs.d/extra")
-      (require 'ry-company-sql)    
-      (add-to-list 'company-backends 'ry/company-sql))
+    ;; (when (at-work-p)
+    ;;   (add-to-list 'load-path "~/.emacs.d/extra")
+    ;;   (require 'ry-company-sql)    
+    ;;   (add-to-list 'company-backends 'ry/company-sql))
 
     ;; Add yasnippet support for all company backends
     ;; https://github.com/syl20bnr/spacemacs/pull/179
