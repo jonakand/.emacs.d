@@ -1,4 +1,3 @@
-;(let ((file-name-handler-alist nil))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Bootstrap use-package.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,24 +26,4 @@
 
 (setq use-package-verbose t)   
 
-;; Load a minimal configuration if NOT on my work VM.
-(if (s-contains? "RAD" (system-name))
-    (add-hook 'after-init-hook #'(lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
-  (add-hook 'after-init-hook #'(lambda () (load-file "~/.emacs.d/minimal-config.el"))))
-
-;;(add-hook 'after-init-hook #'(lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;  Tangle and byte compile the source ORG document if it is newer than the
-  ;;  previously tangled and compiled file.
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;(let ((src "~/.emacs.d/emacs-config.org")
-  ;;      (dst "~/.emacs.d/emacs-config.elc"))
-  ;;  (if (file-newer-than-file-p src dst)
-  ;;      (progn
-  ;;        (require 'ob-tangle)
-  ;;        (add-hook 'after-init-hook (lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org" t))))
-  ;;    (add-hook 'after-init-hook (lambda () (load-file "~/.emacs.d/emacs-config.elc")))))
-  ;;
-  ;; (add-hook 'after-init-hook (lambda () (org-babel-tangle-file "~/.emacs.d/emacs-config.org")))
-;)
+(add-hook 'after-init-hook #'(lambda () (org-babel-load-file "~/.emacs.d/emacs-config.org")))
