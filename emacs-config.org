@@ -386,13 +386,6 @@ The following disables the warning message that appears when a huge change is ma
 ;(add-to-list 'warning-suppress-types '(undo discard-info)) 
 #+END_SRC
 
-Enable subtle highlighting of matching parentheses.
-
-#+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(show-paren-mode 1)
-(setq show-paren-style 'parenthesis)
-#+END_SRC
-
 I work with log files quite often and sometimes they are very large.  The setting below will allow files to be opened without warnings until they are over 100MB in size.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
@@ -3838,6 +3831,31 @@ Company quickhelp is handy so load it after company mode.
     (setq company-quickhelp-delay 0.1)))
 #+END_SRC
 
+* Paredit
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package paredit
+  :ensure t
+  :commands paredit-mode
+  :diminish "()"
+  :config
+  (bind-key "M-)" #'paredit-forward-slurp-sexp paredit-mode-map)
+  (bind-key "C-(" #'paredit-forward-barf-sexp paredit-mode-map)
+  (bind-key "C-)" #'paredit-forward-slurp-sexp paredit-mode-map)
+  (bind-key ")" #'paredit-close-parenthesis paredit-mode-map)
+  (bind-key "M-\"" #'my/other-window-backwards paredit-mode-map))
+
+;;  Pair characters
+(electric-pair-mode 1)
+(setq electric-pair-preserve-balance t
+      electric-pair-delete-adjacent-pairs t
+      electric-pair-open-newline-between-pairs nil)
+
+;;  Show where matching parens are.
+(show-paren-mode 1)
+(setq show-paren-style 'parenthesis)
+#+END_SRC
+
 * Smartparens
    
 This Smartparens configuration was taken from https://github.com/mwfogleman/config/blob/master/home/.emacs.d/michael.org and http://pages.sachachua.com/.emacs.d/Sacha.html, https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el, and [[https://raw.githubusercontent.com/Fuco1/.emacs.d/master/files/smartparens.el]].  I am still trying to incorporate the package into my workflow.  It seems that it will be a very powerful addition to my work.
@@ -4271,7 +4289,9 @@ Lisp mode hooks for cask files for if/when I start looking in to cask.
   :mode ("Cask\\'" . emacs-lisp-mode)
   :config
   (progn
-    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)))
+    (add-hook 'emacs-lisp-mode-hook #'(lambda ()
+                                        (eldoc-mode 1)
+                                        (paredit-mode 1)))))
 #+END_SRC
 
 
