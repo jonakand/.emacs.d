@@ -2556,7 +2556,9 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
   :bind (:map org-agenda-mode-map
               ("x" . nil)
               ("q" . nil)
-              ("b" . nil))
+              ("b" . nil)
+              ("n" . org-agenda-next-item)
+              ("p" . org-agenda-previous-item))
   :config
   (progn    
     (use-package org-bullets
@@ -2807,8 +2809,7 @@ Switch projects and subprojects from NEXT back to TODO"
                                         ; Find the tags on the current task
           (if (and (equal major-mode 'org-mode) (not (org-before-first-heading-p)) (eq arg 4))
               (org-clock-in '(16))
-            (bh/clock-in-organization-task-as-default))))      
-      )
+            (bh/clock-in-organization-task-as-default)))))
 
 ;;    (defun bh/punch-in (arg)
 ;;      "Start continuous clocking and set the Organization task
@@ -3412,6 +3413,17 @@ Callers of this function already widen the buffer view."
               nil
             t))))
 
+    (defun ry/is-project-done-p ()
+      "Determine if the current todo item is part of a project
+that is done."
+      (save-excursion
+        (save-restriction
+          (let ((project-task (bh/find-project-task)))
+            (if (and project-task
+                     (member (org-get-todo-state) org-done-keywords))
+                t
+              nil)))))
+
     (defun bh/is-task-p ()
       "Any task with a todo keyword and no subtask"
       (save-restriction
@@ -3601,12 +3613,15 @@ singleton tasks."
           next-headline)))
 
     (defun bh/skip-non-archivable-tasks ()
-      "Skip trees that are not available for archiving"
+      "Skip trees that are not available for archiving.
+This was updated to treat subtasks the are part of project
+that is not complete as unarchivable."
       (save-restriction
         (widen)
         (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
           ;; Consider only tasks with done todo headings as archivable candidates
-          (if (member (org-get-todo-state) org-done-keywords)
+          (if (and (ry/is-project-done-p)
+                   (member (org-get-todo-state) org-done-keywords))
               (let* ((subtree-end (save-excursion (org-end-of-subtree t)))
                      (daynr (string-to-number (format-time-string "%d" (current-time))))
                      (a-month-ago (* 60 60 24 (+ daynr 1)))
