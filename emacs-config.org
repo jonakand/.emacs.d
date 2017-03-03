@@ -2935,7 +2935,7 @@ Switch projects and subprojects from NEXT back to TODO"
                    "* TODO %?\nSCHEDULED: %t\n%U\n- Room :: \n- Time :: \n- Attendees ::\n  - [ ] \n- Background :: \n  -\n- Meeting notes :: \n  -"))))
 
     ;;  Remove this on 09/04/2015 as it was causing problems with a new version of org-mode.
-    (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
+    ;;(add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 
                                         ; Targets include this file and any file contributing to the agenda - up to 9 levels deep
     (setq org-refile-targets (quote ((nil :maxlevel . 9)
