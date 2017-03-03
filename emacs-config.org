@@ -986,6 +986,19 @@ This list will be used to hold the SQL buffers that have the DB2 process.  I hav
 (run-at-time "5 minutes" nil 'ry/sql-connection-cleanup)
 #+END_SRC
 
+Setup completion package that can be found at https://github.com/jonakand/sql-capf.git
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package sql-completion
+  :load-path "~/emacs/sql-capf"
+  :config
+  (progn
+    (setq sql-completion-min-target-size 4
+          sql-completion-debugging t
+          completion-ignore-case t)
+    (add-hook 'completion-at-point-functions 'sql-completion-at-point)))
+#+END_SRC
+
 ** Key bindings
 
 The key bindings for SQL related commands are below.  The reasoning for using C-d is because I use DB2 at work and it is eady to remember.  Previously it was bound to the F5 key as work also uses DataStudio.  All key bindings are defined in the god-mode section of this document.
