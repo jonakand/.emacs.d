@@ -4168,20 +4168,17 @@ On-the-fly syntax checking.  I included this when I added Eclim.  Not sure if it
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package flycheck
   :ensure t
-  :commands (flycheck-mode)
-  :config
-  (progn
-    (add-hook 'after-init-hook #'global-flycheck-mode)))
+  :commands (flycheck-mode))
 #+END_SRC
 
 Used for displaying errors in a popup.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(use-package flycheck-tip
+(use-package flycheck-pos-tip
   :ensure t
   :after flycheck
   :config
-  (flycheck-tip-use-timer 'verbose))
+  (flycheck-pos-tip-mode))
 #+END_SRC
 
 This package is used to display the various members while working in eclim.
