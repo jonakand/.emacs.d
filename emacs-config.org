@@ -4540,10 +4540,14 @@ Add numbers to links in web pages when using Eww the same way that Surf or other
 (use-package eww-lnum
   :ensure t
   :commands eww
-  :init
-  (eval-after-load "eww"
-    '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
-            (define-key eww-mode-map "F" 'eww-lnum-universal))))
+  :bind (:map eww-mode-map
+              ("f" . eww-lnum-follow)
+              ("F" . eww-lnum-universal))
+  ;; :init
+  ;; (eval-after-load "eww"
+  ;;   '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
+  ;;           (define-key eww-mode-map "F" 'eww-lnum-universal)))
+  )
 #+END_SRC
 
 ** Stackexchange
