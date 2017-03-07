@@ -4021,18 +4021,22 @@ The only reason I use git is to save this configuration, but I can see how this 
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-c g" . magit-status))
+  :bind (:map magit-status-mode-map
+              ("TAB" . magit-section-toggle)
+              ("<C-tab>" . magit-section-cycle)
+              ("q" . magit-quit-session))
   :config
   (progn
-    (setq magit-use-overlays nil)
+    (setq magit-use-overlays nil
+          magit-completing-read-function 'ivy-completing-read
+          magit-last-seen-setup-instructions "1.4.0")
 
-    (setq magit-completing-read-function 'ivy-completing-read)
+    (setenv "GIT_ASKPASS" "git-gui--askpass")
     
     (defadvice magit-status (around magit-fullscreen activate)
       (window-configuration-to-register :magit-fullscreen)
       ad-do-it
       (delete-other-windows))
-
-    (setenv "GIT_ASKPASS" "git-gui--askpass")
     
     (defun magit-quit-session ()
       "Restores the previous window configuration and kills the magit buffer"
@@ -4040,12 +4044,11 @@ The only reason I use git is to save this configuration, but I can see how this 
       (kill-buffer)
       (jump-to-register :magit-fullscreen))
 
-    (setq magit-last-seen-setup-instructions "1.4.0")
-
-    (bind-keys :map magit-status-mode-map
-               ("TAB" . magit-section-toggle)
-               ("<C-tab>" . magit-section-cycle)
-               ("q" . magit-quit-session))))
+    ;; (bind-keys :map magit-status-mode-map
+    ;;            ("TAB" . magit-section-toggle)
+    ;;            ("<C-tab>" . magit-section-cycle)
+    ;;            ("q" . magit-quit-session))
+    ))
 #+END_SRC
 
 Add Git diff information to the gutter so that I can easily track changes.
