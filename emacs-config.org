@@ -2065,7 +2065,6 @@ Add BBDB configuration primarily for use with Gnus.
 #+END_SRC
 
 * Gnus
-
 ** Setup
 
   1. Download GNUTls from [[http://sourceforge.net/projects/ezwinports/]].
@@ -2090,9 +2089,9 @@ Place the following contents in [[~/.emacs.d/.authinfo]]
 Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-one-year-guide/blob/master/gnus-guide-en.org]].
   
   #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-      (eval-after-load "gnutls"
-        '(progn
-           (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
+  (eval-after-load "gnutls"
+    '(progn
+       (setq gnutls-trustfiles '("c:/Users/ryans_000/AppData/Roaming/.emacs.d/ca-bundle.crt" "c:/Users/ryans_000/AppData/Roaming/.emacs.d/cacert.pem"))))
 
   (use-package gnus
     :if (not(at-work-p))
@@ -2100,54 +2099,54 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
     (progn
       (setq gnus-select-method '(nntp "news.gmane.org"))
 
-    ;;Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
-    ;; (add-to-list 'gnus-secondary-select-methods
-    ;;              '(nnimap "gmail"
-    ;;                       (nnimap-address "imap.gmail.com")
-    ;;                       (nnimap-server-port 993)
-    ;;                       (nnimap-stream ssl)
-    ;;                       (nnir-search-engine imap)))
-
+      ;;Add the secondary select methods for email accounts.  In this case Gmail and Outlook using IMAP.
       ;; (add-to-list 'gnus-secondary-select-methods
-      ;;              '(nnimap "outlook"
-      ;;                       (nnimap-address "imap-mail.outlook.com")
-      ;;                       (nimap-server-port 993)
+      ;;              '(nnimap "gmail"
+      ;;                       (nnimap-address "imap.gmail.com")
+      ;;                       (nnimap-server-port 993)
       ;;                       (nnimap-stream ssl)
       ;;                       (nnir-search-engine imap)))
+
+      (add-to-list 'gnus-secondary-select-methods
+                   '(nnimap "outlook"
+                            (nnimap-address "imap-mail.outlook.com")
+                            (nimap-server-port 993)
+                            (nnimap-stream ssl)
+                            (nnir-search-engine imap)))
 
       (setq gnus-thread-sort-functions
             '((not gnus-thread-sort-by-date)
               (not gnus-thread-sort-by-number)))
 
-  ;;When I expire a message I want it to immediately move to the Trash/Deleted folder.
+      ;;When I expire a message I want it to immediately move to the Trash/Deleted folder.
 
-      ;; (setq nnmail-expiry-target 'ry/gnus-fancy-expire)
+      (setq nnmail-expiry-target 'ry/gnus-fancy-expire)
       (setq nnmail-expiry-wait 'immediate)
 
-      ;; (defun ry/gnus-fancy-expire (group-name)
-      ;;   "Determine which expiry target should use for a given message."
-      ;;   (interactive)  
-      ;;   (if (s-contains-p "INBOX" group-name)      
-      ;;       (format "nnimap+gmail:[Gmail]/Trash")    
-      ;;     (format "nnimap+outlook:Deleted")))
+      (defun ry/gnus-fancy-expire (group-name)
+        "Determine which expiry target should use for a given message."
+        (interactive)  
+        (if (s-contains-p "INBOX" group-name)      
+            (format "nnimap+gmail:[Gmail]/Trash")    
+          (format "nnimap+outlook:Deleted")))
 
-  ;;  Use caching to the max.
+      ;;  Use caching to the max.
       (setq gnus-use-cache t)
 
-  ;;  Use tree view for groups.
+      ;;  Use tree view for groups.
       (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
 
-  ;;  Enable threading with full display of subtrees.
+      ;;  Enable threading with full display of subtrees.
       (setq gnus-summary-thread-gathering-function 'gnus-gather-threads-by-subject)
 
-  ;;  Personal information.
+      ;;  Personal information.
       (setq user-full-name "Ryan Yanson"
             user-mail-address "ryanson@outlook.com")
 
-  ;;  The next setting was found on [[http://www.gnu.org/software/emacs/manual/html_node/gnus/FAQ-9_002d2.html]].  Seeing as I don't care about CJK characters it's set.
+      ;;  The next setting was found on [[http://www.gnu.org/software/emacs/manual/html_node/gnus/FAQ-9_002d2.html]].  Seeing as I don't care about CJK characters it's set.
       (setq gnus-use-correct-string-widths nil)
 
-  ;;  Setup faces for the summary buffer.
+      ;;  Setup faces for the summary buffer.
       (copy-face 'font-lock-negation-char-face 'gnus-face-5)
       (setq gnus-face-5 'gnus-face-5)
 
@@ -2160,7 +2159,7 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
       (copy-face 'font-lock-warning-face 'gnus-face-8)
       (setq gnus-face-8 'gnus-face-8)
 
-  ;;  Customize the formatting found in the summary buffer.
+      ;;  Customize the formatting found in the summary buffer.
       (setq-default
        gnus-summary-line-format "%U%R%z %7{│%} %5{%&user-date;%} %7{│%} %8{%-30,30f%} %7{│%} %B%6{%-80,80s%}\n"
        gnus-user-date-format-alist '((t . "%Y-%m-%d %H:%M"))
@@ -2175,7 +2174,7 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
        gnus-sum-thread-tree-vertical "│"
        gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
 
-  ;;  Customize the formatting in the group buffer.  I don't like to see the ugly names for the groups so they are mapped to shorter names.
+      ;;  Customize the formatting in the group buffer.  I don't like to see the ugly names for the groups so they are mapped to shorter names.
       (setq-default gnus-group-line-format "%M%S%p%P[%5y] :%B%(%uG%)\n")
 
       (defun gnus-user-format-function-G (arg)
@@ -2184,28 +2183,29 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
           (if (null mapped-name)
               gnus-tmp-group
             (cdr mapped-name))))
+                                      
+      (setq group-name-map '(
+                             ;;("nnimap+gmail:INBOX" . "Gmail/Inbox")
+                             ;; ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
+                             ;; ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
+                             ;; ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
+                             ;; ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
+                             ;; ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
+                             ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
+                             ("nnimap+outlook:Inbox" . "Outlook/Inbox")
+                             ("nnimap+outlook:Deleted" . "Outlook/Deleted")
+                             ("nnimap+outlook:Macys" . "Outlook/Macys")
+                             ("nnimap+outlook:Amazon" . "Outlook/Amazon")
+                             ("nnimap+outlook:Bills" . "Outlook/Bills")
+                             ("nnimap+outlook:Sent" . "Outlook/Sent")))
 
-      ;; (setq group-name-map '(;;("nnimap+gmail:INBOX" . "Gmail/Inbox")
-      ;;                        ;; ("nnimap+gmail:[Gmail]/All Mail" . "Gmail/All")
-      ;;                        ;; ("nnimap+gmail:[Gmail]/Spam" . "Gmail/Spam")
-      ;;                        ;; ("nnimap+gmail:[Gmail]/Starred" . "Gmail/Starred")
-      ;;                        ;; ("nnimap+gmail:[Gmail]/Trash" . "Gmail/Trash")
-      ;;                        ;; ("nnimap+gmail:jonakand@nycap.rr.com". "Gmail/Jonakand@nycap.rr.com")
-      ;;                        ("nnimap+outlook:@Gmail" . "Outlook/Gmail")
-      ;;                        ("nnimap+outlook:Inbox" . "Outlook/Inbox")
-      ;;                        ("nnimap+outlook:Deleted" . "Outlook/Deleted")
-      ;;                        ("nnimap+outlook:Macys" . "Outlook/Macys")
-      ;;                        ("nnimap+outlook:Amazon" . "Outlook/Amazon")
-      ;;                        ("nnimap+outlook:Bills" . "Outlook/Bills")
-      ;;                        ("nnimap+outlook:Sent" . "Outlook/Sent")))
-
-  ;;    (setq mm-text-html-renderersh 'r)
+      ;;    (setq mm-text-html-renderersh 'r)
       (setq gnus-inhibit-images nil)
 
       (setq mm-attachment-override-types '("image/.*"))
       (setq mm-discouraged-alternatives '("text/html" "text/richtext"))
 
-  ;;  Configure outgoing email.
+      ;;  Configure outgoing email.
       ;; (setq message-send-mail-function 'smtpmail-send-it
       ;;       smtpmail-default-smtp-server "smtp-mail.outlook.com"
       ;;       smtpmail-smtp-service 587
@@ -2213,11 +2213,10 @@ Emacs config, adapted from [[https://github.com/redguardtoo/mastering-emacs-in-o
 
       (setq gnus-always-read-dribble-file t)
 
-  ;;  Check for new mail every five minutes.
-
+      ;;  Check for new mail every five minutes.
       (gnus-demon-add-handler 'gnus-demon-scan-news 5 t)
 
-  ;;  Kill the message buffer after sending an email instead of burying it.
+      ;;  Kill the message buffer after sending an email instead of burying it.
       (setq message-kill-buffer-on-exit t)
 
       (setq mail-user-agent 'gnus-user-agent)
