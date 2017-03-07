@@ -2018,7 +2018,7 @@ Add BBDB configuration primarily for use with Gnus.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package bbdb
   :ensure t
-  :if (not(at-work-p))
+  ;;:if (not(at-work-p))
   :config
   (progn
     (bbdb-initialize 'gnus 'message)
