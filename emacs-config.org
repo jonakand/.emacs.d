@@ -3842,12 +3842,11 @@ Company quickhelp is handy so load it after company mode.
   :ensure t
   :commands paredit-mode
   :diminish "()"
-  :config
-  (bind-key "M-)" #'paredit-forward-slurp-sexp paredit-mode-map)
-  (bind-key "C-(" #'paredit-forward-barf-sexp paredit-mode-map)
-  (bind-key "C-)" #'paredit-forward-slurp-sexp paredit-mode-map)
-  (bind-key ")" #'paredit-close-parenthesis paredit-mode-map)
-  (bind-key "M-\"" #'my/other-window-backwards paredit-mode-map))
+  :bind (:map paredit-mode-map
+              ("M-)" . paredit-forward-slurp-sexp)
+              ("C-(" . paredit-forward-barf-sexp)
+              ("C-)" . paredit-forward-slurp-sexp)
+              (")" . paredit-close-parenthesis)))
 
 ;;  Pair characters
 (electric-pair-mode 1)
