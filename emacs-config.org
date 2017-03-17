@@ -3242,7 +3242,7 @@ Switch projects and subprojects from NEXT back to TODO"
                               org-protocol)))
 
                                         ; position the habit graph on the agenda to the right of the default
-    (setq org-habit-graph-column 50)
+    (setq org-habit-graph-column 80)
 
     (run-at-time "06:00" 86400 '(lambda () (setq org-habit-show-habits t)))
 
