@@ -280,23 +280,36 @@ Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.
        (setq gnutls-log-level 1))))
 #+END_SRC
 
-Set values so that backup files are not littering my directories.  The BACKUP folder will be ignored by git.
+Set values so that backup files are not littering my directories.  The BACKUP folder will be ignored by git.  Backup files regardless of if they are in versio control or not.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(setq backup-directory-alist
-      `((".*" . "~/.emacs.d/BACKUP")))
-(setq auto-save-file-name-transforms
-      `((".*" , "~/.emacs.d/BACKUP" t)))
+(setq backup-directory-alist `((".*" . "~/.emacs.d/BACKUP"))
+      auto-save-file-name-transforms `((".*" , "~/.emacs.d/BACKUP" t))
+      version-control t
+      vc-make-backup-files t)
 #+END_SRC
 
 Change garbage collection to only happen every 20 MB.  Originally found on https://github.com/CQQL/dotfiles/blob/master/src/.emacs.d/lisp/globals.el
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(setq gc-cons-threshold 100000000)
-(setq jit-lock-stealth-time 1
+(setq gc-cons-threshold 100000000
+      jit-lock-stealth-time 1
       ;; jit-lock-stealth-load 200
       jit-lock-chunk-size 1000
       jit-lock-defer-time 0.05)
+#+END_SRC
+
+Save the history of the mini buffer.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(setq savehist-file "~/.emacs.d/savehist"
+      history-length t
+      history-delete-duplicates t
+      savehist-save-minibuffer-history 1
+      savehist-additional-variables '(kill-ring
+                                      search-ring
+                                      regexp-search-ring))
+(savehist-mode 1)
 #+END_SRC
 
 * Navigation
