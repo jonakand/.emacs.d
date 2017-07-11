@@ -1239,44 +1239,43 @@ To make looking at results easier the function below can be used to convert a re
           (with-temp-buffer
             (insert-buffer-substring-no-properties buf beg end)
             (goto-char (point-min))
-            (let ((pt (point))
-                  (lc (count-lines (point-min) (point-max)))
-                  (d))
-              
-              ;;  Loop over each whitespace delimited column
-              ;;  on the first line.
-              (while (= (line-number-at-pos) 1)
 
-                ;;  Loop over each row in the column and
-                ;;  add pipes on each line.
-                (while (and (<= (line-number-at-pos) lc)
-                            (eq d nil))
-                  (insert "|")
+            ;;  Start processing on the line between the column headers
+            ;;  and the result data.
+            (forward-line)
+                        
+            (let* (
+                   ;;  Loop over the second line in the result to get a list
+                   ;;  of colunm widths to know where to insert the pipes.
+                   (lengths
+                    (cl-loop for p in (split-string (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
+                             collect (length p)))
 
-                  ;;  If not at the bottom of a column go
-                  ;;  to the next row and backup one
-                  ;;  character else set a flag to denote
-                  ;;  that the bottom of a column was hit.
-                  (if (/= (line-number-at-pos) lc)
-                      (progn
-                        (next-logical-line 1)
-                        (goto-char (- (point) 1)))
-                    (setq d t)))
+                   ;;  Create a regular expression that will match the data
+                   ;;  rows.  Each group in the expression will be replaced
+                   ;;  with a pipe.
+                   (regexp 
+                    (cl-loop for l in lengths with r = "" do
+                             (setq r (concat r ".\\{" (number-to-string l) "\\}\\([ ]*\\)"))
+                             finally return r)))
 
-                ;;  Go back to the top of the current column (pt),
-                ;;  set pt to point to remember where the top of
-                ;;  the column is, move to the next column, and
-                ;;  reset the of the column flag (d).
-                (goto-char pt)
-                (forward-whitespace 1)
-                (setq pt (point))
-                (setq d nil)))
-            (org-mode)
-            (org-table-align)
+              ;;  Loop over each line and replace the space between
+              ;;  each column with a pipe.              
+              (goto-char (point-min))
+              (while (search-forward-regexp regexp nil t)
+                (cl-loop for c from 1 to (length lengths) do
+                         (replace-match "|" nil nil nil c)))
+
+              ;;  Add pipes to the beginng of each line so that org-mode
+              ;;  will create the result table properly.
+              (goto-char (point-min))              
+              (cl-loop until (eobp) do (insert-string "|") (forward-line)))            
             (buffer-substring-no-properties (point-min) (point-max)))))
     (delete-region beg end)
-    (goto-char beg)
-    (insert table)))
+    (insert table)
+    (org-mode)
+    (org-table-align)
+    (goto-char (point-min))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
