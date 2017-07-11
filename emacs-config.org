@@ -2655,20 +2655,39 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
       "Add the RITM property with the RITM number
 and also set the RITM tag."
       (interactive "sRITM number: ")
-      (org-set-property "RITM" ritm-number)
-      (org-toggle-tag "RITM" 'on))
+      (let ((cur (org-entry-get nil "RITM")))
+        (cond ((= (length ritm-number) 0)
+               (org-toggle-tag "RITM" 'off)
+               (org-delete-property "RITM"))
+              (cur
+               (org-set-property "RITM" (concat cur "," ritm-number)))
+              (t
+               (org-set-property "RITM" ritm-number)
+               (org-toggle-tag "RITM" 'on)))))
 
-    (defun ry/org-set-migration (migration-number)
+    (defun ry/org-set-migration (environment migration-number)
       "Add the MIGRATION property with the migration
 number and also set the MIGRATED tag."
-      (interactive "sMigration number: ")
-      (org-set-property "MIGRATION" migration-number)
-      (org-toggle-tag "MIGRATED" 'on))
+      (interactive (list
+                    (ivy-read "Environment: " '("PROD" "UTM") :predicate nil :require-match t)
+                    (read-string "Migration number: ")))
+      (if (s-equals-p environment "UTM")
+          (progn 
+            (org-set-property "UTM_MIGRATION" migration-number)
+            (org-toggle-tag "UTM" 'on))
+        (org-set-property "PROD_MIGRATION" migration-number)
+            (org-toggle-tag "PROD" 'on)))
     
     (defun ry/org-agenda-after-show-hook ()
       "Show the subtree when viewing it from the agenda."
       (org-show-subtree)
       (org-narrow-to-subtree))
+
+      (defun ry/org-capture-todo ()
+        "Helper function to capture a TODO using the right template."
+        (interactive)
+        (org-capture nil "t"))
+
     (setq org-agenda-after-show-hook 'ry/org-agenda-after-show-hook)
 
     (setq org-clock-goto-hook 'ry/org-agenda-after-show-hook)
