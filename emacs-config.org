@@ -55,8 +55,8 @@ My init.el file contains the lines below.  It is just enough to bootstrap use-pa
 Start debugging so that if this file has errors I know about it.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
-(setq debug-on-error t)
-(setq debug-on-quit t)
+(setq debug-on-error t
+      debug-on-quit t)
 #+END_SRC
 
 Start the server so that when editing I can connect and work quicker.
@@ -276,8 +276,8 @@ Set the path to the trustfiles used by GnuTLS after the gnutls module is loaded.
 (when (windows-p)
   (eval-after-load "gnutls" 
     '(progn 
-       (setq gnutls-trustfiles '("h:/emacs/cacert.pem"))
-       (setq gnutls-log-level 1))))
+       (setq gnutls-trustfiles '("h:/emacs/cacert.pem")
+             gnutls-log-level 1))))
 #+END_SRC
 
 Set values so that backup files are not littering my directories.  The BACKUP folder will be ignored by git.  Backup files regardless of if they are in versio control or not.
@@ -428,8 +428,8 @@ Enable editing functions that are disabled by default.
 I dislike the way that Emacs scrolls by default.  I also do not feel like brining in an extra package for scrolling so this is a compromise.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(setq scroll-margin 5)
-(setq scroll-preserve-screen-position 1)
+(setq scroll-margin 5
+      scroll-preserve-screen-position 1)
 #+END_SRC
 
 Like scrolling the default recenter command has a strange order that recenters happen.  This was a very nice pickup from Abo Abo.
@@ -461,15 +461,15 @@ This setting is used to truncate lines instead of wrapping them.  I like the ide
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
 ;;(set-default 'truncate-lines t)
 (global-visual-line-mode)
-(setq line-move-visual t)
-(setq visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
+(setq line-move-visual t
+      visual-line-fringe-indicators '(left-curly-arrow right-curly-arrow))
 #+END_SRC
 
 Use four spaces in place of tab characters.  Things get weird when programs don't treat tabs the same.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code 
-(setq-default indent-tabs-mode nil)
-(setq tab-width 4)
+(setq-default indent-tabs-mode nil
+              tab-width 4)
 #+END_SRC
 
 The following is an alternative to the typical M-SPC key binding that does different things based on how many times you use it.
@@ -653,8 +653,8 @@ Visual way to unto changes.
   :config
   (progn
     (global-undo-tree-mode)
-    (setq undo-tree-visualizer-timestamps t)
-    (setq undo-tree-visualizer-diff t)))
+    (setq undo-tree-visualizer-timestamps t
+          undo-tree-visualizer-diff t)))
 #+END_SRC
 
 A very helpful package for expanding the current region by semantic units.  
@@ -720,9 +720,9 @@ I like to know where column 80 is.  This used to be a big deal years ago and is 
 I am very poor at spelling.  The following will enable flyspell and use Hunspell as the background spelling process.  The dictionary and Hunspell are installed below my home directory on my Windows machines.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code  
-(setq ispell-personal-dictionary "~/emacs/Config/en_US_personal")
-(setq ispell-silently-savep t)
-(setq ispell-quietly t)
+(setq ispell-personal-dictionary "~/emacs/Config/en_US_personal"
+      ispell-silently-savep t
+      ispell-quietly t)
 #+END_SRC
 
 Flyspell will need a couple environment variables set to know what the default dictionary is and its path.  This may be done in Linux but is not done properly in Windows, so set it up here.
