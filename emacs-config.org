@@ -2435,7 +2435,7 @@ A recent addition is mortal mode found here: [[https://github.com/chrisdone/god-
   :ensure t
   :bind (("<escape>" . god-local-mode))
   :bind (:map god-local-mode-map
-              ("z" . repeat)
+              ("z" . avy-goto-char-timer)
               ("i" . god-local-mode)
               ("v" . scroll-up-command)
               ("r" . ry/replace-character-at-point)
