@@ -2543,7 +2543,7 @@ Ox-twbs was added for exporting documents using the Twitter bootstrap.  Not sure
   :bind* (("C-M-r" . org-capture)
           ("C-c r" . org-capture)
           ("C-c a" . org-agenda)
-          ("<f10>" . org-capture)
+          ("<f10>" . ry/org-capture-todo)
           ("<f9> <f9>" . bh/show-org-agenda)
           ("<f9> r" . org-capture)
           ("<f9> i" . org-clock-in)
