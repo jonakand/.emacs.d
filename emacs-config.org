@@ -2364,7 +2364,7 @@ Save the recent file history.  This is used by Helm.
          ("C-x b" . ivy-switch-buffer)
          ("C-x C-b" . ivy-switch-buffer)
          ("M-y" . counsel-yank-pop)
-         ("C-s" . counsel-grep-or-swiper))
+         ("C-s" . ry-counsel-grep-or-swiper))
   :bind (:map ivy-mode-map ("C-'" . ivy-avy))
   :config
   (ivy-mode 1)
@@ -2391,7 +2391,18 @@ Save the recent file history.  This is used by Helm.
 
   ;; configure regexp engine.
   (setq ivy-re-builders-alist ;; allow input not in order
-        '((t . ivy--regex-ignore-order))))
+        '((t . ivy--regex-ignore-order)))
+
+  (defun ry-counsel-grep-or-swiper ()
+    "Save all buffers visiting files prior to calling counsel-grep-or-swiper due to
+stability issues with the command."
+    (interactive)
+    ;; save all buffers that are visiting files.
+    (cl-loop for b in (buffer-list)
+             when (buffer-file-name b) do
+             (with-current-buffer b
+               (save-buffer)))
+    (counsel-grep-or-swiper)))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
