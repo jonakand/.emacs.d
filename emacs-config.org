@@ -986,6 +986,10 @@ Setup completion package that can be found at https://github.com/jonakand/sql-ca
     (setq sql-completion-min-target-size 4
           sql-completion-debugging t
           completion-ignore-case t)
+    
+    (setq sql-find-query-tokens 'sql-db2-find-query-tokens)
+    (setq sql-get-database-objects 'sql-db2-get-database-objects)
+    
     (add-hook 'completion-at-point-functions 'sql-completion-at-point)))
 #+END_SRC
 
