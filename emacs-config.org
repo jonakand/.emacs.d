@@ -1960,6 +1960,7 @@ Some basic dired configuration.  Make dired stop creating buffers for each direc
     (setq ls-lisp-dirs-first t)
     (setq-default dired-omit-mode t)
     (setq-default dired-omit-files "^\\.$\\|^\\.\\.$")
+    (add-hook 'dired-mode-hook 'auto-revert-mode)
     (add-hook 'dired-mode-hook #'hl-line-mode)))
 #+END_SRC
 
