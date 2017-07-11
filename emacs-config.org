@@ -286,6 +286,7 @@ Set values so that backup files are not littering my directories.  The BACKUP fo
 (setq backup-directory-alist `((".*" . "~/.emacs.d/BACKUP"))
       auto-save-file-name-transforms `((".*" , "~/.emacs.d/BACKUP" t))
       version-control t
+      delete-old-versions t
       vc-make-backup-files t)
 #+END_SRC
 
