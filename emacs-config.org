@@ -4265,6 +4265,7 @@ Used to create a "workspace" for Java development.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package neotree
   :ensure t
+  :disabled t
   :bind (("<f11>" . neotree-toggle))
   :config
   (progn
@@ -4384,7 +4385,8 @@ I do not write Clojure code but I would like to learn when time permits.
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package cider
   :ensure t
-  :if (not (at-work-p))
+;;  :if (not (at-work-p))
+  :disabled t
   :bind (("<f10>" . cider-jack-in))
   :config
   (progn
@@ -4398,8 +4400,9 @@ I do not write Clojure code but I would like to learn when time permits.
 
 #+BEGIN_SRC emacs-lisp :tangle yes :exports code
 (use-package intero
-  :ensure t
-  :if (not (at-work-p))
+  ;;:ensure t
+  ;;:if (not (at-work-p))
+  :disabled t
   :config
   (add-hook 'haskell-mode-hook 'intero-mode))
 #+END_SRC
