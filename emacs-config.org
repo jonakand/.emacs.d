@@ -4364,6 +4364,18 @@ Lisp mode hooks for cask files for if/when I start looking in to cask.
                                         (paredit-mode 1)))))
 #+END_SRC
 
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(use-package slime
+  :ensure t
+  :if (not (at-work-p))
+  :mode 
+  (("\\.lisp\\'" . lisp-mode)
+   ("\\.cl\\'"   . lisp-mode))
+  :config
+  (progn
+    (load (expand-file-name ".quicklisp/slime-helper.el"))
+    (setq inferior-lisp-program "/usr/local/bin/sbcl")))
+#+END_SRC
 
 *** Clojure
 
