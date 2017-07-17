@@ -313,6 +313,19 @@ Save the history of the mini buffer.
 (savehist-mode 1)
 #+END_SRC
 
+Another garbage collection related snippet that I found on: http://bling.github.io/blog/2016/01/18/why-are-you-changing-gc-cons-threshold/.  This will alter the threshold that is set in the snippt above so it needs to be tested and then altered if needed.
+
+#+BEGIN_SRC emacs-lisp :tangle yes :exports code
+(defun my-minibuffer-setup-hook ()
+  (setq gc-cons-threshold most-positive-fixnum))
+
+(defun my-minibuffer-exit-hook ()
+  (setq gc-cons-threshold 800000))
+
+(add-hook 'minibuffer-setup-hook #'my-minibuffer-setup-hook)
+(add-hook 'minibuffer-exit-hook #'my-minibuffer-exit-hook)
+#+END_SRC
+
 * Navigation
 ** Avy Jump
 
