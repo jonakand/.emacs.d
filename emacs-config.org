@@ -3046,14 +3046,14 @@ Switch projects and subprojects from NEXT back to TODO"
                     (tags-todo "REFILE"
                                ((org-agenda-overriding-header "Tasks to Refile")
                                 (org-tags-match-list-sublevels nil)))                    
-                    (tags-todo "-HOLD-CANCELLED/!"
+                    (tags-todo "-HOLD-CANCELLED-MIGRATED-JOSH-WISHLIST/!"
                                ((org-agenda-overriding-header "Projects")
                                 (org-agenda-skip-function 'bh/skip-non-projects)
                                 (org-agenda-sorting-strategy
                                  '(category-keep))))
-                    (tags-todo "-HOLD-CANCELLED-JOSH-MIGRATED/!"
-                               ((org-agenda-overriding-header "Stuck Projects")
-                                (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
+                    ;; (tags-todo "-HOLD-CANCELLED-JOSH-MIGRATED/!"
+                    ;;            ((org-agenda-overriding-header "Stuck Projects")
+                    ;;             (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
                     (tags-todo "-WAITING-CANCELLED-KRANTHI-RITA-TIFFANY-NICK-JOSH-REFILE-CLOCK/!NEXT"
                                ((org-agenda-overriding-header "Next Tasks")
                                 (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
