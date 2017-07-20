@@ -133,19 +133,37 @@ The mode-line is configured using the code below.  I like to have a simplified m
   "Face for current task time in mode-line."
   :group 'faces)
 
+(defun ry/current-task-project-name ()
+  "Return the headline of the project that the current task is in
+if the current task is a project."
+  (interactive)
+  (when org-clock-current-task
+    (org-with-point-at org-clock-marker
+      (when (bh/is-subproject-p)
+        (bh/find-project-task)
+        (nth 4 (org-heading-components))))))
+
 (defun ry/current-task-time ()
   "Concat the current clocking item and the time spent into a
 propertized string.  If no item is being clocked return a no
 clocking string"
-  (cond (org-clock-current-task
-         (concat 
-          (propertize org-clock-current-task 'face 'ry/current-task-face)
-          " : "
-          (propertize (org-minutes-to-clocksum-string (org-clock-get-clocked-time)) 'face 'ry/current-time-face)))
-        ((get-buffer "CAPTURE-refile.org")
-         (propertize "Capturing" 'face 'ry/current-time-face))
-        (t
-         (propertize "Not clocking" 'face 'ry/current-time-face))))
+  (let ((proj-task (ry/current-task-project-name)))
+    (cond (proj-task
+           (concat 
+            (propertize org-clock-current-task 'face 'ry/current-task-face)
+            " ("
+            (propertize proj-task 'face 'ry/current-task-face)
+            ") : "
+            (propertize (org-minutes-to-clocksum-string (org-clock-get-clocked-time)) 'face 'ry/current-time-face)))
+          (org-clock-current-task
+           (concat 
+            (propertize org-clock-current-task 'face 'ry/current-task-face)
+            " : "
+            (propertize (org-minutes-to-clocksum-string (org-clock-get-clocked-time)) 'face 'ry/current-time-face)))
+          ((get-buffer "CAPTURE-refile.org")
+           (propertize "Capturing" 'face 'ry/current-time-face))
+          (t
+           (propertize "Not clocking" 'face 'ry/current-time-face)))))
 
 (setq-default mode-line-format
               '("%e"
